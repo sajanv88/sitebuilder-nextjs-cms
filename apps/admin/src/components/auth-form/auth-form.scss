@@ -1,0 +1,11 @@
+@use "abstracts" as a;
+
+// The form inside an auth screen: fields stacked, the submit button full width.
+.auth-form {
+  display: grid;
+  gap: a.space(5);
+
+  &__submit {
+    inline-size: 100%;
+  }
+}

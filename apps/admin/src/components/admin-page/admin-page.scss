@@ -1,0 +1,26 @@
+@use "abstracts" as a;
+
+.admin-page {
+  display: grid;
+  gap: a.space(6);
+  align-content: start;
+  max-inline-size: var(--app-content-max-width);
+  padding: a.space(4);
+
+  @include a.breakpoint("md") {
+    padding: a.space(8);
+  }
+
+  &__title {
+    margin: 0;
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  &__text {
+    margin: 0;
+    color: var(--color-muted-foreground);
+  }
+}

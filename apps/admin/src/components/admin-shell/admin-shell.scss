@@ -1,0 +1,61 @@
+@use "abstracts" as a;
+
+.admin-shell {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+
+  &__brand {
+    display: block;
+    padding: a.space(2);
+    border-radius: var(--radius-sm);
+    color: var(--color-foreground);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    text-decoration: none;
+
+    @include a.focus-ring;
+  }
+
+  // Name and email of the signed-in person, cut short with an ellipsis where there's no room.
+  &__viewer {
+    display: grid;
+    gap: a.space(0.5);
+    min-inline-size: 0;
+    margin: 0;
+    padding: a.space(2);
+    font-size: var(--text-sm);
+  }
+
+  &__name {
+    overflow: hidden;
+    font-weight: var(--font-weight-medium);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__email {
+    overflow: hidden;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__main {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-inline-size: 0;
+  }
+
+  &__bar {
+    display: flex;
+    gap: a.space(3);
+    align-items: center;
+    padding: a.space(3) a.space(4);
+    border-block-end: var(--nuv-border-width) solid var(--color-border);
+  }
+
+  &__page {
+    min-inline-size: 0;
+  }
+}
