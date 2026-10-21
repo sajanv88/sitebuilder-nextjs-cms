@@ -1,5 +1,7 @@
 "use client";
 
+import { DatePicker } from "@nuvui/date-picker";
+import { enGB } from "@nuvui/date-picker/locale";
 import { ColumnsIcon, TrashIcon } from "@nuvui/icons";
 import {
   Alert,
@@ -16,6 +18,12 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxTrigger,
+  ComboboxValue,
   Empty,
   EmptyDescription,
   EmptyMedia,
@@ -34,7 +42,16 @@ import { ENTRY_LIMITS, type EntryKind } from "@sitebuilder/schema";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState, useSyncExternalStore, useTransition } from "react";
+import {
+  type SubmitEvent,
+  useActionState,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  useTransition,
+} from "react";
 import { saveEntry } from "@/actions/entry-editor";
 import { trashEntries } from "@/actions/entry-list";
 import { RevisionHistory } from "@/components/revision-history/revision-history";
@@ -79,11 +96,43 @@ function useInBrowser(): boolean {
   );
 }
 
-// "2026-10-21T16:05" in the browser's time zone, for a datetime-local field.
-function toLocalInput(iso: string): string {
-  const date = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+// The publish date is nuvui's DatePicker, which picks days only (nuvui has no time picker
+// yet), and the time is a Combobox of quarter hours beside it (decisions #44). Both are in the
+// browser's time zone; the form sends the moment they make together, in UTC.
+const pad = (n: number) => String(n).padStart(2, "0");
+
+// Dates are typed day first (dd/mm/yyyy) and weeks start on Monday. The Settings screen will
+// choose the date format later (docs/next.md); until then it's this European default.
+const DATE_LOCALE = enGB;
+const DATE_PATTERN = "dd/mm/yyyy";
+
+// "14:05", the time of day in the browser's time zone.
+function timeOf(date: Date): string {
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+// "00:00" to "23:45".
+const QUARTER_HOURS = Array.from(
+  { length: 96 },
+  (_, i) => `${pad(Math.floor(i / 4))}:${pad((i % 4) * 15)}`,
+);
+
+// The next quarter hour from now, for a date picked before a time.
+function nextQuarterHour(): string {
+  const now = new Date();
+  now.setMinutes(Math.ceil((now.getMinutes() + 1) / 15) * 15, 0, 0);
+  return timeOf(now);
+}
+
+// The day at "HH:mm", in the browser's time zone.
+function atTime(day: Date, time: string): Date {
+  return new Date(
+    day.getFullYear(),
+    day.getMonth(),
+    day.getDate(),
+    Number(time.slice(0, 2)),
+    Number(time.slice(3, 5)),
+  );
 }
 
 function statusLine(entry: EditorEntry | null): string {
@@ -165,16 +214,41 @@ export function EntryEditor({
   const errors = state.errors ?? {};
   const busy = saving || trashing;
 
-  // The publish date as typed in the field; null until it's touched.
-  const [publishLocal, setPublishLocal] = useState<string | null>(null);
-  const scheduledLocal =
-    inBrowser && entry?.status === "scheduled" && entry.publishedAt
-      ? toLocalInput(entry.publishedAt)
-      : "";
-  const local = publishLocal ?? scheduledLocal;
-  const publishAt = local && !Number.isNaN(Date.parse(local)) ? new Date(local).toISOString() : "";
+  // The publish date and time as picked; undefined until touched, showing what's scheduled.
+  const [pickedDay, setPickedDay] = useState<Date | null>();
+  const [pickedTime, setPickedTime] = useState<string>();
+  const [dayInvalid, setDayInvalid] = useState(false);
+  const dayField = useRef<HTMLInputElement>(null);
+  const scheduled = useMemo(() => {
+    if (!inBrowser || entry?.status !== "scheduled" || !entry.publishedAt) return null;
+    const at = new Date(entry.publishedAt);
+    return { day: new Date(at.getFullYear(), at.getMonth(), at.getDate()), time: timeOf(at) };
+  }, [inBrowser, entry?.status, entry?.publishedAt]);
+  const day = pickedDay === undefined ? (scheduled?.day ?? null) : pickedDay;
+  const time = pickedTime ?? scheduled?.time ?? "";
+  // A time saved off the quarter hour (14:05) stays in the list, in its place.
+  const times =
+    time && !QUARTER_HOURS.includes(time) ? [...QUARTER_HOURS, time].sort() : QUARTER_HOURS;
+  const publishAt = day && time ? atTime(day, time).toISOString() : "";
   const future = publishAt !== "" && Date.parse(publishAt) > Date.now();
   const zone = inBrowser ? Intl.DateTimeFormat().resolvedOptions().timeZone : "";
+
+  function pickDay(next: Date | null) {
+    setPickedDay(next);
+    setDayInvalid(false);
+    if (next && !time) setPickedTime(nextQuarterHour());
+  }
+
+  // Text in the date field that isn't a date leaves no date, which would publish now. The form
+  // has noValidate, so the browser doesn't stop it: stop Publish here instead.
+  function checkDay(event: SubmitEvent<HTMLFormElement>) {
+    if (event.nativeEvent.submitter?.getAttribute("value") !== "publish") return;
+    if (dayField.current && !dayField.current.validity.valid) {
+      event.preventDefault();
+      setDayInvalid(true);
+      dayField.current.focus();
+    }
+  }
 
   // One toast per save, and one when the editor opens on something just created. Each has an
   // id, so an effect that runs twice (React does in development) shows it once.
@@ -212,7 +286,7 @@ export function EntryEditor({
   const publishLabel = future ? "Schedule" : entry?.status === "published" ? "Update" : "Publish";
 
   return (
-    <form action={action} className="entry-editor" noValidate>
+    <form action={action} onSubmit={checkDay} className="entry-editor" noValidate>
       <input type="hidden" name="id" value={entry?.id ?? ""} />
       <input type="hidden" name="type" value={type} />
       <input type="hidden" name="updatedAt" value={entry?.updatedAt ?? ""} />
@@ -335,21 +409,54 @@ export function EntryEditor({
             <CardContent className="entry-editor__card">
               <p className="entry-editor__note">{statusLine(entry)}</p>
               {allowed.publish ? (
-                <Field>
-                  <FieldLabel>Publish on</FieldLabel>
-                  <FieldControl>
-                    <Input
-                      type="datetime-local"
-                      value={local}
-                      onChange={(event) => setPublishLocal(event.currentTarget.value)}
-                    />
-                  </FieldControl>
-                  <FieldDescription>
-                    Empty publishes now. A later time schedules it.
-                    {zone ? ` Times are in your time zone, ${zone}.` : null}
-                  </FieldDescription>
-                  <FieldError>{errors.publishAt}</FieldError>
-                </Field>
+                <>
+                  <Field>
+                    <FieldLabel>Publish date</FieldLabel>
+                    <FieldControl>
+                      <DatePicker
+                        ref={dayField}
+                        value={day}
+                        onValueChange={pickDay}
+                        locale={DATE_LOCALE}
+                        placeholder={DATE_PATTERN}
+                        invalidMessage={`Enter a date as ${DATE_PATTERN}.`}
+                      />
+                    </FieldControl>
+                    <FieldDescription>
+                      Empty publishes now. A later date and time schedules it.
+                    </FieldDescription>
+                    <FieldError>
+                      {dayInvalid
+                        ? `Enter a date as ${DATE_PATTERN}, or clear it.`
+                        : errors.publishAt}
+                    </FieldError>
+                  </Field>
+                  <Field>
+                    <FieldLabel>Publish time</FieldLabel>
+                    <Combobox value={time} onValueChange={setPickedTime}>
+                      <FieldControl>
+                        <ComboboxTrigger>
+                          <ComboboxValue placeholder="Pick a time" />
+                        </ComboboxTrigger>
+                      </FieldControl>
+                      <ComboboxContent
+                        aria-label="Publish time"
+                        label="Search times"
+                        searchPlaceholder="Type a time, such as 14:30"
+                      >
+                        <ComboboxEmpty>No time found. Times go in quarter hours.</ComboboxEmpty>
+                        {times.map((option) => (
+                          <ComboboxItem key={option} value={option}>
+                            {option}
+                          </ComboboxItem>
+                        ))}
+                      </ComboboxContent>
+                    </Combobox>
+                    <FieldDescription>
+                      24-hour clock{zone ? `, in your time zone, ${zone}` : null}.
+                    </FieldDescription>
+                  </Field>
+                </>
               ) : null}
             </CardContent>
           </Card>
