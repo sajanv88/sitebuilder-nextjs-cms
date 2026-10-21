@@ -1,4 +1,5 @@
 import {
+  type BlockList,
   type EntryKind,
   type EntryListQuery,
   type EntrySortKey,
@@ -13,6 +14,7 @@ import { and, asc, count, desc, eq, ilike, inArray, isNull, ne, type SQL, sql } 
 import type { Executor } from "../executor";
 import { user } from "../schema/auth-schema";
 import { type Entry, type EntryStatus, entries } from "../schema/entries";
+import { media } from "../schema/media";
 import { redirects } from "../schema/site";
 import { entryTerms, terms } from "../schema/terms";
 import { isUniqueViolation } from "./errors";
@@ -185,6 +187,8 @@ export interface EntryForEdit {
   publishedAt: Date | null;
   updatedAt: Date;
   deletedAt: Date | null;
+  content: BlockList;
+  featuredMediaId: string | null;
   author: { id: string; name: string };
   parent: { id: string; title: string } | null;
   categoryIds: string[];
@@ -207,6 +211,8 @@ export async function getEntryForEdit(db: Executor, id: string): Promise<EntryFo
       publishedAt: true,
       updatedAt: true,
       deletedAt: true,
+      content: true,
+      featuredMediaId: true,
     },
     with: {
       author: { columns: { id: true, name: true } },
@@ -253,6 +259,103 @@ export async function listParentOptions(
     )
     .orderBy(asc(entries.path))
     .limit(1000);
+}
+
+// ── For blocks ───────────────────────────────────────────────────────────────────────────────
+
+export interface EntryLink {
+  id: string;
+  title: string;
+  type: EntryKind;
+  path: string;
+  // For the caller's can() check: an author may only see their own drafts' titles.
+  authorId: string;
+  // Published, its time reached, and not in the trash: what visitors can open (§4.1).
+  public: boolean;
+}
+
+const isPublic = sql<boolean>`(${entries.status} = 'published' and ${entries.publishedAt} <= now() and ${entries.deletedAt} is null)`;
+
+// The entries blocks link to, by id: their current paths, so links follow renames (§5.1).
+export async function getEntryLinks(
+  db: Executor,
+  ids: readonly string[],
+): Promise<Map<string, EntryLink>> {
+  if (ids.length === 0) return new Map();
+  const rows = await db
+    .select({
+      id: entries.id,
+      title: entries.title,
+      type: entries.type,
+      path: entries.path,
+      authorId: entries.authorId,
+      public: isPublic,
+    })
+    .from(entries)
+    .where(inArray(entries.id, [...new Set(ids)]));
+  return new Map(rows.map((row) => [row.id, row]));
+}
+
+// Entries to link to, for the editor's link field: not in the trash, matching the search.
+export async function searchEntryLinks(db: Executor, q: string, limit = 20): Promise<EntryLink[]> {
+  return db
+    .select({
+      id: entries.id,
+      title: entries.title,
+      type: entries.type,
+      path: entries.path,
+      authorId: entries.authorId,
+      public: isPublic,
+    })
+    .from(entries)
+    .where(
+      and(isNull(entries.deletedAt), q ? ilike(entries.title, `%${escapeLike(q)}%`) : undefined),
+    )
+    .orderBy(asc(entries.type), asc(entries.path))
+    .limit(limit);
+}
+
+export interface PostCard {
+  id: string;
+  title: string;
+  path: string;
+  excerpt: string | null;
+  publishedAt: Date;
+  termIds: string[];
+}
+
+// The newest public posts, for the latest-posts block, with their category and tag ids.
+export async function listLatestPosts(db: Executor, limit = 24): Promise<PostCard[]> {
+  const rows = await db
+    .select({
+      id: entries.id,
+      title: entries.title,
+      path: entries.path,
+      excerpt: entries.excerpt,
+      publishedAt: entries.publishedAt,
+    })
+    .from(entries)
+    .where(and(eq(entries.type, "post"), isPublic))
+    .orderBy(desc(entries.publishedAt), asc(entries.id))
+    .limit(limit);
+  const links =
+    rows.length === 0
+      ? []
+      : await db
+          .select({ entryId: entryTerms.entryId, termId: entryTerms.termId })
+          .from(entryTerms)
+          .where(
+            inArray(
+              entryTerms.entryId,
+              rows.map((row) => row.id),
+            ),
+          );
+  return rows.map((row) => ({
+    ...row,
+    // Public posts always have one (isPublic checks it).
+    publishedAt: row.publishedAt ?? new Date(0),
+    termIds: links.filter((link) => link.entryId === row.id).map((link) => link.termId),
+  }));
 }
 
 // ── Slugs and paths ──────────────────────────────────────────────────────────────────────────
@@ -413,9 +516,12 @@ async function writeRedirects(db: Executor, moves: readonly Move[]): Promise<voi
 
 // ── Writes ───────────────────────────────────────────────────────────────────────────────────
 
-// The fields a save writes, already validated (EntryFields) and authorised.
+// The fields a save writes, already validated (EntryFields, and validateBlockList for the
+// content) and authorised.
 export interface EntryWrite {
   title: string;
+  content: BlockList;
+  featuredMediaId: string | null;
   // "" = make one from the title.
   slug: string;
   excerpt: string | null;
@@ -434,6 +540,7 @@ export type EntryWriteError =
   | "in-trash"
   | "reserved-slug"
   | "invalid-parent"
+  | "invalid-media"
   | "path-taken";
 
 export type EntryWriteResult =
@@ -450,16 +557,31 @@ async function mapPathTaken(run: () => Promise<EntryWriteResult>): Promise<Entry
   }
 }
 
-// A new draft with an empty block list (blocks arrive in phase 3), and its first revision.
+// The featured image must exist. The row is locked, so it can't be deleted before this commits.
+async function mediaExists(db: Executor, id: string | null): Promise<boolean> {
+  if (id === null) return true;
+  const [row] = await db.select({ id: media.id }).from(media).where(eq(media.id, id)).for("share");
+  return row !== undefined;
+}
+
+// A new draft and, unless autosave created it, its first revision (§4.1: autosave writes none).
 export async function createEntry(
   db: Executor,
-  input: EntryWrite & { type: EntryKind; authorId: string; actorId: string },
+  input: EntryWrite & {
+    type: EntryKind;
+    authorId: string;
+    actorId: string;
+    writeRevision?: boolean;
+  },
 ): Promise<EntryWriteResult> {
   return mapPathTaken(() =>
     db.transaction(async (tx) => {
       const parentId = input.type === "page" ? input.parentId : null;
       const parent = await resolveParent(tx, parentId, null);
       if (!parent.ok) return parent;
+      if (!(await mediaExists(tx, input.featuredMediaId))) {
+        return { ok: false, error: "invalid-media" };
+      }
       const placed = await place(tx, {
         type: input.type,
         title: input.title,
@@ -482,7 +604,8 @@ export async function createEntry(
           excerpt: input.excerpt,
           seoTitle: input.seoTitle,
           seoDescription: input.seoDescription,
-          content: [],
+          content: input.content,
+          featuredMediaId: input.featuredMediaId,
           authorId: input.authorId,
           createdAt: now,
           updatedAt: now,
@@ -494,7 +617,7 @@ export async function createEntry(
         await setEntryTerms(tx, created.id, "category", input.categoryIds);
         await setEntryTerms(tx, created.id, "tag", input.tagIds);
       }
-      await writeRevision(tx, created, input.actorId);
+      if (input.writeRevision !== false) await writeRevision(tx, created, input.actorId);
       return { ok: true, id: created.id, slug: placed.slug, path: placed.path, updatedAt: now };
     }),
   );
@@ -529,6 +652,9 @@ export async function updateEntry(
           ? await currentParentPath(tx, parentId)
           : await resolveParent(tx, parentId, entry.id);
       if (!parent.ok) return parent;
+      if (!(await mediaExists(tx, input.featuredMediaId))) {
+        return { ok: false, error: "invalid-media" };
+      }
       const placed = await place(tx, {
         type: entry.type,
         title: input.title,
@@ -551,6 +677,8 @@ export async function updateEntry(
           excerpt: input.excerpt,
           seoTitle: input.seoTitle,
           seoDescription: input.seoDescription,
+          content: input.content,
+          featuredMediaId: input.featuredMediaId,
           ...(input.authorId ? { authorId: input.authorId } : {}),
           updatedAt,
         })
@@ -570,12 +698,48 @@ export async function updateEntry(
       }
       await writeRevision(
         tx,
-        { id: entry.id, title: input.title, content: entry.content },
+        { id: entry.id, title: input.title, content: input.content },
         input.actorId,
       );
       return { ok: true, id: entry.id, slug: placed.slug, path: placed.path, updatedAt };
     }),
   );
+}
+
+export type AutosaveResult =
+  | { ok: true; updatedAt: Date }
+  | { ok: false; error: "not-found" | "conflict" | "in-trash" | "not-draft" };
+
+// The editor's autosave (design §8): the title and blocks of a draft, with the same conflict
+// check as a save and no revision. Published and scheduled entries change only on an explicit
+// save, so half-finished edits never go live (decisions #56).
+export async function autosaveEntry(
+  db: Executor,
+  input: { id: string; expectedUpdatedAt: Date; title: string; content: BlockList },
+): Promise<AutosaveResult> {
+  return db.transaction(async (tx) => {
+    const [entry] = await tx
+      .select({
+        status: entries.status,
+        updatedAt: entries.updatedAt,
+        deletedAt: entries.deletedAt,
+      })
+      .from(entries)
+      .where(eq(entries.id, input.id))
+      .for("update");
+    if (!entry) return { ok: false, error: "not-found" };
+    if (entry.deletedAt) return { ok: false, error: "in-trash" };
+    if (entry.status !== "draft") return { ok: false, error: "not-draft" };
+    if (entry.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) {
+      return { ok: false, error: "conflict" };
+    }
+    const updatedAt = new Date();
+    await tx
+      .update(entries)
+      .set({ title: input.title, content: input.content, updatedAt })
+      .where(eq(entries.id, input.id));
+    return { ok: true, updatedAt };
+  });
 }
 
 export type StatusChange = { kind: "publish"; at: Date | null } | { kind: "unpublish" };

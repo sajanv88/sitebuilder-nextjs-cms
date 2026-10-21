@@ -1,4 +1,10 @@
-import { type SettingsKey, SettingsSchemas, type SettingsValue } from "@sitebuilder/schema";
+import {
+  type DefaultSettingsKey,
+  type SettingsKey,
+  SettingsSchemas,
+  type SettingsValue,
+} from "@sitebuilder/schema";
+import { eq } from "drizzle-orm";
 import * as v from "valibot";
 import type { Executor } from "../executor";
 import { settings } from "../schema/site";
@@ -33,12 +39,17 @@ export async function upsertSettings<K extends SettingsKey>(
   return { ok: true };
 }
 
+// Removes a row. For `media`, that hands the choice back to the environment (decisions #45).
+export async function deleteSettings(db: Executor, key: SettingsKey): Promise<void> {
+  await db.delete(settings).where(eq(settings.key, key));
+}
+
 // Writes each default only where the key has no row yet. Used by the bootstrap.
 export async function insertDefaultSettings(
   db: Executor,
-  defaults: { [K in SettingsKey]: SettingsValue<K> },
+  defaults: { [K in DefaultSettingsKey]: SettingsValue<K> },
 ): Promise<void> {
-  const rows = (Object.keys(defaults) as SettingsKey[]).map((key) => ({
+  const rows = (Object.keys(defaults) as DefaultSettingsKey[]).map((key) => ({
     key,
     value: defaults[key],
   }));

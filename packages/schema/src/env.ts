@@ -29,6 +29,9 @@ const base = {
     String(25 * 1024 * 1024),
   ),
   CRON_SECRET: v.optional(v.pipe(v.string(), v.minLength(32, "Must be at least 32 characters"))),
+  // Where local storage keeps files. Read with S3 too: files uploaded before a switch to S3
+  // stay on disk (decisions #48).
+  MEDIA_LOCAL_DIR: v.optional(v.pipe(v.string(), v.minLength(1)), "/data/media"),
 };
 
 export const EnvSchema = v.variant(
@@ -43,7 +46,8 @@ export const EnvSchema = v.variant(
       S3_REGION: required,
       S3_ACCESS_KEY_ID: required,
       S3_SECRET_ACCESS_KEY: required,
-      S3_PUBLIC_URL: httpUrl,
+      // Unused for now: files are served at /media/<key> by the site zone (decisions #47).
+      S3_PUBLIC_URL: v.optional(httpUrl),
     }),
   ],
   'Must be "local" or "s3"',

@@ -7,31 +7,56 @@ export { type Db, db } from "./client";
 export type { Executor } from "./executor";
 export { type BootstrapInput, type BootstrapResult, bootstrapSite } from "./queries/bootstrap";
 export {
+  type AutosaveResult,
+  autosaveEntry,
   countEntriesByAuthor,
   createEntry,
   type DeleteResult,
   deleteEntry,
   type EntryForEdit,
+  type EntryLink,
   type EntryList,
   type EntryListRow,
   type EntryWrite,
   type EntryWriteError,
   type EntryWriteResult,
   getEntryForEdit,
+  getEntryLinks,
   getEntryOwner,
   getPublicEntryByPath,
   type ListEntriesInput,
   listEntries,
+  listLatestPosts,
   listParentOptions,
+  type PostCard,
   type RestoreResult,
   restoreEntry,
   type StatusChange,
   type StatusResult,
+  searchEntryLinks,
   setEntryStatus,
   type TrashResult,
   trashEntry,
   updateEntry,
 } from "./queries/entries";
+export {
+  countMediaByStorage,
+  createMedia,
+  type DeleteMediaResult,
+  deleteMedia,
+  getMedia,
+  getMediaByKey,
+  getMediaForRender,
+  type ListMediaInput,
+  listMedia,
+  type MediaList,
+  type MediaRow,
+  type MediaUse,
+  mediaUsage,
+  type NewMediaInput,
+  type RenderMedia,
+  updateMediaAlt,
+} from "./queries/media";
 export { ensureMenus } from "./queries/menus";
 export {
   listRevisions,
@@ -40,7 +65,12 @@ export {
   type RevisionRow,
   restoreRevision,
 } from "./queries/revisions";
-export { getSettings, type UpsertSettingsResult, upsertSettings } from "./queries/settings";
+export {
+  deleteSettings,
+  getSettings,
+  type UpsertSettingsResult,
+  upsertSettings,
+} from "./queries/settings";
 export {
   clearFailedSignIns,
   isSignInLocked,

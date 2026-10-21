@@ -59,6 +59,18 @@ export {
 } from "./entries";
 export { type Env, type EnvResult, EnvSchema, parseEnv } from "./env";
 export {
+  MEDIA_ALT_MAX,
+  MEDIA_KINDS,
+  MEDIA_STORAGES,
+  MEDIA_TYPES,
+  MediaAlt,
+  MediaId,
+  type MediaKind,
+  MediaListQuery,
+  type MediaStorageKind,
+  type MediaType,
+} from "./media";
+export {
   MENU_LOCATIONS,
   type Menu,
   type MenuItem,
@@ -67,8 +79,17 @@ export {
   MenuSchema,
 } from "./menu";
 export {
+  type DefaultSettingsKey,
   defaultSettings,
+  MediaStorageInput,
+  MediaStorageSettings,
   ReadingSettings,
+  S3AccessKeyId,
+  S3Bucket,
+  S3Endpoint,
+  S3Region,
+  S3SecretInput,
+  SealedSecret,
   type SettingsKey,
   SettingsSchemas,
   type SettingsValue,
@@ -78,4 +99,8 @@ export {
   TokenValue,
 } from "./settings";
 export { LinkTarget, NodeId, Url, Uuid } from "./shared";
-export { type BlockListResult, validateBlockList } from "./validate-block-list";
+export {
+  type BlockListResult,
+  type ValidateOptions,
+  validateBlockList,
+} from "./validate-block-list";

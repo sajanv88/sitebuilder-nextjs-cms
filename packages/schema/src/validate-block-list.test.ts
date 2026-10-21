@@ -13,10 +13,14 @@ const rules: BlockRules = {
     }),
   },
   separator: { props: v.strictObject({}) },
+  "rich-text": { props: v.strictObject({ html: v.pipe(v.string(), v.maxLength(100_000)) }) },
   section: { props: v.strictObject({}), container: { allow: leaves, min: 0, max: 50 } },
   columns: { props: v.strictObject({}), container: { allow: ["column"], min: 2, max: 4 } },
   column: { props: v.strictObject({}), container: { allow: leaves, min: 0, max: 30 } },
 };
+
+// Stands in for the real cleaner in packages/blocks: drops script elements.
+const options = { sanitizeHtml: (html: string) => html.replace(/<script[\s\S]*?<\/script>/g, "") };
 
 let next = 0;
 const id = () => `block-${String(++next).padStart(4, "0")}`;
@@ -24,7 +28,7 @@ const heading = (text: string): Block => ({ id: id(), type: "heading", props: { 
 const column = (children: Block[]): Block => ({ id: id(), type: "column", props: {}, children });
 
 const codes = (input: unknown) => {
-  const result = validateBlockList(input, rules);
+  const result = validateBlockList(input, rules, options);
   return result.ok ? [] : result.issues.map((issue) => issue.code);
 };
 
@@ -36,6 +40,7 @@ describe("validateBlockList", () => {
         { id: id(), type: "columns", props: {}, children: [column([heading("A")]), column([])] },
       ],
       rules,
+      options,
     );
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -44,7 +49,7 @@ describe("validateBlockList", () => {
   });
 
   test("1. rejects a wrong shape, with the path", () => {
-    const result = validateBlockList([{ id: "short", type: "heading", props: {} }], rules);
+    const result = validateBlockList([{ id: "short", type: "heading", props: {} }], rules, options);
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.issues[0]).toMatchObject({ code: "invalid-shape", path: [0, "id"] });
@@ -86,6 +91,7 @@ describe("validateBlockList", () => {
     const result = validateBlockList(
       [{ id: id(), type: "heading", props: { text: "Hi", level: 9, colour: "red" } }],
       rules,
+      options,
     );
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -105,5 +111,26 @@ describe("validateBlockList", () => {
     expect(codes([{ id: id(), type: "columns", props: {}, children: five }])).toEqual([
       "too-many-children",
     ]);
+  });
+
+  test("6. html props are stored cleaned, also inside containers", () => {
+    const dirty = "<p>Hi</p><script>alert(1)</script>";
+    const result = validateBlockList(
+      [
+        { id: id(), type: "rich-text", props: { html: dirty } },
+        {
+          id: id(),
+          type: "section",
+          props: {},
+          children: [{ id: id(), type: "rich-text", props: { html: dirty } }],
+        },
+      ],
+      { ...rules, section: { props: v.strictObject({}), container: { allow: ["rich-text"] } } },
+      options,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value[0]?.props).toEqual({ html: "<p>Hi</p>" });
+    expect(result.value[1]?.children?.[0]?.props).toEqual({ html: "<p>Hi</p>" });
   });
 });

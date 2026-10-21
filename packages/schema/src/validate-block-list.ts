@@ -21,10 +21,19 @@ function issuePath(issue: v.BaseIssue<unknown>): Path {
   );
 }
 
+export interface ValidateOptions {
+  // Cleans the HTML of rich text (check 6). The schema package is valibot-only, so the cleaner
+  // comes from packages/blocks, which runs it on the server.
+  sanitizeHtml: (html: string) => string;
+}
+
 // The only function that decides whether content may be stored (design §5.2). Checks, in order:
-// shape, limits, known types, props, containers. Rich-text sanitising (check 6) is added with the
-// rich-text block in phase 3 (docs/decisions.md #10).
-export function validateBlockList(input: unknown, rules: BlockRules): BlockListResult {
+// shape, limits, known types, props, containers, and then cleans every `html` prop.
+export function validateBlockList(
+  input: unknown,
+  rules: BlockRules,
+  options: ValidateOptions,
+): BlockListResult {
   // 1. Shape.
   const shape = v.safeParse(BlockListSchema, input);
   if (!shape.success) {
@@ -67,6 +76,10 @@ export function validateBlockList(input: unknown, rules: BlockRules): BlockListR
   }
   if (issues.length > 0) return { ok: false, issues };
 
+  // 6. Rich text: the stored HTML is the cleaned HTML.
+  const clean = (props: Record<string, unknown>): Record<string, unknown> =>
+    typeof props.html === "string" ? { ...props, html: options.sanitizeHtml(props.html) } : props;
+
   // 3 to 5. Known types, props per type, container rules. Props come back parsed, so a schema
   // that trims or defaults values decides what is stored.
   const check = (blocks: Block[], base: Path): Block[] =>
@@ -103,7 +116,7 @@ export function validateBlockList(input: unknown, rules: BlockRules): BlockListR
             message: `"${block.type}" can't contain blocks`,
           });
         }
-        return props.success ? { ...block, props: props.output } : block;
+        return props.success ? { ...block, props: clean(props.output) } : block;
       }
 
       const count = children?.length ?? 0;
@@ -135,7 +148,7 @@ export function validateBlockList(input: unknown, rules: BlockRules): BlockListR
       return {
         id: block.id,
         type: block.type,
-        props: props.success ? props.output : block.props,
+        props: props.success ? clean(props.output) : block.props,
         ...(checkedChildren ? { children: checkedChildren } : {}),
       };
     });

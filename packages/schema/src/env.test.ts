@@ -25,12 +25,18 @@ describe("parseEnv", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.env.MEDIA_MAX_BYTES).toBe(25 * 1024 * 1024);
+    expect(result.env.MEDIA_LOCAL_DIR).toBe("/data/media");
     expect(result.env).not.toHaveProperty("UNRELATED");
   });
 
   test("accepts s3 storage with all its variables", () => {
     const result = parseEnv(s3);
     expect(result.ok && result.env.MEDIA_STORAGE === "s3" && result.env.S3_BUCKET).toBe("media");
+  });
+
+  test("S3_PUBLIC_URL is optional (files are served at /media/<key>)", () => {
+    const { S3_PUBLIC_URL: _unused, ...withoutPublicUrl } = s3;
+    expect(parseEnv(withoutPublicUrl).ok).toBe(true);
   });
 
   test("s3 without its variables names each missing one", () => {

@@ -26,6 +26,8 @@ type TestDb = Awaited<ReturnType<typeof createTestDb>>;
 
 const fields = (overrides: Partial<EntryWrite> = {}): EntryWrite => ({
   title: "About us",
+  content: [],
+  featuredMediaId: null,
   slug: "",
   excerpt: null,
   seoTitle: null,

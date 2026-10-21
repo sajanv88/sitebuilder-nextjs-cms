@@ -34,7 +34,7 @@ export interface ContainerRule {
 
 export interface BlockRule {
   // Strict: unknown props are rejected, not ignored. The registry builds these.
-  props: v.GenericSchema<Record<string, unknown>>;
+  props: v.GenericSchema<unknown, Record<string, unknown>>;
   container?: ContainerRule;
 }
 
