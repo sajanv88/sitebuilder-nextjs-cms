@@ -19,6 +19,8 @@ x-app: &app
     AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env (see the README)}
     SITE_URL: ${SITE_URL:-http://localhost:3000}
     MEDIA_STORAGE: ${MEDIA_STORAGE:-local}
+    # The media volume's mount point, whatever .env says for local development.
+    MEDIA_LOCAL_DIR: /data/media
   # The way Kubernetes runs it: read-only root filesystem, no capabilities.
   read_only: true
   cap_drop: [ALL]
@@ -69,7 +71,7 @@ services:
     tmpfs:
       - /app/apps/admin/.next/cache:uid=1001,gid=1001
     volumes:
-      # Uploaded files, when MEDIA_STORAGE=local. Nothing writes here until phase 3.
+      # Uploaded files kept on disk (local storage). The admin zone writes them.
       - media:/data/media
     depends_on:
       migrate:
@@ -85,6 +87,9 @@ services:
     image: sitebuilder-site:local
     tmpfs:
       - /app/apps/site/.next/cache:uid=1001,gid=1001
+    volumes:
+      # The site zone serves uploaded files at /media/<key>; it only reads them.
+      - media:/data/media:ro
     ports:
       - "${SITE_PORT:-3000}:3000"
     depends_on:

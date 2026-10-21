@@ -35,11 +35,11 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // Documents only: not route handlers (/api/health included), static files, image
+      // Documents only: not route handlers (/api/health, /media/<key>), static files, image
       // optimisation, or prefetches. Not the admin zone's paths either: the admin zone sets its
       // own CSP with its own nonce, and a second policy from here would block its scripts.
       source:
-        "/((?!api/|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|admin(?:/|$)|setup(?:/|$)|admin-static/).*)",
+        "/((?!api/|media/|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|admin(?:/|$)|setup(?:/|$)|admin-static/).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

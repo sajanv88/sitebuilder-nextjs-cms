@@ -189,3 +189,53 @@ Plan: [docs/phase-2-plan.md](docs/phase-2-plan.md), approved 2026-10-21. No post
 - [x] Install, biome ci, stylelint, typecheck, tests, build, both images read-only
 - [x] Gate in the browser as admin and as an author (through port 3000, production images)
 - [x] decisions.md, next.md, licences.md updated
+
+# Phase 3 (Blocks and editor) checklist
+
+Plan: [docs/phase-3-plan.md](docs/phase-3-plan.md), approved 2026-10-21. Storage: local disk and S3, with S3 credentials entered by an admin in Settings and the environment as the fallback; media served through the site; autosave on drafts only; the whole first block set.
+
+## 1. packages/schema
+- [x] `validateBlockList` check 6: a required `sanitizeHtml` option cleans every `html` prop
+- [x] Media inputs (alt, list query, kinds and types), media storage settings and form input, endpoint guard
+- [x] Env: `MEDIA_LOCAL_DIR`; `S3_PUBLIC_URL` optional
+- [x] Tests
+
+## 2. packages/media
+- [x] Type from the file's bytes (eight types, SVG refused), storage keys, dimensions
+- [x] Local disk and S3 (aws4fetch) storage with ranges and a probe; sealed secrets
+- [x] Settings first, then the environment; files read from the storage that holds them
+- [x] Tests
+
+## 3. packages/db
+- [x] Migration `media_storage`; media queries (list, get, alt, usage at any depth, delete refused while used, counts)
+- [x] Entries store content and the featured image; autosave without a revision; links, link search, latest posts
+- [x] PGlite tests
+
+## 4. packages/blocks
+- [x] The 21 block types of design §5.5, strict props, inspector fields, BEM SCSS on tokens
+- [x] Registry and `BlockRules`, renderer with a render context, content helpers
+- [x] Sanitiser and `validateContent` in the server entry
+- [x] Tests, including a landing page round-trip and server rendering
+
+## 5. Admin: Settings → Media storage
+- [x] Environment, server disk or S3; test connection; save tests first; secret write-only
+- [x] Asks before a change that would leave S3 files unreadable
+
+## 6. Admin: Media screen
+- [x] DataTable in server mode, kinds, search; upload route with progress and cancel; details sheet with alt, where used, delete
+- [x] Authors see and manage only their own files
+
+## 7. Admin: block editor
+- [x] Inserter (Command), outline (Tree with drag and Alt+arrows), canvas, inspector with every field kind
+- [x] Media picker (library and upload), link picker, featured image
+- [x] Save validates blocks and marks the ones that need attention; drafts autosave; published entries wait for Update
+- [x] One pane at a time below lg, every field kept in the form
+
+## 8. Site zone
+- [x] `/media/<key>` for files in either storage, with ranges, nosniff and a year's cache; media volume read-only
+
+## 9. Verify and report
+- [x] Biome, stylelint, typecheck, 198 tests, both images built, Compose healthy
+- [x] Gate in the browser: landing page built, reloaded intact; uploads with local storage (dev and Compose); draft autosave; published waits for Update; phone width
+- [ ] Gate with MinIO entered in Settings: needs your bucket and keys, typed by you
+- [x] decisions.md, next.md, licences.md updated

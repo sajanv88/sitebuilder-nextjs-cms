@@ -6,6 +6,10 @@ coverage/
 out/
 next-env.d.ts
 *.tsbuildinfo
+# Local storage's folder in development (MEDIA_LOCAL_DIR).
+.media/
+# Written by `next dev` into each app; the repo's agent instructions are CLAUDE.md.
+apps/*/AGENTS.md
 *.log
 .env*
 !.env.example
