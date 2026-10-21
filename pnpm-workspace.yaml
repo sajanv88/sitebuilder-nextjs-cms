@@ -6,6 +6,7 @@ packages:
 # turbo is pinned in the root package.json instead: the Dockerfile reads it from there.
 catalog:
   "@biomejs/biome": 2.5.15
+  "@nuvui/date-picker": 0.1.7
   "@nuvui/icons": 0.1.0
   "@nuvui/react": 0.7.0
   "@nuvui/table": 0.1.7
