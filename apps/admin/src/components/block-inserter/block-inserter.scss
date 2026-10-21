@@ -1,0 +1,32 @@
+@use "abstracts" as a;
+
+.block-inserter {
+  --nuv-command-list-height: 60vh;
+
+  display: grid;
+  gap: a.space(3);
+
+  &__hint {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-xs);
+  }
+
+  &__command {
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  &__item {
+    display: grid;
+    min-inline-size: 0;
+  }
+
+  &__text {
+    overflow: hidden;
+    font-size: var(--text-xs);
+    opacity: 0.8;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

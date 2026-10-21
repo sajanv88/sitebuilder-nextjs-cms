@@ -1,0 +1,42 @@
+@use "abstracts" as a;
+
+// The page's own spacing between blocks, with a frame around each that shows on hover and when
+// it's selected. The frame is an outline, so it takes no room and the layout matches the site.
+.block-canvas {
+  display: grid;
+  gap: a.space(6);
+  align-content: start;
+  min-block-size: 20rem;
+  padding: a.space(4);
+  border: var(--nuv-border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-background);
+
+  @include a.breakpoint("md") {
+    padding: a.space(8);
+  }
+
+  &__block {
+    display: grid;
+    border-radius: var(--radius-sm);
+    outline: var(--nuv-border-width) dashed transparent;
+    outline-offset: a.space(1);
+    cursor: default;
+
+    @include a.hover {
+      outline-color: var(--color-border-strong);
+    }
+  }
+
+  &__block--selected {
+    outline: calc(var(--nuv-border-width) * 2) solid var(--color-ring);
+
+    @include a.hover {
+      outline-color: var(--color-ring);
+    }
+  }
+
+  &__block--problem {
+    outline: calc(var(--nuv-border-width) * 2) dashed var(--color-warning);
+  }
+}

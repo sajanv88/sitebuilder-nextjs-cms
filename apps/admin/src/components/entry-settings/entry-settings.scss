@@ -1,0 +1,13 @@
+@use "abstracts" as a;
+
+.entry-settings {
+  display: grid;
+  gap: a.space(4);
+  align-content: start;
+
+  &__card {
+    display: grid;
+    gap: a.space(5);
+    min-inline-size: 0;
+  }
+}

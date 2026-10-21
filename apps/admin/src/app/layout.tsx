@@ -1,5 +1,7 @@
 import "@nuvui/react/styles.css";
 import "@nuvui/date-picker/styles.css";
+import "@nuvui/editor/styles.css";
+import "@nuvui/media/styles.css";
 import "@nuvui/table/styles.css";
 import "@/styles/globals.scss";
 

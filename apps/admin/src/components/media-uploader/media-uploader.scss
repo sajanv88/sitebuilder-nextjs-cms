@@ -1,0 +1,70 @@
+@use "abstracts" as a;
+
+.media-uploader {
+  display: grid;
+  gap: a.space(4);
+
+  &__list {
+    display: grid;
+    gap: a.space(2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  // Name and size on one line, the status under them on a phone and beside them from md.
+  &__item {
+    display: grid;
+    gap: a.space(1) a.space(3);
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: a.space(2) a.space(3);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+
+    @include a.breakpoint("md") {
+      grid-template-columns: minmax(0, 1fr) auto 12rem;
+    }
+  }
+
+  &__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__size {
+    color: var(--color-muted-foreground);
+  }
+
+  &__status {
+    grid-column: 1 / -1;
+    color: var(--color-muted-foreground);
+
+    @include a.breakpoint("md") {
+      grid-column: auto;
+    }
+  }
+
+  &__done,
+  &__failed {
+    display: inline-flex;
+    gap: a.space(1);
+    align-items: center;
+  }
+
+  &__done {
+    color: var(--color-success);
+  }
+
+  &__failed {
+    color: var(--color-danger);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+  }
+}

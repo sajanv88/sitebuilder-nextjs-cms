@@ -10,10 +10,11 @@ import { AdminPage } from "@/components/admin-page/admin-page";
 import { EntryTable } from "@/components/entry-table/entry-table";
 import { listEntriesFor } from "@/server/entries";
 
-const SCREENS = {
-  post: { title: "Posts", create: "New post", path: "/admin/posts/new" },
-  page: { title: "Pages", create: "New page", path: "/admin/pages/new" },
-} as const satisfies Record<EntryKind, { title: string; create: string; path: Route }>;
+// The editor's route is /admin/<type>s/[id]; "new" is the id of an entry not created yet.
+const SCREENS: Record<EntryKind, { title: string; create: string; path: Route }> = {
+  post: { title: "Posts", create: "New post", path: "/admin/posts/new" as Route },
+  page: { title: "Pages", create: "New page", path: "/admin/pages/new" as Route },
+};
 
 // The Posts and Pages screens. The list's state comes from the URL and is parsed with
 // EntryListQuery, which falls back to defaults for anything it doesn't accept.

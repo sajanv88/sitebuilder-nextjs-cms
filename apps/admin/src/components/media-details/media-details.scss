@@ -1,0 +1,79 @@
+@use "abstracts" as a;
+
+.media-details {
+  display: grid;
+  gap: a.space(6);
+  align-content: start;
+
+  &__loading {
+    block-size: 12rem;
+  }
+
+  &__preview {
+    display: block;
+    max-inline-size: 100%;
+    max-block-size: 20rem;
+    margin-inline: auto;
+    border-radius: var(--radius-lg);
+    background-color: var(--color-muted);
+    object-fit: contain;
+  }
+
+  &__alt {
+    display: grid;
+    gap: a.space(3);
+  }
+
+  &__facts {
+    display: grid;
+    gap: a.space(3);
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+
+  &__url {
+    overflow-wrap: anywhere;
+    font-family: var(--font-mono);
+  }
+
+  &__section {
+    display: grid;
+    gap: a.space(2);
+  }
+
+  &__heading {
+    margin: 0;
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &__uses {
+    display: grid;
+    gap: a.space(2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__note {
+    margin: a.space(2) 0 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+}
+
+.media-details__facts :where(dt) {
+  color: var(--color-muted-foreground);
+}
+
+.media-details__facts :where(dd) {
+  margin: 0;
+  font-weight: var(--font-weight-medium);
+}
+
+.media-details__uses :where(li) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: a.space(2);
+  align-items: center;
+}

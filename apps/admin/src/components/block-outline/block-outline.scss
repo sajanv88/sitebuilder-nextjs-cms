@@ -1,0 +1,50 @@
+@use "abstracts" as a;
+
+.block-outline {
+  display: grid;
+  gap: a.space(3);
+
+  &__hint,
+  &__empty {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-xs);
+  }
+
+  &__tree {
+    padding: a.space(1);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  &__label {
+    display: inline-flex;
+    gap: a.space(2);
+    align-items: center;
+    min-inline-size: 0;
+  }
+
+  &__icon {
+    flex: none;
+    color: var(--color-muted-foreground);
+  }
+
+  &__type {
+    flex: none;
+  }
+
+  &__summary {
+    min-inline-size: 0;
+    overflow: hidden;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__problem {
+    display: inline-flex;
+    flex: none;
+    color: var(--color-warning);
+  }
+}

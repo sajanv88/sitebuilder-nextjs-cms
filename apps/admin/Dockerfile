@@ -78,6 +78,9 @@ COPY --from=builder /repo/packages/db/drizzle ./packages/db/drizzle
 # `node packages/db/dist/create-admin.mjs [--force]` with ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD.
 COPY --from=builder /repo/packages/db/dist/create-admin.mjs ./packages/db/dist/create-admin.mjs
 RUN mkdir -p apps/admin/.next/cache && chown 1001:1001 apps/admin/.next/cache
+# Local media storage (MEDIA_LOCAL_DIR's default). A new named volume takes this folder's owner,
+# so uploads can be written there; in Kubernetes the chart mounts storage here or uses S3.
+RUN mkdir -p /data/media && chown 1001:1001 /data/media
 LABEL org.opencontainers.image.title="admin" \
       org.opencontainers.image.licenses="GPL-2.0-or-later"
 USER 1001:1001

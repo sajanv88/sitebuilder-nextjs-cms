@@ -50,9 +50,11 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // Documents only: not route handlers (/api/health and /api/auth included), static files
-      // (served under the zone's assetPrefix), image optimisation, or prefetches.
-      source: "/((?!api/|_next/static|_next/image|admin-static/|favicon.ico).*)",
+      // Documents only: not route handlers (/api/health, /api/auth and the admin's own under
+      // /admin/api/), static files (served under the zone's assetPrefix), image optimisation, or
+      // prefetches. Route handlers check the session themselves; leaving them out also keeps
+      // uploads clear of the proxy's 10 MB body buffer (decisions #52).
+      source: "/((?!api/|admin/api/|_next/static|_next/image|admin-static/|favicon.ico).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

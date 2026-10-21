@@ -1,4 +1,5 @@
 import type { EntryForEdit } from "@sitebuilder/db";
+import type { BlockList } from "@sitebuilder/schema";
 
 // The editor's form state, shared by the save action (server) and the editor (browser). Dates
 // travel as ISO strings.
@@ -13,7 +14,8 @@ export type EditorField =
   | "authorId"
   | "categoryIds"
   | "tagIds"
-  | "publishAt";
+  | "publishAt"
+  | "featuredMediaId";
 
 // What the form shows. Strings, as typed: a failed save gives them back so nothing is lost.
 export interface EditorValues {
@@ -26,6 +28,8 @@ export interface EditorValues {
   authorId: string;
   categoryIds: string[];
   tagIds: string[];
+  // "" for none.
+  featuredMediaId: string;
 }
 
 // The stored entry, with dates as ISO strings for the browser.
@@ -37,12 +41,23 @@ export interface EditorEntry {
   updatedAt: string;
 }
 
+// A problem validateBlockList found, pinned to the block it's about (and its field, if any).
+export interface BlockIssue {
+  blockId: string;
+  field: string | undefined;
+  message: string;
+}
+
 export interface EditorState {
   result: "idle" | "saved" | "invalid" | "conflict" | "failed";
   message?: string;
   errors?: Partial<Record<EditorField, string>>;
+  // Problems in the blocks: nothing was saved, and the editor marks each block.
+  blockIssues?: BlockIssue[];
   values: EditorValues;
   entry: EditorEntry | null;
+  // The blocks as stored after a save (rich text cleaned), which the editor takes up.
+  content?: BlockList;
   // Changes on every save, so the editor can say "Saved" once per save.
   savedAt?: number;
 }
@@ -68,5 +83,6 @@ export function toEditorValues(entry: EntryForEdit): EditorValues {
     authorId: entry.author.id,
     categoryIds: entry.categoryIds,
     tagIds: entry.tagIds,
+    featuredMediaId: entry.featuredMediaId ?? "",
   };
 }

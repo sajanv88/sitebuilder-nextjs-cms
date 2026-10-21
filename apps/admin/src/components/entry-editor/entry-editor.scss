@@ -1,18 +1,17 @@
 @use "abstracts" as a;
 
-// Fluid up to --app-content-max-width, then centred, like every admin screen. The header is
-// nuvui's page-header block; under it, the entry and its settings, side by side from lg.
+// The editor fills the content area's width (it doesn't stop at --app-content-max-width: the
+// page in the middle needs the room). The header is nuvui's page-header block; under it, three
+// panes side by side from lg, and one at a time below, picked with the toggle.
 .entry-editor {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: a.space(6);
+  gap: a.space(4);
   align-content: start;
-  max-inline-size: var(--app-content-max-width);
-  margin-inline: auto;
   padding: a.space(4);
 
   @include a.breakpoint("md") {
-    padding: a.space(8);
+    padding: a.space(6);
   }
 
   &__head {
@@ -47,10 +46,23 @@
     overflow-wrap: anywhere;
   }
 
+  &__save-state {
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
   &__actions {
     display: flex;
     flex-wrap: wrap;
     gap: a.space(2);
+  }
+
+  &__views {
+    justify-self: start;
+
+    @include a.breakpoint("lg") {
+      display: none;
+    }
   }
 
   &__body {
@@ -59,30 +71,53 @@
     align-items: start;
 
     @include a.breakpoint("lg") {
-      grid-template-columns: minmax(0, 1fr) 20rem;
+      grid-template-columns: 17rem minmax(0, 1fr) 21rem;
     }
   }
 
-  &__main,
-  &__side,
-  &__card {
+  &__pane {
     display: grid;
-    gap: a.space(5);
+    gap: a.space(4);
+    align-content: start;
     min-inline-size: 0;
   }
 
-  // The time combobox fills the card, as the date picker does.
-  &__card {
-    --nuv-combobox-width: 100%;
+  // The side panes stay in view while the page scrolls past them.
+  &__pane--blocks,
+  &__pane--settings {
+    @include a.breakpoint("lg") {
+      position: sticky;
+      inset-block-start: a.space(4);
+      max-block-size: calc(100dvh - #{a.space(8)});
+      overflow-y: auto;
+    }
   }
 
-  &__side {
-    gap: a.space(4);
+  &__tab {
+    padding-block-start: a.space(4);
+  }
+
+  &__title-input {
+    font-size: var(--text-lg);
   }
 
   &__note {
     margin: 0;
     color: var(--color-muted-foreground);
     font-size: var(--text-sm);
+  }
+}
+
+// Below lg, only the chosen view shows. The others stay mounted, so their fields are sent.
+.entry-editor__body--view-page .entry-editor__pane--blocks,
+.entry-editor__body--view-page .entry-editor__pane--settings,
+.entry-editor__body--view-blocks .entry-editor__pane--page,
+.entry-editor__body--view-blocks .entry-editor__pane--settings,
+.entry-editor__body--view-settings .entry-editor__pane--page,
+.entry-editor__body--view-settings .entry-editor__pane--blocks {
+  display: none;
+
+  @include a.breakpoint("lg") {
+    display: grid;
   }
 }

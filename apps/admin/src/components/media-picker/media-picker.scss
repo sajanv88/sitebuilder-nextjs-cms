@@ -1,0 +1,70 @@
+@use "abstracts" as a;
+
+.media-picker {
+  display: grid;
+  gap: a.space(4);
+
+  &__panel {
+    display: grid;
+    gap: a.space(4);
+    padding-block-start: a.space(4);
+  }
+
+  // As many to a row as fit, never narrower than 8rem.
+  &__grid {
+    display: grid;
+    gap: a.space(2);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 8rem), 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__item {
+    position: relative;
+    display: grid;
+    gap: a.space(1);
+    justify-items: stretch;
+    inline-size: 100%;
+    block-size: auto;
+    padding: a.space(1);
+    text-align: start;
+  }
+
+  &__img {
+    display: block;
+    inline-size: 100%;
+    aspect-ratio: 1;
+    border-radius: var(--radius-md);
+    background-color: var(--color-muted);
+    object-fit: cover;
+  }
+
+  &__img--icon {
+    display: grid;
+    place-items: center;
+    color: var(--color-muted-foreground);
+  }
+
+  &__name {
+    overflow: hidden;
+    font-size: var(--text-xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__check {
+    position: absolute;
+    inset-block-start: a.space(2);
+    inset-inline-end: a.space(2);
+    border-radius: var(--radius-full);
+    background-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+  }
+
+  &__more {
+    display: flex;
+    justify-content: center;
+    min-block-size: a.space(10);
+  }
+}

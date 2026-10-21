@@ -1,0 +1,44 @@
+@use "abstracts" as a;
+
+.media-storage-form {
+  display: grid;
+  gap: a.space(6);
+
+  &__choices {
+    display: grid;
+    gap: a.space(2);
+  }
+
+  &__label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  // One card under another: each has a sentence or two in it.
+  &__cards {
+    display: grid;
+    gap: a.space(2);
+  }
+
+  &__s3 {
+    display: grid;
+    gap: a.space(5);
+    padding-block-start: a.space(2);
+  }
+
+  &__pair {
+    display: grid;
+    gap: a.space(5);
+
+    @include a.breakpoint("md") {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+  }
+}

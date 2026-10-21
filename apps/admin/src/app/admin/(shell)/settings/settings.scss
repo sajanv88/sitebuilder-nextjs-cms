@@ -1,0 +1,6 @@
+// A section of settings is no wider than a form reads well at.
+.settings {
+  &__card {
+    max-inline-size: 44rem;
+  }
+}

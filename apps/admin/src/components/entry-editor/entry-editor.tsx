@@ -2,7 +2,7 @@
 
 import { DatePicker } from "@nuvui/date-picker";
 import { enGB } from "@nuvui/date-picker/locale";
-import { ColumnsIcon, TrashIcon } from "@nuvui/icons";
+import { TrashIcon } from "@nuvui/icons";
 import {
   Alert,
   AlertDescription,
@@ -14,31 +14,28 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
   Combobox,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxItem,
   ComboboxTrigger,
   ComboboxValue,
-  Empty,
-  EmptyDescription,
-  EmptyMedia,
-  EmptyTitle,
   Field,
   FieldControl,
   FieldDescription,
   FieldError,
   FieldLabel,
   Input,
-  NativeSelect,
-  Textarea,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  ToggleGroup,
+  ToggleGroupItem,
   toast,
 } from "@nuvui/react";
-import { ENTRY_LIMITS, type EntryKind } from "@sitebuilder/schema";
+import { createBlock } from "@sitebuilder/blocks";
+import { type BlockList, ENTRY_LIMITS, type EntryKind } from "@sitebuilder/schema";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -54,30 +51,39 @@ import {
 } from "react";
 import { saveEntry } from "@/actions/entry-editor";
 import { trashEntries } from "@/actions/entry-list";
+import { BlockCanvas } from "@/components/block-canvas/block-canvas";
+import { type EditorData, EditorDataProvider } from "@/components/block-editor/editor-data";
+import {
+  applyMove,
+  duplicateBlock,
+  findBlock,
+  insertBlock,
+  locate,
+  moveBy,
+  removeBlock,
+  updateProps,
+} from "@/components/block-editor/editor-model";
+import { snapshotOf, useAutosave } from "@/components/block-editor/use-autosave";
+import { BlockInserter } from "@/components/block-inserter/block-inserter";
+import { BlockInspector } from "@/components/block-inspector/block-inspector";
+import { BlockOutline } from "@/components/block-outline/block-outline";
+import { type EditorOptions, EntrySettings } from "@/components/entry-settings/entry-settings";
 import { RevisionHistory } from "@/components/revision-history/revision-history";
-import { TermPicker } from "@/components/term-picker/term-picker";
 import { formatDateTime } from "@/lib/dates";
-import type { EditorEntry, EditorState, EditorValues } from "./editor-state";
+import type { BlockIssue, EditorEntry, EditorState } from "./editor-state";
 import "./entry-editor.scss";
 
-// The editor for a post or a page (design §8). Phase 2 edits everything but the body: blocks
-// arrive in phase 3, and the area for them is shown empty. The page-header block gives the
-// top: where you are, the title and status, and the actions.
+export type { EditorOptions } from "@/components/entry-settings/entry-settings";
 
-export interface EditorOptions {
-  // Pages that can be the parent (pages only).
-  parents: { id: string; title: string; path: string }[] | null;
-  // Users the author can be changed to (posts, for someone allowed post.update).
-  authors: { id: string; name: string }[] | null;
-  // Terms to pick from (posts, for someone allowed term.assign).
-  categories: { id: string; name: string }[] | null;
-  tags: { id: string; name: string }[] | null;
-}
+// The editor for a post or a page (design §8): an inserter and an outline on one side, the page
+// as visitors will see it in the middle, the selected block's fields and the entry's settings on
+// the other, and a bar along the top with the status, saving, history and trash. On a phone the
+// three are views one at a time; every field stays in the form either way.
 
 const NOUNS = {
-  post: { one: "post", many: "Posts", list: "/admin/posts" },
-  page: { one: "page", many: "Pages", list: "/admin/pages" },
-} as const satisfies Record<EntryKind, { one: string; many: string; list: Route }>;
+  post: { one: "post", title: "Post", many: "Posts", list: "/admin/posts" },
+  page: { one: "page", title: "Page", many: "Pages", list: "/admin/pages" },
+} as const satisfies Record<EntryKind, { one: string; title: string; many: string; list: Route }>;
 
 const STATUS = {
   published: { label: "Published", intent: "success" },
@@ -146,61 +152,24 @@ function statusLine(entry: EditorEntry | null): string {
   return "A draft: only people who can sign in to the admin see it.";
 }
 
-// A field with a limit, and how much of it is used.
-function Counted({
-  name,
-  label,
-  limit,
-  defaultValue,
-  multiline,
-  error,
-}: {
-  name: keyof EditorValues;
-  label: string;
-  limit: number;
-  defaultValue: string;
-  multiline?: boolean;
-  error?: string | undefined;
-}) {
-  const [length, setLength] = useState(defaultValue.length);
-  const over = length > limit;
-  return (
-    <Field>
-      <FieldLabel>{label}</FieldLabel>
-      <FieldControl>
-        {multiline ? (
-          <Textarea
-            name={name}
-            rows={3}
-            autoResize
-            defaultValue={defaultValue}
-            onInput={(event) => setLength(event.currentTarget.value.length)}
-          />
-        ) : (
-          <Input
-            name={name}
-            defaultValue={defaultValue}
-            onInput={(event) => setLength(event.currentTarget.value.length)}
-          />
-        )}
-      </FieldControl>
-      <FieldDescription>
-        {length} of {limit} characters
-      </FieldDescription>
-      <FieldError>{error ?? (over ? `Use at most ${limit} characters.` : undefined)}</FieldError>
-    </Field>
-  );
-}
+type View = "blocks" | "page" | "settings";
+
+const newest = (a: EditorEntry | null, b: EditorEntry | null): EditorEntry | null =>
+  !a ? b : !b ? a : Date.parse(a.updatedAt) >= Date.parse(b.updatedAt) ? a : b;
 
 export function EntryEditor({
   type,
   initial,
+  content,
+  data,
   options,
   allowed,
   created,
 }: {
   type: EntryKind;
   initial: Pick<EditorState, "values" | "entry">;
+  content: BlockList;
+  data: EditorData;
   options: EditorOptions;
   allowed: { publish: boolean; trash: boolean; createTerms: boolean };
   created: boolean;
@@ -210,11 +179,77 @@ export function EntryEditor({
   const [trashing, startTrash] = useTransition();
   const inBrowser = useInBrowser();
   const noun = NOUNS[type];
-  const { values, entry } = state;
   const errors = state.errors ?? {};
   const busy = saving || trashing;
 
-  // The publish date and time as picked; undefined until touched, showing what's scheduled.
+  // ── The entry, the blocks and saving ─────────────────────────────────────────────────────
+  const [title, setTitle] = useState(initial.values.title);
+  const [blocks, setBlocks] = useState<BlockList>(content);
+  const [featuredMediaId, setFeaturedMediaId] = useState(initial.values.featuredMediaId);
+  // The id and the conflict token, which an autosave can change between saves.
+  const [entryId, setEntryId] = useState(initial.entry?.id ?? "");
+  const [token, setToken] = useState(initial.entry?.updatedAt ?? "");
+  const [path, setPath] = useState(initial.entry?.path ?? "");
+  const [savedSnapshot, setSavedSnapshot] = useState(() =>
+    snapshotOf(initial.values.title, content),
+  );
+  const [issues, setIssues] = useState<BlockIssue[]>([]);
+  const submitted = useRef("");
+
+  // The newest of: the last save's answer, the server's copy (which changes after a create or a
+  // restored revision), and what autosave has stored since.
+  const known = newest(state.entry, initial.entry);
+  const entry: EditorEntry | null =
+    known && known.id === entryId
+      ? { ...known, path: path || known.path, updatedAt: token || known.updatedAt }
+      : entryId
+        ? { id: entryId, status: "draft", path, publishedAt: null, updatedAt: token }
+        : known;
+
+  // A newer copy from the server than this editor has: the entry was created with Save (the
+  // action moved to its address), or a revision was restored. Take it up. An older one, such as
+  // the page drawn for a draft autosave just created, changes nothing.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs when the server's copy changes, comparing it with the editor's at that moment.
+  useEffect(() => {
+    const server = initial.entry;
+    if (!server) return;
+    if (server.id === entryId && token && Date.parse(server.updatedAt) <= Date.parse(token)) return;
+    setEntryId(server.id);
+    setToken(server.updatedAt);
+    setPath(server.path);
+    setTitle(initial.values.title);
+    setBlocks(content);
+    setSavedSnapshot(snapshotOf(initial.values.title, content));
+    setIssues([]);
+  }, [initial.entry?.id, initial.entry?.updatedAt]);
+
+  // ── Selection and views ──────────────────────────────────────────────────────────────────
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [view, setView] = useState<View>("page");
+  const [sideTab, setSideTab] = useState<"add" | "outline">("add");
+  const [settingsTab, setSettingsTab] = useState<"block" | "entry">("entry");
+  const selected = selectedId ? findBlock(blocks, selectedId) : undefined;
+  const where = selectedId ? locate(blocks, selectedId) : undefined;
+  const siblings = where ? (where.parent?.children ?? blocks).length : 0;
+  const issueIds = useMemo(() => new Set(issues.map((issue) => issue.blockId)), [issues]);
+
+  function select(id: string | null) {
+    setSelectedId(id);
+    if (id) setSettingsTab("block");
+  }
+
+  function add(type: string) {
+    const block = createBlock(type);
+    const next = insertBlock(blocks, block, selectedId);
+    if (!next) {
+      toast("There's no place for that block here.", { intent: "warning" });
+      return;
+    }
+    setBlocks(next);
+    select(block.id);
+  }
+
+  // ── Publishing date and time ─────────────────────────────────────────────────────────────
   const [pickedDay, setPickedDay] = useState<Date | null>();
   const [pickedTime, setPickedTime] = useState<string>();
   const [dayInvalid, setDayInvalid] = useState(false);
@@ -241,31 +276,79 @@ export function EntryEditor({
 
   // Text in the date field that isn't a date leaves no date, which would publish now. The form
   // has noValidate, so the browser doesn't stop it: stop Publish here instead.
-  function checkDay(event: SubmitEvent<HTMLFormElement>) {
-    if (event.nativeEvent.submitter?.getAttribute("value") !== "publish") return;
-    if (dayField.current && !dayField.current.validity.valid) {
+  function onSubmit(event: SubmitEvent<HTMLFormElement>) {
+    if (
+      event.nativeEvent.submitter?.getAttribute("value") === "publish" &&
+      dayField.current &&
+      !dayField.current.validity.valid
+    ) {
       event.preventDefault();
       setDayInvalid(true);
+      setView("settings");
+      setSettingsTab("entry");
       dayField.current.focus();
+      return;
     }
+    submitted.current = snapshotOf(title, blocks);
   }
 
+  // ── After a save ─────────────────────────────────────────────────────────────────────────
   // One toast per save, and one when the editor opens on something just created. Each has an
   // id, so an effect that runs twice (React does in development) shows it once.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once per save answer; the blocks and title it compares are read at that moment on purpose.
   useEffect(() => {
-    if (state.result === "saved" && state.message && state.savedAt) {
-      toast(state.message, { intent: "success", id: `saved-${state.savedAt}` });
+    if (state.result === "saved" && state.savedAt && state.entry) {
+      toast(state.message ?? "Saved.", { intent: "success", id: `saved-${state.savedAt}` });
+      setToken(state.entry.updatedAt);
+      setEntryId(state.entry.id);
+      setPath(state.entry.path);
+      setIssues([]);
+      // The stored blocks have their rich text cleaned. Take them up, unless more was typed
+      // while the save was on its way.
+      if (state.content && snapshotOf(title, blocks) === submitted.current) {
+        setBlocks(state.content);
+        setSavedSnapshot(snapshotOf(state.values.title, state.content));
+      } else {
+        setSavedSnapshot(submitted.current);
+      }
     }
-  }, [state.result, state.message, state.savedAt]);
+    if (state.result === "invalid" && state.blockIssues) {
+      setIssues(state.blockIssues);
+      const first = state.blockIssues.find((issue) => issue.blockId)?.blockId;
+      if (first) select(first);
+    }
+  }, [state]);
+
   useEffect(() => {
-    if (!created || !entry) return;
-    toast(`${noun.one === "post" ? "Post" : "Page"} created`, {
-      intent: "success",
-      id: `created-${entry.id}`,
-    });
+    if (!created || !state.entry) return;
+    toast(`${noun.title} created`, { intent: "success", id: `created-${state.entry.id}` });
     // Drop ?created=1, so a reload doesn't say it again.
-    router.replace(`${noun.list}/${entry.id}` as Route, { scroll: false });
-  }, [created, entry, noun.one, noun.list, router]);
+    router.replace(`${noun.list}/${state.entry.id}` as Route, { scroll: false });
+  }, [created, state.entry, noun.title, noun.list, router]);
+
+  // ── Autosave: drafts only ────────────────────────────────────────────────────────────────
+  const status = useAutosave({
+    enabled: (entry === null || entry.status === "draft") && !busy,
+    type,
+    entryId,
+    token,
+    title,
+    blocks,
+    savedSnapshot,
+    onSaved: (saved) => {
+      setToken(saved.updatedAt);
+      setSavedSnapshot(saved.snapshot);
+      setPath(saved.path);
+      if (!entryId) {
+        setEntryId(saved.id);
+        // The new draft's own address, for a reload or a shared link. Only the address
+        // changes: navigating would remount the editor (Next keys a segment by its id) and
+        // lose what isn't saved yet, such as an excerpt typed meanwhile.
+        window.history.replaceState(window.history.state, "", `${noun.list}/${saved.id}`);
+      }
+    },
+    onIssues: setIssues,
+  });
 
   function trash() {
     if (!entry) return;
@@ -277,308 +360,287 @@ export function EntryEditor({
         });
         return;
       }
-      toast(`Moved to the trash`, { intent: "success" });
+      toast("Moved to the trash", { intent: "success" });
       router.push(noun.list);
     });
   }
 
   const live = entry?.status === "published" || entry?.status === "scheduled";
   const publishLabel = future ? "Schedule" : entry?.status === "published" ? "Update" : "Publish";
+  const saveState =
+    saving || status.state === "saving"
+      ? "Saving…"
+      : status.state === "saved"
+        ? `Saved at ${status.at}`
+        : status.state === "dirty"
+          ? "Unsaved changes"
+          : status.state === "problem"
+            ? `Not saved: ${status.message}`
+            : "";
+
+  const publishing = (
+    <>
+      <p className="entry-editor__note">{statusLine(entry)}</p>
+      {allowed.publish ? (
+        <>
+          <Field>
+            <FieldLabel>Publish date</FieldLabel>
+            <FieldControl>
+              <DatePicker
+                ref={dayField}
+                value={day}
+                onValueChange={pickDay}
+                locale={DATE_LOCALE}
+                placeholder={DATE_PATTERN}
+                invalidMessage={`Enter a date as ${DATE_PATTERN}.`}
+              />
+            </FieldControl>
+            <FieldDescription>
+              Empty publishes now. A later date and time schedules it.
+            </FieldDescription>
+            <FieldError>
+              {dayInvalid ? `Enter a date as ${DATE_PATTERN}, or clear it.` : errors.publishAt}
+            </FieldError>
+          </Field>
+          <Field>
+            <FieldLabel>Publish time</FieldLabel>
+            <Combobox value={time} onValueChange={setPickedTime}>
+              <FieldControl>
+                <ComboboxTrigger>
+                  <ComboboxValue placeholder="Pick a time" />
+                </ComboboxTrigger>
+              </FieldControl>
+              <ComboboxContent
+                aria-label="Publish time"
+                label="Search times"
+                searchPlaceholder="Type a time, such as 14:30"
+              >
+                <ComboboxEmpty>No time found. Times go in quarter hours.</ComboboxEmpty>
+                {times.map((option) => (
+                  <ComboboxItem key={option} value={option}>
+                    {option}
+                  </ComboboxItem>
+                ))}
+              </ComboboxContent>
+            </Combobox>
+            <FieldDescription>
+              24-hour clock{zone ? `, in your time zone, ${zone}` : null}.
+            </FieldDescription>
+          </Field>
+        </>
+      ) : null}
+    </>
+  );
 
   return (
-    <form action={action} onSubmit={checkDay} className="entry-editor" noValidate>
-      <input type="hidden" name="id" value={entry?.id ?? ""} />
-      <input type="hidden" name="type" value={type} />
-      <input type="hidden" name="updatedAt" value={entry?.updatedAt ?? ""} />
-      <input type="hidden" name="publishAt" value={publishAt} />
+    <EditorDataProvider initial={data}>
+      <form action={action} onSubmit={onSubmit} className="entry-editor" noValidate>
+        <input type="hidden" name="id" value={entryId} />
+        <input type="hidden" name="type" value={type} />
+        <input type="hidden" name="updatedAt" value={token} />
+        <input type="hidden" name="publishAt" value={publishAt} />
+        <input type="hidden" name="content" value={JSON.stringify(blocks)} />
+        <input type="hidden" name="featuredMediaId" value={featuredMediaId} />
 
-      <header className="entry-editor__head">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link href={noun.list}>{noun.many}</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{entry ? values.title : `New ${noun.one}`}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <div className="entry-editor__row">
-          <div className="entry-editor__heading">
-            <h1 className="entry-editor__title">{entry ? values.title : `New ${noun.one}`}</h1>
-            {entry ? (
-              <Badge intent={STATUS[entry.status].intent} variant="outline">
-                {STATUS[entry.status].label}
-              </Badge>
-            ) : null}
-          </div>
-          <div className="entry-editor__actions">
-            {entry ? <RevisionHistory entryId={entry.id} updatedAt={entry.updatedAt} /> : null}
-            {entry && allowed.trash ? (
-              <Button intent="ghost" onClick={trash} disabled={busy}>
-                <TrashIcon size={16} />
-                Move to trash
-              </Button>
-            ) : null}
-            {allowed.publish && live ? (
-              <Button
-                type="submit"
-                name="intent"
-                value="unpublish"
-                intent="secondary"
-                disabled={busy}
-              >
-                Unpublish
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                name="intent"
-                value="save"
-                intent={allowed.publish ? "secondary" : "primary"}
-                disabled={busy}
-              >
-                {allowed.publish ? "Save draft" : "Save"}
-              </Button>
-            )}
-            {allowed.publish ? (
-              <Button
-                type="submit"
-                name="intent"
-                value="publish"
-                disabled={busy}
-                aria-busy={saving}
-              >
-                {publishLabel}
-              </Button>
-            ) : null}
-          </div>
-        </div>
-      </header>
-
-      {state.result === "conflict" || state.result === "failed" || state.result === "invalid" ? (
-        <Alert intent={state.result === "invalid" ? "warning" : "danger"} role="alert">
-          <AlertDescription>{state.message}</AlertDescription>
-        </Alert>
-      ) : null}
-
-      <div className="entry-editor__body">
-        <div className="entry-editor__main">
-          <Field required>
-            <FieldLabel>Title</FieldLabel>
-            <FieldControl>
-              <Input name="title" defaultValue={values.title} maxLength={ENTRY_LIMITS.title} />
-            </FieldControl>
-            <FieldError>{errors.title}</FieldError>
-          </Field>
-          <Counted
-            name="excerpt"
-            label="Excerpt"
-            limit={ENTRY_LIMITS.excerpt}
-            defaultValue={values.excerpt}
-            multiline
-            error={errors.excerpt}
-          />
-          <Empty>
-            <EmptyMedia>
-              <ColumnsIcon size={24} />
-            </EmptyMedia>
-            <EmptyTitle asChild>
-              <h2>Content blocks come next</h2>
-            </EmptyTitle>
-            <EmptyDescription>
-              Headings, text, images and the rest are added here in the next release. Saving now
-              keeps the {noun.one}'s details and an empty body.
-            </EmptyDescription>
-          </Empty>
-        </div>
-
-        <aside
-          className="entry-editor__side"
-          aria-label={`${noun.one === "post" ? "Post" : "Page"} settings`}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle asChild>
-                <h2>Publishing</h2>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="entry-editor__card">
-              <p className="entry-editor__note">{statusLine(entry)}</p>
+        <header className="entry-editor__head">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href={noun.list}>{noun.many}</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{title || `New ${noun.one}`}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="entry-editor__row">
+            <div className="entry-editor__heading">
+              <h1 className="entry-editor__title">{title || `New ${noun.one}`}</h1>
+              {entry ? (
+                <Badge intent={STATUS[entry.status].intent} variant="outline">
+                  {STATUS[entry.status].label}
+                </Badge>
+              ) : null}
+              <span className="entry-editor__save-state" role="status">
+                {saveState}
+              </span>
+            </div>
+            <div className="entry-editor__actions">
+              {entry ? <RevisionHistory entryId={entry.id} updatedAt={token} /> : null}
+              {entry && allowed.trash ? (
+                <Button intent="ghost" onClick={trash} disabled={busy}>
+                  <TrashIcon size={16} />
+                  Move to trash
+                </Button>
+              ) : null}
+              {allowed.publish && live ? (
+                <Button
+                  type="submit"
+                  name="intent"
+                  value="unpublish"
+                  intent="secondary"
+                  disabled={busy}
+                >
+                  Unpublish
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  name="intent"
+                  value="save"
+                  intent={allowed.publish ? "secondary" : "primary"}
+                  disabled={busy}
+                >
+                  {allowed.publish ? "Save draft" : "Save"}
+                </Button>
+              )}
               {allowed.publish ? (
-                <>
-                  <Field>
-                    <FieldLabel>Publish date</FieldLabel>
-                    <FieldControl>
-                      <DatePicker
-                        ref={dayField}
-                        value={day}
-                        onValueChange={pickDay}
-                        locale={DATE_LOCALE}
-                        placeholder={DATE_PATTERN}
-                        invalidMessage={`Enter a date as ${DATE_PATTERN}.`}
-                      />
-                    </FieldControl>
-                    <FieldDescription>
-                      Empty publishes now. A later date and time schedules it.
-                    </FieldDescription>
-                    <FieldError>
-                      {dayInvalid
-                        ? `Enter a date as ${DATE_PATTERN}, or clear it.`
-                        : errors.publishAt}
-                    </FieldError>
-                  </Field>
-                  <Field>
-                    <FieldLabel>Publish time</FieldLabel>
-                    <Combobox value={time} onValueChange={setPickedTime}>
-                      <FieldControl>
-                        <ComboboxTrigger>
-                          <ComboboxValue placeholder="Pick a time" />
-                        </ComboboxTrigger>
-                      </FieldControl>
-                      <ComboboxContent
-                        aria-label="Publish time"
-                        label="Search times"
-                        searchPlaceholder="Type a time, such as 14:30"
-                      >
-                        <ComboboxEmpty>No time found. Times go in quarter hours.</ComboboxEmpty>
-                        {times.map((option) => (
-                          <ComboboxItem key={option} value={option}>
-                            {option}
-                          </ComboboxItem>
-                        ))}
-                      </ComboboxContent>
-                    </Combobox>
-                    <FieldDescription>
-                      24-hour clock{zone ? `, in your time zone, ${zone}` : null}.
-                    </FieldDescription>
-                  </Field>
-                </>
+                <Button
+                  type="submit"
+                  name="intent"
+                  value="publish"
+                  disabled={busy}
+                  aria-busy={saving}
+                >
+                  {publishLabel}
+                </Button>
               ) : null}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        </header>
 
-          <Card>
-            <CardHeader>
-              <CardTitle asChild>
-                <h2>Address</h2>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="entry-editor__card">
-              <Field>
-                <FieldLabel>Slug</FieldLabel>
-                <FieldControl>
-                  <Input name="slug" defaultValue={values.slug} spellCheck={false} />
-                </FieldControl>
-                <FieldDescription>
-                  {entry ? `Now at ${entry.path}. ` : null}
-                  Lowercase letters, digits and hyphens. Empty makes one from the title.
-                </FieldDescription>
-                <FieldError>{errors.slug}</FieldError>
-              </Field>
-              {options.parents ? (
-                <Field>
-                  <FieldLabel>Parent page</FieldLabel>
-                  <FieldControl>
-                    <NativeSelect name="parentId" defaultValue={values.parentId}>
-                      <option value="">None (top level)</option>
-                      {options.parents.map((parent) => (
-                        <option key={parent.id} value={parent.id}>
-                          {parent.title} ({parent.path})
-                        </option>
-                      ))}
-                    </NativeSelect>
-                  </FieldControl>
-                  <FieldError>{errors.parentId}</FieldError>
-                </Field>
-              ) : null}
-            </CardContent>
-          </Card>
+        {state.result === "conflict" || state.result === "failed" || state.result === "invalid" ? (
+          <Alert intent={state.result === "invalid" ? "warning" : "danger"} role="alert">
+            <AlertDescription>{state.message}</AlertDescription>
+          </Alert>
+        ) : null}
 
-          {options.authors ? (
-            <Card>
-              <CardHeader>
-                <CardTitle asChild>
-                  <h2>Author</h2>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="entry-editor__card">
-                <Field>
-                  <FieldLabel>Written by</FieldLabel>
-                  <FieldControl>
-                    <NativeSelect name="authorId" defaultValue={values.authorId}>
-                      {options.authors.map((author) => (
-                        <option key={author.id} value={author.id}>
-                          {author.name}
-                        </option>
-                      ))}
-                    </NativeSelect>
-                  </FieldControl>
-                  <FieldError>{errors.authorId}</FieldError>
-                </Field>
-              </CardContent>
-            </Card>
-          ) : null}
+        {/* Below lg, one of the three at a time. Every pane stays in the form. */}
+        <ToggleGroup
+          type="single"
+          size="sm"
+          value={view}
+          onValueChange={(next) => next && setView(next as View)}
+          aria-label="Show"
+          className="entry-editor__views"
+        >
+          <ToggleGroupItem value="blocks">Add and outline</ToggleGroupItem>
+          <ToggleGroupItem value="page">{noun.title}</ToggleGroupItem>
+          <ToggleGroupItem value="settings">Settings</ToggleGroupItem>
+        </ToggleGroup>
 
-          {options.categories && options.tags ? (
-            <Card>
-              <CardHeader>
-                <CardTitle asChild>
-                  <h2>Categories and tags</h2>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="entry-editor__card">
-                <TermPicker
-                  taxonomy="category"
-                  name="categoryIds"
-                  label="Categories"
-                  options={options.categories}
-                  defaultPicked={values.categoryIds}
-                  canCreate={allowed.createTerms}
-                  error={errors.categoryIds}
+        <div className={`entry-editor__body entry-editor__body--view-${view}`}>
+          <section
+            className="entry-editor__pane entry-editor__pane--blocks"
+            aria-label="Add blocks and outline"
+          >
+            <Tabs value={sideTab} onValueChange={(next) => setSideTab(next as "add" | "outline")}>
+              <TabsList>
+                <TabsTrigger value="add">Add</TabsTrigger>
+                <TabsTrigger value="outline">Outline</TabsTrigger>
+              </TabsList>
+              <TabsContent value="add" className="entry-editor__tab">
+                <BlockInserter onAdd={add} />
+              </TabsContent>
+              <TabsContent value="outline" className="entry-editor__tab">
+                <BlockOutline
+                  blocks={blocks}
+                  selectedId={selectedId}
+                  issueIds={issueIds}
+                  onSelect={select}
+                  onMove={(move) => setBlocks((now) => applyMove(now, move))}
                 />
-                <TermPicker
-                  taxonomy="tag"
-                  name="tagIds"
-                  label="Tags"
-                  options={options.tags}
-                  defaultPicked={values.tagIds}
-                  canCreate={allowed.createTerms}
-                  error={errors.tagIds}
-                />
-              </CardContent>
-            </Card>
-          ) : null}
+              </TabsContent>
+            </Tabs>
+          </section>
 
-          <Card>
-            <CardHeader>
-              <CardTitle asChild>
-                <h2>Search engines</h2>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="entry-editor__card">
-              <Counted
-                name="seoTitle"
-                label="Title for search results"
-                limit={ENTRY_LIMITS.seoTitle}
-                defaultValue={values.seoTitle}
-                error={errors.seoTitle}
-              />
-              <Counted
-                name="seoDescription"
-                label="Description for search results"
-                limit={ENTRY_LIMITS.seoDescription}
-                defaultValue={values.seoDescription}
-                multiline
-                error={errors.seoDescription}
-              />
-            </CardContent>
-          </Card>
-        </aside>
-      </div>
-    </form>
+          <section className="entry-editor__pane entry-editor__pane--page" aria-label={noun.title}>
+            <Field required>
+              <FieldLabel>Title</FieldLabel>
+              <FieldControl>
+                <Input
+                  name="title"
+                  value={title}
+                  onChange={(event) => setTitle(event.currentTarget.value)}
+                  maxLength={ENTRY_LIMITS.title}
+                  className="entry-editor__title-input"
+                />
+              </FieldControl>
+              <FieldError>{errors.title}</FieldError>
+            </Field>
+            <BlockCanvas
+              blocks={blocks}
+              selectedId={selectedId}
+              issueIds={issueIds}
+              onSelect={select}
+            />
+          </section>
+
+          <section
+            className="entry-editor__pane entry-editor__pane--settings"
+            aria-label="Settings"
+          >
+            <Tabs
+              value={settingsTab}
+              onValueChange={(next) => setSettingsTab(next as "block" | "entry")}
+            >
+              <TabsList>
+                <TabsTrigger value="block">Block</TabsTrigger>
+                <TabsTrigger value="entry">{noun.title}</TabsTrigger>
+              </TabsList>
+              <TabsContent value="block" className="entry-editor__tab">
+                <BlockInspector
+                  block={selected}
+                  issues={issues}
+                  canMoveUp={(where?.index ?? 0) > 0}
+                  canMoveDown={where !== undefined && where.index < siblings - 1}
+                  onChange={(props) =>
+                    selectedId && setBlocks((now) => updateProps(now, selectedId, props))
+                  }
+                  onMove={(step) => selectedId && setBlocks((now) => moveBy(now, selectedId, step))}
+                  onDuplicate={() => {
+                    if (!selectedId) return;
+                    const copied = duplicateBlock(blocks, selectedId);
+                    if (!copied) {
+                      toast("There's no room for another one here.", { intent: "warning" });
+                      return;
+                    }
+                    setBlocks(copied.blocks);
+                    select(copied.copyId);
+                  }}
+                  onRemove={() => {
+                    if (!selectedId) return;
+                    setBlocks((now) => removeBlock(now, selectedId));
+                    setSelectedId(null);
+                  }}
+                />
+              </TabsContent>
+              {/* Mounted while hidden: its fields go with every save. */}
+              <TabsContent
+                value="entry"
+                forceMount
+                hidden={settingsTab !== "entry"}
+                className="entry-editor__tab"
+              >
+                <EntrySettings
+                  type={type}
+                  values={state.values}
+                  errors={errors}
+                  entry={entry}
+                  options={options}
+                  createTerms={allowed.createTerms}
+                  publishing={publishing}
+                  featuredMediaId={featuredMediaId}
+                  onFeaturedChange={setFeaturedMediaId}
+                />
+              </TabsContent>
+            </Tabs>
+          </section>
+        </div>
+      </form>
+    </EditorDataProvider>
   );
 }
