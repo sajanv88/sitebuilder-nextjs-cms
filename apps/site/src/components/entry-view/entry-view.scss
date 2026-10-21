@@ -1,0 +1,107 @@
+@use "abstracts" as a;
+
+// The page's frame around its blocks: the same width and spacing as the editor's canvas, so
+// what the editor shows is what ships. Sections draw their own bands inside it.
+.entry {
+  display: grid;
+  gap: a.space(8);
+  inline-size: 100%;
+  max-inline-size: var(--app-content-max-width);
+  margin-inline: auto;
+  padding: a.space(8) a.space(4) a.space(12);
+
+  @include a.breakpoint("md") {
+    padding: a.space(12) a.space(8) a.space(16);
+  }
+
+  &__header {
+    display: grid;
+    gap: a.space(2);
+  }
+
+  &__title {
+    margin: 0;
+
+    // nuvui's type scale stops at --text-2xl; this is the heading block's h1 size, so a title
+    // and a level-1 heading block look the same.
+    font-size: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    overflow-wrap: anywhere;
+  }
+
+  &__meta {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  &__featured {
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+  }
+
+  &__featured-img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+  }
+
+  &__content {
+    display: grid;
+    gap: a.space(6);
+  }
+
+  &__footer {
+    display: grid;
+    gap: a.space(4);
+    padding-block-start: a.space(6);
+    border-block-start: var(--nuv-border-width) solid var(--color-border);
+  }
+
+  &__terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2) a.space(3);
+    align-items: baseline;
+  }
+
+  &__terms-label {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &__term-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__term {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: a.space(8);
+    padding-inline: a.space(3);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-full);
+    color: var(--color-foreground);
+    font-size: var(--text-sm);
+    text-decoration: none;
+
+    @include a.focus-ring;
+
+    @include a.hover {
+      background-color: var(--color-muted);
+    }
+
+    @media (pointer: coarse) {
+      min-block-size: var(--nuv-touch-size);
+    }
+  }
+}

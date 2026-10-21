@@ -12,10 +12,10 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   return (
-    <main className="page">
+    <div className="page">
       <h1 className="page__title">Something went wrong</h1>
       {error.digest && <p className="page__meta">Reference: {error.digest}</p>}
       <Button onClick={reset}>Try again</Button>
-    </main>
+    </div>
   );
 }

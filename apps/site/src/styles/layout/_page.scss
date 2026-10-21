@@ -4,7 +4,8 @@
   display: grid;
   gap: a.space(4);
   margin-inline: auto;
-  padding: a.space(4);
+  inline-size: 100%;
+  padding: a.space(12) a.space(4);
   max-inline-size: var(--app-content-max-width);
 
   @include a.breakpoint("md") {
@@ -23,7 +24,7 @@
     font-size: var(--text-sm);
   }
 
-  &__card {
-    max-inline-size: 32rem;
+  &__action {
+    justify-self: start;
   }
 }

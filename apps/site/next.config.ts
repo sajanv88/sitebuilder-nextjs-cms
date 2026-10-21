@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import type { NextConfig } from "next";
 
 // `pnpm dev` reads the repo root .env, as `pnpm db:*` does: `next dev` only looks in the app's
@@ -22,6 +23,11 @@ const securityHeaders = [
 
 const deploymentId = process.env.NEXT_DEPLOYMENT_ID;
 
+// "use cache" entries stay in memory; tag invalidations go through Postgres, so an updateTag()
+// in one zone reaches the other and every replica (decisions #63). Bundled by packages/db
+// (its build runs first); in the image it sits at the same place beside the server.
+const cacheHandler = resolve("../../packages/db/dist/cache-handler.mjs");
+
 // Multi-Zones: this is the main zone. The admin zone (apps/admin) serves these paths, and this
 // app forwards them. Rewrites are fixed at build time, so the default is a service name that is
 // the same in compose and in every Kubernetes namespace; `pnpm dev` runs the admin on 3001.
@@ -42,10 +48,18 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   typedRoutes: true,
   poweredByHeader: false,
+  cacheHandlers: { default: cacheHandler },
   // Skew protection across a rolling update: the Dockerfile passes the commit SHA.
   ...(deploymentId ? { deploymentId } : {}),
   sassOptions: {
     loadPaths: ["src/styles"],
+  },
+  // Block pictures are resized here from /media/<key> (decisions #70). Only that path, with no
+  // query string, may be optimised. A key never changes its file, so results keep for a year.
+  images: {
+    localPatterns: [{ pathname: "/media/**", search: "" }],
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 31_536_000,
   },
   experimental: {
     // Type-check with the project's own tsc: TypeScript 7, the native compiler.

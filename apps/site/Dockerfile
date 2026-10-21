@@ -78,6 +78,9 @@ COPY --from=builder /repo/apps/site/public ./apps/site/public
 # nuvraxis-fullstack: the migrate Job's runner (one bundled file) and the SQL migrations it applies.
 COPY --from=builder /repo/packages/db/dist/migrate.mjs ./packages/db/dist/migrate.mjs
 COPY --from=builder /repo/packages/db/drizzle ./packages/db/drizzle
+# The "use cache" handler next.config.ts names (decisions #63): one bundled file, loaded by path
+# from .next, so it sits at the same place relative to the server as in the repo.
+COPY --from=builder /repo/packages/db/dist/cache-handler.mjs ./packages/db/dist/cache-handler.mjs
 RUN mkdir -p apps/site/.next/cache && chown 1001:1001 apps/site/.next/cache
 LABEL org.opencontainers.image.title="site" \
       org.opencontainers.image.licenses="GPL-2.0-or-later"

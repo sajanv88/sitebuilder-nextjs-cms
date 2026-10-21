@@ -1,19 +1,50 @@
+import { db, type PublicRoute, resolveRoute } from "@sitebuilder/db";
 import { type NextRequest, NextResponse } from "next/server";
 
-// A fresh nonce per request, sent as the Content-Security-Policy. Next reads the nonce from
-// the request's CSP header and puts it on its own scripts; the root layout reads x-nonce for
-// anything else that needs it (nuvui's ScrollArea, next/script).
-export function proxy(request: NextRequest) {
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const isDev = process.env.NODE_ENV === "development";
+// Two jobs, before anything renders (decisions #65):
+//
+// 1. Routing. Each page request's path is resolved against the database (one indexed lookup,
+//    plus the reading settings) and rewritten to an internal route under /_site/, or answered
+//    with a redirect. A path that's nothing is rewritten to one no route matches, which Next
+//    answers with the not-found page and a real 404. A page can't set its own status: the
+//    root layout's shell starts the response before the page runs.
+// 2. A fresh nonce per request, sent as the Content-Security-Policy. Next reads the nonce from
+//    the request's CSP header and puts it on its own scripts; the root layout reads x-nonce for
+//    anything else that needs it (the theme's <style>, nuvui's ScrollArea).
 
-  const csp = [
+// Matches no route, so Next renders not-found.tsx with status 404.
+const MISSING = "/_site/missing";
+
+function internalPath(route: PublicRoute, path: string, preview: boolean): string | null {
+  // Draft mode: what isn't public may be the viewer's draft. The preview route checks the
+  // session and the viewer's permission itself.
+  if (preview && route.kind === "missing") return `/_site/preview${path}`;
+  switch (route.kind) {
+    case "home":
+      return "/_site/home";
+    case "entry":
+      return `/_site/entry/${route.id}`;
+    case "posts":
+      return `/_site/posts/${route.page}`;
+    case "term":
+      return `/_site/term/${route.termId}/${route.page}`;
+    case "missing":
+      return MISSING;
+    case "redirect":
+      return null;
+  }
+}
+
+function contentSecurityPolicy(nonce: string): string {
+  const isDev = process.env.NODE_ENV === "development";
+  return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
-    // nuvui: ScrollArea's one <style> element takes the nonce; components set style attributes.
+    // The theme's <style> and nuvui's ScrollArea take the nonce; components set style attributes.
     `style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`}`,
     "style-src-attr 'unsafe-inline'",
     "img-src 'self' blob: data:",
+    "media-src 'self'",
     "font-src 'self'",
     "connect-src 'self'",
     "worker-src 'self' blob:",
@@ -22,28 +53,49 @@ export function proxy(request: NextRequest) {
     "form-action 'self'",
     "frame-ancestors 'none'",
   ].join("; ");
+}
 
+export async function proxy(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  let route: PublicRoute;
+  try {
+    route = await resolveRoute(db, path);
+  } catch (error) {
+    // The database is down: the page can't be drawn either. Let it render the error page.
+    console.error("proxy: resolving a path failed", error);
+    route = { kind: "missing" };
+  }
+
+  if (route.kind === "redirect") {
+    const target = new URL(route.to, request.nextUrl);
+    target.search = request.nextUrl.search;
+    return NextResponse.redirect(target, route.status);
+  }
+
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const csp = contentSecurityPolicy(nonce);
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("x-site-path", path);
   requestHeaders.set("Content-Security-Policy", csp);
 
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  // Draft mode and a session: only then is a preview possible, and the preview route checks
+  // both for real. Anyone else gets a true 404 for what isn't public.
+  const preview =
+    request.cookies.has("__prerender_bypass") &&
+    (request.cookies.has("__Secure-better-auth.session_token") ||
+      request.cookies.has("better-auth.session_token"));
+  const destination = new URL(internalPath(route, path, preview) ?? MISSING, request.nextUrl);
+  destination.search = request.nextUrl.search;
+  const response = NextResponse.rewrite(destination, { request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);
   return response;
 }
 
 export const config = {
   matcher: [
-    {
-      // Documents only: not route handlers (/api/health, /media/<key>), static files, image
-      // optimisation, or prefetches. Not the admin zone's paths either: the admin zone sets its
-      // own CSP with its own nonce, and a second policy from here would block its scripts.
-      source:
-        "/((?!api/|media/|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|admin(?:/|$)|setup(?:/|$)|admin-static/).*)",
-      missing: [
-        { type: "header", key: "next-router-prefetch" },
-        { type: "header", key: "purpose", value: "prefetch" },
-      ],
-    },
+    // Pages only: not route handlers (/api/*, /media/<key>, /feed.xml), Next's files, the
+    // metadata routes, or the admin zone's paths, which it answers with its own CSP.
+    "/((?!api/|media/|_next/|favicon.ico|robots.txt|sitemap.xml|feed.xml|admin(?:/|$)|setup(?:/|$)|admin-static/).*)",
   ],
 };
