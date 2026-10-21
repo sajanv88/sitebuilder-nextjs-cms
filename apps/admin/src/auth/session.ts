@@ -1,10 +1,10 @@
 import "server-only";
+import { type Action, type Actor, can, canSome, type Resource } from "@sitebuilder/auth";
 import { RoleSchema } from "@sitebuilder/schema";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import * as v from "valibot";
 import { auth } from "./auth";
-import { type Action, type Actor, can, canSome, type Resource } from "./can";
 
 export interface Viewer extends Actor {
   name: string;

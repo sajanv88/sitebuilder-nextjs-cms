@@ -1,0 +1,29 @@
+{
+  "name": "@sitebuilder/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@sitebuilder/db": "workspace:*",
+    "@sitebuilder/schema": "workspace:*",
+    "better-auth": "catalog:",
+    "next": "catalog:",
+    "server-only": "catalog:",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@sitebuilder/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "license": "GPL-2.0-or-later"
+}

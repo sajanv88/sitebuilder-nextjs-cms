@@ -22,6 +22,7 @@
       "env": ["DATABASE_URL"]
     },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     }

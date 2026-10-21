@@ -10,7 +10,10 @@
     "analyze": "next analyze"
   },
   "dependencies": {
+    "@nuvui/icons": "catalog:",
+    "@nuvui/media": "catalog:",
     "@nuvui/react": "catalog:",
+    "@nuvui/table": "catalog:",
     "@opentelemetry/api": "catalog:",
     "@opentelemetry/api-logs": "catalog:",
     "@opentelemetry/instrumentation": "catalog:",
@@ -18,6 +21,8 @@
     "@opentelemetry/sdk-logs": "catalog:",
     "@opentelemetry/sdk-metrics": "catalog:",
     "@opentelemetry/sdk-trace-base": "catalog:",
+    "@sitebuilder/auth": "workspace:*",
+    "@sitebuilder/blocks": "workspace:*",
     "@sitebuilder/db": "workspace:*",
     "@sitebuilder/media": "workspace:*",
     "@sitebuilder/schema": "workspace:*",
