@@ -1,0 +1,177 @@
+# Checks every pull request, against any base branch. Publishes nothing.
+name: PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  # The Helm chart (one, for now: phase 5 adds the admin zone to it).
+  APP: site
+  HELM_VERSION: v4.3.1
+  KUBECONFORM_IMAGE: ghcr.io/yannh/kubeconform:v0.8.0
+  KUBERNETES_VERSION: 1.34.0
+  NEXT_TELEMETRY_DISABLED: "1"
+  TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  quality:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # --affected diffs against the base branch, so it needs history, not just one commit.
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec biome ci --reporter=github .
+      - run: pnpm exec stylelint "**/*.scss" --allow-empty-input
+      - run: pnpm exec turbo run typecheck test --affected
+      - run: pnpm audit --audit-level high
+
+  build:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec turbo run build --affected
+
+  docker:
+    if: ${{ !github.event.pull_request.draft }}
+    # One image per Next.js zone (docs/decisions.md #1).
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [site, admin]
+    env:
+      APP: ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      # One platform, loaded into the local daemon so it can be run. main.yaml builds both.
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: apps/${{ env.APP }}/Dockerfile
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: ${{ env.APP }}:pr
+          build-args: |
+            NEXT_DEPLOYMENT_ID=${{ github.event.pull_request.head.sha }}
+          # Reads the cache main.yaml writes; a PR never writes it.
+          cache-from: type=gha,scope=${{ env.APP }}
+      - name: Run the image and hit /api/health
+        # The server refuses to start without its environment. /api/health touches no
+        # dependency, so placeholders are enough; the secret is made up per run.
+        run: |
+          docker run -d --name app -p 3000:3000 \
+            --read-only --tmpfs "/app/apps/${APP}/.next/cache:uid=1001,gid=1001" \
+            --cap-drop ALL --security-opt no-new-privileges \
+            -e DATABASE_URL=postgres://unused:unused@127.0.0.1:5432/unused \
+            -e AUTH_SECRET="$(openssl rand -base64 32)" \
+            -e SITE_URL=http://localhost:3000 \
+            -e MEDIA_STORAGE=local \
+            "${APP}:pr"
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/api/health; then exit 0; fi
+            sleep 1
+          done
+          docker logs app
+          exit 1
+
+  helm:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+        with:
+          version: ${{ env.HELM_VERSION }}
+      - name: helm lint
+        run: |
+          helm lint --strict "charts/${APP}"
+          helm lint --strict "charts/${APP}" -f "charts/${APP}/values-production.yaml"
+      - name: helm template | kubeconform
+        run: |
+          {
+            helm template "${APP}" "charts/${APP}"
+            echo "---"
+            helm template "${APP}" "charts/${APP}" -f "charts/${APP}/values-production.yaml"
+          } | docker run --rm -i "${KUBECONFORM_IMAGE}" \
+                -strict -summary -kubernetes-version "${KUBERNETES_VERSION}" -
+
+  # Added by nuvraxis-fullstack. Runs the exact migration artefact the Kubernetes Job runs
+  # (the bundled dist/migrate.mjs) against a real Postgres 17, twice, then the db tests.
+  db:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.11-alpine3.24@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://app:app@localhost:5432/app
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Fails on migrations that conflict across branches, and on schema changes without one.
+      - run: pnpm --filter @sitebuilder/db exec drizzle-kit check
+      - run: pnpm exec turbo run build --filter=@sitebuilder/db
+      - name: Run the bundled migrator twice (the second run must be a no-op)
+        run: |
+          node packages/db/dist/migrate.mjs
+          node packages/db/dist/migrate.mjs | tee second-run.log
+          grep -q "database is up to date" second-run.log
+      - run: pnpm --filter @sitebuilder/db test

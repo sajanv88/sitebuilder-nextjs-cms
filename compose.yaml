@@ -1,0 +1,109 @@
+# Sitebuilder on one machine: `cp .env.example .env`, set AUTH_SECRET, then
+# `docker compose up --build` and open http://localhost:3000/setup.
+#
+# Two Next.js zones (docs/decisions.md #1): `site` is published and forwards the admin paths to
+# `admin`, which is reachable only inside this network as http://admin:3000 (the address the
+# site image was built with). `migrate` applies the SQL migrations before either starts.
+#
+# For development: `docker compose -f compose.yaml -f compose.dev.yaml up -d postgres`, then
+# `pnpm db:migrate` and `pnpm dev`.
+name: sitebuilder
+
+x-app: &app
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    # Inside this network the database is `postgres`, whatever .env says for local development.
+    DATABASE_URL: postgres://app:app@postgres:5432/sitebuilder
+    AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env (see the README)}
+    SITE_URL: ${SITE_URL:-http://localhost:3000}
+    MEDIA_STORAGE: ${MEDIA_STORAGE:-local}
+  # The way Kubernetes runs it: read-only root filesystem, no capabilities.
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  restart: unless-stopped
+
+x-admin-build: &admin-build
+  build:
+    context: .
+    dockerfile: apps/admin/Dockerfile
+  image: sitebuilder-admin:local
+
+services:
+  postgres:
+    # Postgres 17, pinned by digest (multi-arch index), the same image CI's pr.yaml uses.
+    image: postgres:17.11-alpine3.24@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: sitebuilder
+    # Not published: only the app services reach it. compose.dev.yaml publishes it on loopback
+    # for `pnpm dev`.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d sitebuilder"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Applies the committed migrations, then exits. Safe to run again: it applies only new ones.
+  migrate:
+    <<: [*admin-build]
+    command: ["node", "packages/db/dist/migrate.mjs"]
+    environment:
+      DATABASE_URL: postgres://app:app@postgres:5432/sitebuilder
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  admin:
+    <<: [*app, *admin-build]
+    tmpfs:
+      - /app/apps/admin/.next/cache:uid=1001,gid=1001
+    volumes:
+      # Uploaded files, when MEDIA_STORAGE=local. Nothing writes here until phase 3.
+      - media:/data/media
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  site:
+    <<: *app
+    build:
+      context: .
+      dockerfile: apps/site/Dockerfile
+      args:
+        ADMIN_ZONE_URL: http://admin:3000
+    image: sitebuilder-site:local
+    tmpfs:
+      - /app/apps/site/.next/cache:uid=1001,gid=1001
+    ports:
+      - "${SITE_PORT:-3000}:3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      admin:
+        condition: service_healthy
+
+  # Optional database UI: `docker compose --profile tools up -d`, then http://127.0.0.1:8080
+  # (System: PostgreSQL, Server: postgres, user/password/database as above).
+  adminer:
+    image: adminer:5.5.1@sha256:e3a6b4942dd088a29cc8bbce22553429247c5c2b30b07d856ae49012b5c84a5b
+    profiles: [tools]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8080"
+
+volumes:
+  pgdata:
+  media:

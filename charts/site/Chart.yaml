@@ -1,0 +1,11 @@
+apiVersion: v2
+name: site
+description: Helm chart for the site Next.js app (ghcr.io/nuvraxis/site).
+type: application
+# Both are set by .github/workflows/release.yaml from the git tag (vX.Y.Z → version X.Y.Z,
+# appVersion vX.Y.Z) when the chart is packaged. Don't edit them by hand.
+version: 0.0.0
+appVersion: "0.0.0"
+home: https://github.com/nuvraxis/site
+sources:
+  - https://github.com/nuvraxis/site

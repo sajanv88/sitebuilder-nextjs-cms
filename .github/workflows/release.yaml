@@ -1,0 +1,102 @@
+# Releases a tag vX.Y.Z without rebuilding: retags the image main.yaml built for that commit,
+# publishes the Helm chart to GHCR as OCI, and creates the GitHub Release.
+#
+# Ritual: merge to main → wait for main.yaml to go green → git tag vX.Y.Z && git push origin vX.Y.Z
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # The chart (one, for now: phase 5 adds the admin zone to it). The images: one per zone.
+  APP: site
+  IMAGES: ghcr.io/nuvraxis/site ghcr.io/nuvraxis/admin
+  CHART_REPOSITORY: oci://ghcr.io/nuvraxis/charts
+  HELM_VERSION: v4.3.1
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check the tag is vX.Y.Z and on main
+        run: |
+          if [[ ! "${GITHUB_REF_NAME}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} isn't vMAJOR.MINOR.PATCH."
+            exit 1
+          fi
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "${GITHUB_SHA}" origin/main; then
+            echo "::error::Tag ${GITHUB_REF_NAME} points at ${GITHUB_SHA}, which isn't on main. Tag a commit that has been merged to main."
+            exit 1
+          fi
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Retag the images built by main.yaml
+        run: |
+          # Both zones must exist for this commit before either is retagged.
+          for image in ${IMAGES}; do
+            source_ref="${image}:sha-${GITHUB_SHA::7}"
+            if ! docker buildx imagetools inspect "${source_ref}" > /dev/null 2>&1; then
+              echo "::error::${source_ref} doesn't exist. Let main.yaml finish for ${GITHUB_SHA::7}, then re-run this workflow. Nothing is rebuilt here."
+              exit 1
+            fi
+          done
+          mkdir -p dist
+          for image in ${IMAGES}; do
+            # Manifest-level copy: keeps both architectures, the provenance and the SBOM.
+            docker buildx imagetools create \
+              --tag "${image}:${GITHUB_REF_NAME}" \
+              --tag "${image}:latest" \
+              "${image}:sha-${GITHUB_SHA::7}"
+            digest="$(docker buildx imagetools inspect "${image}:${GITHUB_REF_NAME}" --format '{{ json .Manifest }}' | jq -r .digest)"
+            echo "${image}@${digest}" >> dist/image-digest.txt
+            docker buildx imagetools inspect "${image}:${GITHUB_REF_NAME}" --format '{{ json .SBOM }}' > "dist/sbom-${image##*/}.spdx.json"
+          done
+
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Package and push the chart
+        env:
+          REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          helm lint --strict "charts/${APP}"
+          # Sets version and appVersion in the packaged chart; Chart.yaml in git stays 0.0.0.
+          helm package "charts/${APP}" --version "${version}" --app-version "${GITHUB_REF_NAME}" --destination dist
+          echo "${REGISTRY_PASSWORD}" | helm registry login ghcr.io --username "${GITHUB_ACTOR}" --password-stdin
+          helm push "dist/${APP}-${version}.tgz" "${CHART_REPOSITORY}"
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --verify-tag \
+            --generate-notes \
+            --title "${GITHUB_REF_NAME}" \
+            dist/*.tgz dist/image-digest.txt dist/sbom-*.spdx.json

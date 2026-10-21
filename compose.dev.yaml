@@ -1,0 +1,8 @@
+# Development additions to compose.yaml: publishes Postgres on loopback for `pnpm db:*` and
+# `pnpm dev`, which run on the host.
+#   docker compose -f compose.yaml -f compose.dev.yaml up -d postgres
+# Port taken? Set POSTGRES_PORT=55432 and use that port in .env's DATABASE_URL.
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
