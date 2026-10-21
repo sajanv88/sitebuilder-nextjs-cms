@@ -1,5 +1,5 @@
 import type { IconComponent } from "@nuvui/icons";
-import type { LinkTarget, MediaKind, MediaType } from "@sitebuilder/schema";
+import type { DateSettings, LinkTarget, MediaKind, MediaType } from "@sitebuilder/schema";
 import type { ComponentType, ReactNode } from "react";
 import type * as v from "valibot";
 
@@ -41,6 +41,23 @@ export interface RenderContext {
   posts: readonly PostSummary[];
   // True in the editor's canvas: blocks with nothing to show yet draw a placeholder.
   editing: boolean;
+  // How dates are written, and the site's language for month names.
+  dates: DateSettings & { language: string };
+  // The block whose heading is the page's h1: a hero that opens the page (decisions #68).
+  headingBlockId: string | null;
+  // Draws a picture. The site zone passes one built on next/image (decisions #70); without
+  // it, a plain <img> with the stored width and height.
+  image?: ((props: ImageProps) => ReactNode) | undefined;
+}
+
+export interface ImageProps {
+  media: RenderMedia;
+  alt: string;
+  className?: string | undefined;
+  // How wide it's drawn, for choosing a file size: the `sizes` attribute.
+  sizes: string;
+  // Near the top of the page: load it first rather than lazily.
+  priority?: boolean | undefined;
 }
 
 export interface BlockRenderProps<P> {

@@ -6,7 +6,9 @@ import { describe, expect, test, vi } from "vitest";
 // server.ts is server-only; under vitest there's no React server condition to satisfy.
 vi.mock("server-only", () => ({}));
 
-const { collectEntryIds, collectMediaIds, cloneBlock, createBlock } = await import("./content");
+const { collectEntryIds, collectMediaIds, cloneBlock, createBlock, headingBlockId } = await import(
+  "./content"
+);
 const { allowedChildren, BLOCKS, blockRules, LEAF_TYPES } = await import("./registry");
 const { BlockList } = await import("./render");
 const { sanitizeRichText, validateContent } = await import("./server");
@@ -33,6 +35,8 @@ const context = {
     target.kind === "url" ? target.url : target.entryId === PAGE ? "/about" : undefined,
   posts: [],
   editing: false,
+  dates: { dateFormat: "dd/MM/yyyy" as const, timeZone: "Europe/London", language: "en" },
+  headingBlockId: null as string | null,
 };
 
 let n = 0;
@@ -214,6 +218,36 @@ describe("BlockList", () => {
     expect(html).not.toContain("<script");
     // The video's file isn't in the context: visitors get nothing, not a broken player.
     expect(html).not.toContain("A tour");
+  });
+
+  test("gives a hero that opens the page the h1, and an h2 anywhere else", () => {
+    const hero = block("hero", { headline: "Big news" });
+    const lead = renderToStaticMarkup(
+      <BlockList
+        blocks={[hero]}
+        context={{ ...context, headingBlockId: headingBlockId([hero]) }}
+      />,
+    );
+    expect(lead).toContain('<h1 class="block-hero__title">Big news</h1>');
+    const later = [block("separator", {}), hero];
+    expect(headingBlockId(later)).toBeNull();
+    expect(renderToStaticMarkup(<BlockList blocks={later} context={context} />)).toContain(
+      '<h2 class="block-hero__title">Big news</h2>',
+    );
+  });
+
+  test("draws pictures with the zone's own image component when it has one", () => {
+    const html = renderToStaticMarkup(
+      <BlockList
+        blocks={[block("image", { mediaId: IMAGE })]}
+        context={{
+          ...context,
+          image: ({ media, sizes }) => <span data-src={media.url} data-sizes={sizes} />,
+        }}
+      />,
+    );
+    expect(html).toContain('data-src="/media/2026/10/x-photo.jpg"');
+    expect(html).not.toContain("<img");
   });
 
   test("in the editor, a block with nothing to show yet draws a placeholder", () => {

@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import * as v from "valibot";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
 import { cx, mediaId, optionalText } from "../../shared";
-import type { BlockDefinition, RenderMedia } from "../../types";
+import type { BlockDefinition, ImageProps, RenderContext } from "../../types";
 import "./block-image.scss";
 
 const RATIOS = { "16:9": 16 / 9, "4:3": 4 / 3, "1:1": 1 } as const;
@@ -21,27 +21,21 @@ const Props = v.strictObject({
 });
 type Props = v.InferOutput<typeof Props>;
 
-// A plain <img> with its width and height, so the page doesn't jump when it loads. next/image
-// waits for phase 4: S3 addresses are runtime values and its remote patterns are fixed at build
-// (decisions #58). Every file is same-origin under /media/ anyway.
-export function MediaImage({
-  media,
-  alt,
-  className,
-}: {
-  media: RenderMedia;
-  alt: string;
-  className?: string;
-}) {
+// A picture from the media library. The site draws it with next/image, resized to the widths
+// `sizes` asks for (decisions #70); the editor's canvas, and a file without stored dimensions,
+// get a plain <img> with its width and height, so the page doesn't jump when it loads.
+export function MediaImage({ context, ...image }: ImageProps & { context: RenderContext }) {
+  const { media, alt, className, priority } = image;
+  if (context.image && media.width && media.height) return context.image(image);
   return (
-    // biome-ignore lint/performance/noImgElement: next/image is decided in phase 4 (decisions #58); the browser's lazy loading and the stored dimensions cover layout until then.
+    // biome-ignore lint/performance/noImgElement: the editor's canvas runs in the admin zone, which doesn't serve /media for next/image (decisions #70).
     <img
       className={className}
       src={media.url}
       alt={alt}
       width={media.width ?? undefined}
       height={media.height ?? undefined}
-      loading="lazy"
+      loading={priority ? "eager" : "lazy"}
       decoding="async"
     />
   );
@@ -98,7 +92,16 @@ export const image: BlockDefinition<Props> = {
       ) : null;
     }
     const alt = props.alt ?? media.alt ?? "";
-    let picture: ReactNode = <MediaImage media={media} alt={alt} className="block-image__img" />;
+    let picture: ReactNode = (
+      <MediaImage
+        context={context}
+        media={media}
+        alt={alt}
+        className="block-image__img"
+        // At most the widest section; a column draws it narrower, which costs a larger file.
+        sizes="(min-width: 80rem) 80rem, 100vw"
+      />
+    );
     if (props.ratio !== "auto") {
       picture = <AspectRatio ratio={RATIOS[props.ratio]}>{picture}</AspectRatio>;
     }

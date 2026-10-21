@@ -34,3 +34,7 @@ export function storageKey(
   const month = String(now.getUTCMonth() + 1).padStart(2, "0");
   return `${now.getUTCFullYear()}/${month}/${id}-${sanitizeFilename(filename)}`;
 }
+
+// Every file is served by the site zone at /media/<key>, whichever storage holds it
+// (decisions #47), so the address is the same on both zones.
+export const mediaUrl = (storageKey: string): string => `/media/${storageKey}`;

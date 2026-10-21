@@ -76,3 +76,10 @@ export function collectEntryIds(blocks: readonly Block[]): string[] {
   });
   return [...ids];
 }
+
+// The block whose heading is the page's h1: a hero that opens the page. The page then doesn't
+// draw its title (decisions #68). The site and the editor's canvas both ask this.
+export function headingBlockId(blocks: readonly Block[]): string | null {
+  const first = blocks[0];
+  return first?.type === "hero" ? first.id : null;
+}

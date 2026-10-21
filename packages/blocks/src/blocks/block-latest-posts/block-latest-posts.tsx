@@ -1,10 +1,9 @@
 import { FileTextIcon } from "@nuvui/icons";
 import { Card, CardDescription, CardHeader, CardTitle } from "@nuvui/react";
-import { Uuid } from "@sitebuilder/schema";
+import { formatDate, Uuid } from "@sitebuilder/schema";
 import * as v from "valibot";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
-import { formatDate } from "../../shared";
-import type { BlockDefinition, PostSummary } from "../../types";
+import type { BlockDefinition, PostSummary, RenderContext } from "../../types";
 import "./block-latest-posts.scss";
 
 const Props = v.strictObject({
@@ -25,10 +24,11 @@ function pick(posts: readonly PostSummary[], props: Props): PostSummary[] {
   return matching.slice(0, props.count);
 }
 
-function PostDate({ post }: { post: PostSummary }) {
+function PostDate({ post, context }: { post: PostSummary; context: RenderContext }) {
+  const { language, ...settings } = context.dates;
   return (
     <time className="block-latest-posts__date" dateTime={post.publishedAt}>
-      {formatDate(post.publishedAt)}
+      {formatDate(new Date(post.publishedAt), settings, language)}
     </time>
   );
 }
@@ -77,7 +77,7 @@ export const latestPosts: BlockDefinition<Props> = {
               <a className="block-latest-posts__link" href={post.path}>
                 {post.title}
               </a>
-              <PostDate post={post} />
+              <PostDate post={post} context={context} />
               {props.showExcerpt && post.excerpt ? (
                 <p className="block-latest-posts__excerpt">{post.excerpt}</p>
               ) : null}
@@ -99,7 +99,7 @@ export const latestPosts: BlockDefinition<Props> = {
                     </a>
                   </h3>
                 </CardTitle>
-                <PostDate post={post} />
+                <PostDate post={post} context={context} />
                 {props.showExcerpt && post.excerpt ? (
                   <CardDescription>{post.excerpt}</CardDescription>
                 ) : null}

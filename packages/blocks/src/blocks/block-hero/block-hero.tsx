@@ -65,14 +65,17 @@ export const hero: BlockDefinition<Props> = {
     { kind: "media", name: "imageMediaId", label: "Picture", accept: "image", optional: true },
   ],
   summary: (props) => props.headline,
-  Render: ({ props, context }) => {
+  Render: ({ id, props, context }) => {
     const picture = props.imageMediaId ? context.media(props.imageMediaId) : undefined;
+    // A hero that opens the page holds its h1; anywhere else it's a section's heading
+    // (decisions #68).
+    const lead = context.headingBlockId === id;
+    const Heading = lead ? "h1" : "h2";
     return (
       <section className={cx("block-hero", picture && "block-hero--with-picture")}>
         <div className="block-hero__inner">
           {props.eyebrow ? <p className="block-hero__eyebrow">{props.eyebrow}</p> : null}
-          {/* h2: the entry's title is the page's h1 (the page template comes in phase 4). */}
-          <h2 className="block-hero__title">{props.headline}</h2>
+          <Heading className="block-hero__title">{props.headline}</Heading>
           {props.body ? <p className="block-hero__lead">{props.body}</p> : null}
           <div className="block-hero__actions">
             <ActionLink action={props.primaryAction} intent="primary" context={context} />
@@ -81,7 +84,14 @@ export const hero: BlockDefinition<Props> = {
         </div>
         {picture?.mimeType.startsWith("image/") ? (
           <div className="block-hero__picture">
-            <MediaImage media={picture} alt={picture.alt ?? ""} className="block-hero__img" />
+            <MediaImage
+              context={context}
+              media={picture}
+              alt={picture.alt ?? ""}
+              className="block-hero__img"
+              sizes="(min-width: 60rem) 60rem, 100vw"
+              priority={lead}
+            />
           </div>
         ) : null}
       </section>

@@ -60,7 +60,12 @@ export const gallery: BlockDefinition<Props> = {
             {images.map((media) => (
               <CarouselItem key={media.id}>
                 <AspectRatio ratio={4 / 3}>
-                  <MediaImage media={media} alt={media.alt ?? ""} />
+                  <MediaImage
+                    context={context}
+                    media={media}
+                    alt={media.alt ?? ""}
+                    sizes="(min-width: 80rem) 80rem, 100vw"
+                  />
                 </AspectRatio>
               </CarouselItem>
             ))}
@@ -79,7 +84,13 @@ export const gallery: BlockDefinition<Props> = {
         {images.map((media) => (
           <li key={media.id}>
             <AspectRatio ratio={1}>
-              <MediaImage media={media} alt={media.alt ?? ""} />
+              <MediaImage
+                context={context}
+                media={media}
+                alt={media.alt ?? ""}
+                // Squares at least 10rem wide, as many to a row as fit.
+                sizes="(min-width: 48rem) 20rem, 50vw"
+              />
             </AspectRatio>
           </li>
         ))}

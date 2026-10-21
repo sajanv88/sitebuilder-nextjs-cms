@@ -38,13 +38,3 @@ export function formatBytes(bytes: number): string {
   }
   return `${value >= 10 ? Math.round(value) : Math.round(value * 10) / 10} ${units[unit]}`;
 }
-
-// "21 Oct 2026", in UTC, so the server and the browser agree (design §7: no "today").
-export function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(iso));
-}
