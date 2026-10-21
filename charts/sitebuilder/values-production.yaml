@@ -1,0 +1,37 @@
+# Production overrides. Pass after values.yaml: -f values.yaml -f values-production.yaml
+# (in Argo CD: helm.valueFiles: [values.yaml, values-production.yaml]). Replace the example host.
+
+site:
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+  resources:
+    requests:
+      cpu: 250m
+      memory: 384Mi
+    limits:
+      memory: 768Mi
+
+imagePullSecrets:
+  - name: ghcr-pull
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-body-size: "32m"
+  host: sitebuilder.example.com
+  tls:
+    - secretName: sitebuilder-tls
+      hosts:
+        - sitebuilder.example.com
+
+config:
+  SITE_URL: https://sitebuilder.example.com
+  OTEL_RESOURCE_ATTRIBUTES: deployment.environment=production
+
+existingSecret: sitebuilder-secrets

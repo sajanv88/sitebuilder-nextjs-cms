@@ -1,4 +1,8 @@
 {{- if .Values.ingress.enabled -}}
+{{- $site := include "zone.serviceName" (dict "root" $ "zone" "site") }}
+{{- $admin := include "zone.serviceName" (dict "root" $ "zone" "admin") }}
+# One host. The admin zone's paths go straight to it (decisions #79); the site zone would
+# forward them too, but this saves a hop and lets the admin see the ingress's client address.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -24,18 +28,23 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            pathType: {{ .pathType }}
+          {{- range list "/admin" "/admin-static" "/setup" "/api/auth" }}
+          - path: {{ . }}
+            pathType: Prefix
             backend:
               service:
-                name: {{ include "app.fullname" $ }}
+                name: {{ $admin }}
                 port:
                   name: http
           {{- end }}
-    {{- end }}
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $site }}
+                port:
+                  name: http
 {{- end }}

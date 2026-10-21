@@ -1,6 +1,6 @@
 {{- if .Values.db.migrate.enabled }}
-# Runs the app's committed migrations before Argo CD applies the new Deployment.
-# Same image and tag as the Deployment; no drizzle-kit in the image, only the bundled runner.
+# Runs the committed migrations before Argo CD applies the new Deployments. The admin image,
+# the only one with the migrator (decisions #28); same tag as the Deployments.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       labels:
-        # Not the app's selector labels: the Service and PDB must never select this pod.
+        # Not the zones' selector labels: no Service or PDB may select this pod.
         app.kubernetes.io/name: {{ include "app.name" . }}-migrate
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: migrate
@@ -37,7 +37,7 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: migrate
-          image: {{ include "app.image" . | quote }}
+          image: {{ include "zone.image" (dict "root" $ "zone" "admin") | quote }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             {{- toYaml .Values.db.migrate.command | nindent 12 }}

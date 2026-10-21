@@ -1,0 +1,18 @@
+{{- range $zone := list "site" "admin" }}
+{{- $ctx := dict "root" $ "zone" $zone }}
+{{- $pdb := (index $.Values $zone).podDisruptionBudget }}
+{{- if $pdb.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "zone.fullname" $ctx }}
+  labels:
+    {{- include "zone.labels" $ctx | nindent 4 }}
+spec:
+  maxUnavailable: {{ $pdb.maxUnavailable }}
+  selector:
+    matchLabels:
+      {{- include "zone.selectorLabels" $ctx | nindent 6 }}
+{{- end }}
+{{- end }}

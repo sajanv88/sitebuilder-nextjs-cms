@@ -1,0 +1,26 @@
+Sitebuilder is running:
+  site:  {{ include "zone.image" (dict "root" $ "zone" "site") }}
+  admin: {{ include "zone.image" (dict "root" $ "zone" "admin") }}
+
+{{- if .Values.ingress.enabled }}
+
+  URL: http{{ if .Values.ingress.tls }}s{{ end }}://{{ .Values.ingress.host }}
+  First admin: http{{ if .Values.ingress.tls }}s{{ end }}://{{ .Values.ingress.host }}/setup
+{{- else }}
+
+  Try it locally (the site forwards the admin paths to the admin):
+    kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "zone.serviceName" (dict "root" $ "zone" "site") }} 3000:{{ .Values.service.port }}
+    open http://127.0.0.1:3000/setup
+  SITE_URL must then be http://127.0.0.1:3000, or sign-in refuses the request.
+{{- end }}
+{{- if not .Values.existingSecret }}
+
+  No existingSecret is set, so AUTH_SECRET is missing and both zones stop at start with a
+  message naming it.
+{{- end }}
+
+Database: migrations run as the PreSync Job {{ include "app.fullname" . }}-migrate before each sync.
+  The Secret "{{ include "app.dbSecretName" . }}" with DATABASE_URL must exist before the first sync.
+  If it doesn't, the migrate pod stays in CreateContainerConfigError and the sync never starts:
+    kubectl -n {{ .Release.Namespace }} get secret {{ include "app.dbSecretName" . }}
+    kubectl -n {{ .Release.Namespace }} logs job/{{ include "app.fullname" . }}-migrate

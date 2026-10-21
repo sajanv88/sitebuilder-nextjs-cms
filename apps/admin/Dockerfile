@@ -72,6 +72,7 @@ COPY --from=builder /repo/apps/admin/.next/standalone ./
 COPY --from=builder /repo/apps/admin/.next/static ./apps/admin/.next/static
 COPY --from=builder /repo/apps/admin/public ./apps/admin/public
 # nuvraxis-fullstack: the migrate Job's runner (one bundled file) and the SQL migrations it applies.
+# Only this image carries them: Compose and the chart run migrations from it (decisions #28).
 COPY --from=builder /repo/packages/db/dist/migrate.mjs ./packages/db/dist/migrate.mjs
 COPY --from=builder /repo/packages/db/drizzle ./packages/db/drizzle
 # The "use cache" handler next.config.ts names (decisions #63): one bundled file, loaded by path
@@ -80,11 +81,13 @@ COPY --from=builder /repo/packages/db/dist/cache-handler.mjs ./packages/db/dist/
 # The non-interactive first admin (design §8.1), one bundled file like the migrator:
 # `node packages/db/dist/create-admin.mjs [--force]` with ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD.
 COPY --from=builder /repo/packages/db/dist/create-admin.mjs ./packages/db/dist/create-admin.mjs
+# GPL-2.0-or-later: the licence and every dependency's licence travel with the image.
+COPY LICENSE THIRD_PARTY_LICENSES.md ./
 RUN mkdir -p apps/admin/.next/cache && chown 1001:1001 apps/admin/.next/cache
 # Local media storage (MEDIA_LOCAL_DIR's default). A new named volume takes this folder's owner,
 # so uploads can be written there; in Kubernetes the chart mounts storage here or uses S3.
 RUN mkdir -p /data/media && chown 1001:1001 /data/media
-LABEL org.opencontainers.image.title="admin" \
+LABEL org.opencontainers.image.title="sitebuilder-admin" \
       org.opencontainers.image.licenses="GPL-2.0-or-later"
 USER 1001:1001
 EXPOSE 3000
