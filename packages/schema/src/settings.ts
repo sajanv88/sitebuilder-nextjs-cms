@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import * as v from "valibot";
 import { DateFormatSchema, DEFAULT_DATE_FORMAT, DEFAULT_TIME_ZONE, TimeZoneSchema } from "./dates";
 import { RESERVED_SEGMENTS } from "./entries";

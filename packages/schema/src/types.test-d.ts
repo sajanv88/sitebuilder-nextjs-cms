@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { expectTypeOf, test } from "vitest";
 import type { Block, BlockList } from "./blocks";
 import type { Env } from "./env";

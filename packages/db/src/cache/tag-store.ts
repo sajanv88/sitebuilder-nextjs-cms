@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { gt, sql } from "drizzle-orm";
 import type { Executor } from "../executor";
 import { cacheTags } from "../schema/site";

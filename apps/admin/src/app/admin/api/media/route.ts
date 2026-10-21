@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { can } from "@sitebuilder/auth";
 import { createMedia, db } from "@sitebuilder/db";
 import { readDimensions, StorageError, sniffType, storageKey } from "@sitebuilder/media";

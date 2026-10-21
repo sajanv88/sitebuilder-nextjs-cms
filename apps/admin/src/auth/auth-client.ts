@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { createAuthClient } from "better-auth/react";
 
 // Browser side of Better Auth. Sign-in and sign-out go through its HTTP endpoints, not a Server

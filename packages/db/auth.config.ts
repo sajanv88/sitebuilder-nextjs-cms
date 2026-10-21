@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // Generation-only Better Auth config: `pnpm db:auth-schema` reads it to write
 // src/schema/auth-schema.ts. It mirrors what in apps/admin/src/auth/auth.ts adds tables or
 // columns: the plugins and the database rate-limit storage (roles and other options don't).

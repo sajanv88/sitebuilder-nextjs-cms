@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { describe, expect, test } from "vitest";
 import { readDimensions } from "./dimensions";
 import { sniffType } from "./sniff";

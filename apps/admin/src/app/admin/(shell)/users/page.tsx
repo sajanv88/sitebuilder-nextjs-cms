@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { db, listUsers } from "@sitebuilder/db";
 import type { Metadata } from "next";
 import { requirePermission } from "@/auth/session";

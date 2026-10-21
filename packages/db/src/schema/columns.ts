@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { timestamp, uuid } from "drizzle-orm/pg-core";
 
 // Column builders shared by our tables. Better Auth's tables (auth-schema.ts) are generated and

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { ImageProps } from "@sitebuilder/blocks";
 import Image from "next/image";
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { randomUUID } from "node:crypto";
 import { defaultSettings } from "@sitebuilder/schema";
 import { sql } from "drizzle-orm";

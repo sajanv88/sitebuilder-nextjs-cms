@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { DEFAULT_READING, db, getSettings, listPublishedPages } from "@sitebuilder/db";
 import { describeEnvironment, openSecret } from "@sitebuilder/media";
 import { defaultSettings, timeZoneNames } from "@sitebuilder/schema";

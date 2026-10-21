@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // What each Server Action and route handler changes on the public site, as the kinds of cache
 // tags it must invalidate (design §7, decisions #63). Every export of src/actions/ is listed,
 // with [] where nothing public changes; action-effects.test.ts fails on one that isn't, so a

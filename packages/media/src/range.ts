@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { ByteRange } from "./storage/types";
 
 // One range from an HTTP Range header ("bytes=0-1023", "bytes=1024-", "bytes=-500"), for video

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { createBlock } from "@sitebuilder/blocks";
 import type { Block } from "@sitebuilder/schema";
 import { describe, expect, test } from "vitest";

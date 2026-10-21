@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { ImageIcon } from "@nuvui/icons";
 import { AspectRatio } from "@nuvui/react";
 import { LinkTarget } from "@sitebuilder/schema";

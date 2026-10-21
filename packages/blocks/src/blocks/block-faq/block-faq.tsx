@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { HelpCircleIcon } from "@nuvui/icons";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@nuvui/react";
 import * as v from "valibot";

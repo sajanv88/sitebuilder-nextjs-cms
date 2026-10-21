@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { beforeEach, describe, expect, it } from "vitest";
 import { session, user } from "../schema/auth-schema";
 import { createTestDb } from "../testing/pglite";

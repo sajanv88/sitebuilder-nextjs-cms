@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { index, pgEnum, primaryKey, snakeCase, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { id } from "./columns";
 import { entries } from "./entries";

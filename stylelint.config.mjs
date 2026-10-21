@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // BEM in kebab-case: block, block__element, block--modifier, block__element--modifier.
 const kebab = "[a-z][a-z0-9]*(?:-[a-z0-9]+)*";
 

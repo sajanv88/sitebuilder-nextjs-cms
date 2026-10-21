@@ -43,6 +43,8 @@ jobs:
       - run: pnpm exec stylelint "**/*.scss" --allow-empty-input
       - run: pnpm exec turbo run typecheck test --affected
       - run: pnpm audit --audit-level high
+      # Every source file carries the SPDX and copyright lines; every package.json is GPL-2.0-or-later.
+      - run: pnpm check:licence
 
   build:
     if: ${{ !github.event.pull_request.draft }}

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { ColumnsIcon } from "@nuvui/icons";
 import { Children } from "react";
 import * as v from "valibot";

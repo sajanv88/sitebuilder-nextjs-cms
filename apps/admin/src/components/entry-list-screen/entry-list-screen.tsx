@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { PlusIcon } from "@nuvui/icons";
 import { Button } from "@nuvui/react";
 import { can, canSome } from "@sitebuilder/auth";

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // The role-to-actions table (design §6.1, §6.2). This plain object is the source of truth:
 // can() reads it, and access-control.ts registers it with Better Auth's admin plugin.
 // `xOwn` is the action `x` restricted to entries or files the actor owns.

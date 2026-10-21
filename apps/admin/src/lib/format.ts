@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { MEDIA_TYPES, type MediaType } from "@sitebuilder/schema";
 
 // 1048576 → "1 MB".

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { randomUUID } from "node:crypto";
 import { AwsClient } from "aws4fetch";
 import { isStorageKey } from "../keys";

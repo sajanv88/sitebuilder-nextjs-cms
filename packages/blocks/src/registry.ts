@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { BlockRule, BlockRules } from "@sitebuilder/schema";
 import { button } from "./blocks/block-button/block-button";
 import { callout } from "./blocks/block-callout/block-callout";

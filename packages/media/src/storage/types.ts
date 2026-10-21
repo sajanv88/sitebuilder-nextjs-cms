@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { MediaStorageKind } from "@sitebuilder/schema";
 
 // A place files are kept (design §9): the server's disk or an S3-compatible bucket.

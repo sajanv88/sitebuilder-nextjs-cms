@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { allowedChildren, blockRules, cloneBlock } from "@sitebuilder/blocks";
 import { type Block, MAX_DEPTH } from "@sitebuilder/schema";
 

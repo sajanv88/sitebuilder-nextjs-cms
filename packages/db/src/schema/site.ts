@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { MenuItem, MenuLocation, SettingsKey, SettingsValue } from "@sitebuilder/schema";
 import { sql } from "drizzle-orm";
 import { check, index, integer, jsonb, snakeCase, text, timestamp } from "drizzle-orm/pg-core";

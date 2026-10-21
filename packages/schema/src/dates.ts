@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import * as v from "valibot";
 
 // How dates are written, and in which time zone (decisions #69). Dates are stored in UTC and

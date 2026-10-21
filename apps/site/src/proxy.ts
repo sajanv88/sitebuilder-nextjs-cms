@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { db, type PublicRoute, resolveRoute } from "@sitebuilder/db";
 import { type NextRequest, NextResponse } from "next/server";
 

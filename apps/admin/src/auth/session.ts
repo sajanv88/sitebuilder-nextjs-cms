@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import "server-only";
 import { type Action, type Actor, can, canSome, type Resource } from "@sitebuilder/auth";
 import { RoleSchema } from "@sitebuilder/schema";

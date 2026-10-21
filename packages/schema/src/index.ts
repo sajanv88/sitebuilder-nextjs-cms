@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // valibot schemas and types shared by both zones and packages/db. Depends on valibot only.
 
 export {

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // Postgres error codes the queries turn into results. Drivers wrap the database error (drizzle
 // in DrizzleQueryError, with the driver's error as `cause`), so the chain is walked.
 

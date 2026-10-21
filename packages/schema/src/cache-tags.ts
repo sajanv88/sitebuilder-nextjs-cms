@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { MenuLocation } from "./menu";
 
 // The tags the site zone's cached reads carry, and that every admin write invalidates

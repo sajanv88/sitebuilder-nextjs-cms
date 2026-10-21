@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { EntryKind } from "@sitebuilder/schema";
 import { beforeEach, describe, expect, it } from "vitest";
 import { redirects } from "../schema/site";

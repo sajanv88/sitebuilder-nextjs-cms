@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { TagStore } from "./tag-store";
 
 // A cache handler for "use cache" (Next's `cacheHandlers.default`, the CacheHandler interface in

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { InfoIcon } from "@nuvui/icons";
 import { Alert, AlertDescription, AlertTitle } from "@nuvui/react";
 import * as v from "valibot";

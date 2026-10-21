@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 "use client";
 
 import { PlusIcon, TrashIcon } from "@nuvui/icons";

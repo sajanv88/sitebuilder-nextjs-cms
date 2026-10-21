@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 "use server";
 
 import { db, deleteEntry, restoreEntry, trashEntry } from "@sitebuilder/db";

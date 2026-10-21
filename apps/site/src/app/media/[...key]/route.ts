@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { db, getMediaByKey, getSettings } from "@sitebuilder/db";
 import { isStorageKey, parseRange, storageFor } from "@sitebuilder/media";
 import { env } from "@/env";

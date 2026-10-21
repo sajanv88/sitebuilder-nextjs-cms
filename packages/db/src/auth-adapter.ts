@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { db } from "./client";
 import { account, rateLimit, session, user, verification } from "./schema/auth-schema";

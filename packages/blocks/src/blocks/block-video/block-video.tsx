@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { VideoIcon } from "@nuvui/icons";
 import { VideoPlayer } from "@nuvui/media/video-player";
 import * as v from "valibot";

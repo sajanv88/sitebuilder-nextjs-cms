@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { Role } from "@sitebuilder/schema";
 import { and, asc, count, eq, ne, sql } from "drizzle-orm";
 import type { Executor } from "../executor";

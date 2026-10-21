@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { Menu, MenuItem } from "@sitebuilder/schema";
 
 // The menu editor's changes, as plain functions over the items (design §5.3): two levels, groups

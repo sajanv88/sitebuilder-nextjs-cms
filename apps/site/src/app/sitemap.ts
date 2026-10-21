@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { archivePath } from "@sitebuilder/schema";
 import type { MetadataRoute } from "next";
 import { connection } from "next/server";

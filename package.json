@@ -18,7 +18,8 @@
     "db:check": "pnpm --filter @sitebuilder/db db:check",
     "db:migrate": "pnpm --filter @sitebuilder/db db:migrate",
     "db:seed": "pnpm --filter @sitebuilder/db db:seed",
-    "db:studio": "pnpm --filter @sitebuilder/db db:studio"
+    "db:studio": "pnpm --filter @sitebuilder/db db:studio",
+    "check:licence": "node scripts/check-licence.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -27,5 +28,6 @@
     "stylelint-config-standard-scss": "catalog:",
     "turbo": "2.11.9"
   },
-  "license": "GPL-2.0-or-later"
+  "license": "GPL-2.0-or-later",
+  "author": "Sajankumar Vijayan"
 }

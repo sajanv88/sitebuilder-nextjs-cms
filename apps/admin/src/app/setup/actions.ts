@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 "use server";
 
 import { bootstrapSite, db } from "@sitebuilder/db";

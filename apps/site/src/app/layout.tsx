@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import "@nuvui/react/styles.css";
 // Every preset is loaded; data-preset on <html> picks one (design §5.4).
 import "@nuvui/react/themes/ember.css";

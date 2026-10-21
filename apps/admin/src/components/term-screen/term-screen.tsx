@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { can } from "@sitebuilder/auth";
 import { db, listTerms } from "@sitebuilder/db";
 import type { TaxonomyKind } from "@sitebuilder/schema";

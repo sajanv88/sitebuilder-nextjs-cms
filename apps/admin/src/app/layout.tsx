@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import "@nuvui/react/styles.css";
 import "@nuvui/date-picker/styles.css";
 import "@nuvui/editor/styles.css";

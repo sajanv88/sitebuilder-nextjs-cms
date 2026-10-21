@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { MediaType } from "@sitebuilder/schema";
 
 // The type of a file, from its first bytes (design §4.2). The name and the browser's header are

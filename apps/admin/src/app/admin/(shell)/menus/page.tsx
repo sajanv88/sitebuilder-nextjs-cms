@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@nuvui/react";
 import { db, getEntryLinks, getMenu, listTermOptions } from "@sitebuilder/db";
 import type { Menu, MenuLocation } from "@sitebuilder/schema";

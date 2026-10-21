@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // The migration runner the Kubernetes Job executes: `node packages/db/dist/migrate.mjs`.
 // `pnpm build` bundles this file with drizzle-orm and pg into dist/migrate.mjs, because the
 // Next.js standalone image doesn't contain drizzle-orm's migrator. It needs only that file,

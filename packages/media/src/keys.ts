@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { randomUUID } from "node:crypto";
 
 // Where a file is stored (design §4.2): yyyy/mm/<uuid>-<sanitised-filename>. The uuid makes each

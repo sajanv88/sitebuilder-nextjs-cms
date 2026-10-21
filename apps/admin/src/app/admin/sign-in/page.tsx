@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { Alert, AlertDescription } from "@nuvui/react";
 import { countUsers, db } from "@sitebuilder/db";
 import type { Metadata } from "next";

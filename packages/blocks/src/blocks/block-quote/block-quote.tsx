@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { QuoteIcon } from "@nuvui/icons";
 import * as v from "valibot";
 import { optionalText, text } from "../../shared";

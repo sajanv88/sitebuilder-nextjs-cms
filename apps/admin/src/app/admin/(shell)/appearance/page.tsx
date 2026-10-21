@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // The presets, for the preview and the swatches. Each does nothing until an element names it
 // with data-preset, so loading them here changes no other screen.
 import "@nuvui/react/themes/ember.css";

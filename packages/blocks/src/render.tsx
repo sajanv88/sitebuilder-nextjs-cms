@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { AlertTriangleIcon } from "@nuvui/icons";
 import type { Block } from "@sitebuilder/schema";
 import type { ComponentType, ReactNode } from "react";

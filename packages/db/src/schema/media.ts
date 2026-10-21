@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import type { MediaStorageKind, MediaType } from "@sitebuilder/schema";
 import { index, integer, snakeCase, text, uniqueIndex } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";

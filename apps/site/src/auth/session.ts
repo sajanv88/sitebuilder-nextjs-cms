@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import "server-only";
 import type { Actor } from "@sitebuilder/auth";
 import { type Auth, createAuth } from "@sitebuilder/auth/server";

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { permissions, type ResourceType, type Role, type RolePermissions } from "./permissions";
 
 // The one permission check (design §6.4). Every server action, route handler and admin page

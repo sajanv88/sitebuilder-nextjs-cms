@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { TypeIcon } from "@nuvui/icons";
 import * as v from "valibot";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";

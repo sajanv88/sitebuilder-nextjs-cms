@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // The block registry and the renderer (design §5.5, §8), used by both zones: the admin zone's
 // editor and the site zone's pages. Server-only checks are in "@sitebuilder/blocks/server".
 

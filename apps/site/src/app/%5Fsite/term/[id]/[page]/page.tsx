@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { archivePath, listPagePath, Uuid } from "@sitebuilder/schema";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { can } from "@sitebuilder/auth";
 import { db, getEntryForEdit, getReading } from "@sitebuilder/db";
 import { Uuid } from "@sitebuilder/schema";

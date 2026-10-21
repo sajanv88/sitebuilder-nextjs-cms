@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // The package's public surface for apps: the database, inferred types, query functions and
 // Better Auth's adapter. Never the pool, never drizzle-kit, and not the tables: queries live in
 // this package. drizzle-kit reads the tables through the "./schema" export instead.

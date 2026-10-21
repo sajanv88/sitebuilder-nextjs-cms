@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { Button } from "@nuvui/react";
 
 // Unknown and unpublished paths, answered with a 404 (src/proxy.ts). Inside the site's own

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // Non-interactive first admin (design §8.1): `node packages/db/dist/create-admin.mjs [--force]`.
 // Reads ADMIN_EMAIL, ADMIN_NAME and ADMIN_PASSWORD (script inputs, not app config) plus
 // DATABASE_URL and SITE_URL. Does what /setup does: the admin, the default settings and the two

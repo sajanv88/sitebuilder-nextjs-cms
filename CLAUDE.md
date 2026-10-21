@@ -8,6 +8,12 @@ A self-hosted, WordPress-style CMS: two Next.js 16 apps as Multi-Zones (`apps/si
 
 ## Ground rules
 
+- **Licence notice on every new source file.** Every `.ts`, `.tsx`, `.mts`, `.js`, `.mjs`, `.scss` file you create starts with these two lines (after a shebang, if any), then a blank line; `.css` uses the `/* … */` form. A `"use client"` or `"use server"` directive goes after them, unchanged. Generated files (`auth-schema.ts`, migrations, `next-env.d.ts`) are left alone. `pnpm check:licence` checks it, in CI too.
+
+  ```ts
+  // SPDX-License-Identifier: GPL-2.0-or-later
+  // Copyright (C) 2026 Sajankumar Vijayan
+  ```
 - **pnpm only.** Never write `npm`, `npx` or `yarn` in a file, script or command. Use `pnpm`, `pnpm dlx`, `pnpm exec`. Add dependencies to the workspace `catalog:` in `pnpm-workspace.yaml` and reference them as `"catalog:"`.
 - **Node 26**, the exact version in `.node-version`. The Dockerfile base and CI use the same version.
 - **Biome formats and lints** everything except SCSS. Don't add ESLint or Prettier. A plugin hook runs `biome check --write` on each file Claude edits.

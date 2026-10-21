@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 import { Alert, AlertActions, AlertDescription, AlertTitle, Button } from "@nuvui/react";
 import "./preview-bar.scss";
 

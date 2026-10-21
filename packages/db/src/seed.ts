@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
 // Local development data: `pnpm db:seed`. Idempotent, so it's safe to run again: rows that
 // already exist are left alone. Never run it against production. Users come from /setup or
 // create-admin, not from here.
