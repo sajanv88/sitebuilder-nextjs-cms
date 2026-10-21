@@ -1,0 +1,102 @@
+@use "abstracts" as a;
+
+// One column on a phone. From lg, the sections and the list of them beside, as nuvui's
+// article block.
+.settings-layout {
+  display: grid;
+  gap: a.space(10);
+
+  @include a.breakpoint("lg") {
+    grid-template-columns: minmax(0, 1fr) 13rem;
+  }
+
+  &__main {
+    display: grid;
+    gap: a.space(10);
+    align-content: start;
+    min-inline-size: 0;
+  }
+
+  // The list behind a button is for a narrow screen only.
+  &__drawer {
+    @include a.breakpoint("lg") {
+      display: none;
+    }
+  }
+
+  &__toggle {
+    justify-content: space-between;
+    inline-size: 100%;
+  }
+
+  &__contents {
+    padding-block-start: a.space(3);
+  }
+
+  // Heading and text above the card on a phone; beside it from xl.
+  &__section {
+    display: grid;
+    gap: a.space(4);
+
+    @include a.breakpoint("xl") {
+      grid-template-columns: 16rem minmax(0, 1fr);
+      gap: a.space(8);
+      align-items: start;
+    }
+  }
+
+  &__intro {
+    display: grid;
+    gap: a.space(1);
+    align-content: start;
+  }
+
+  // A heading a link jumps to stops below the sticky bar.
+  &__heading {
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    scroll-margin-block-start: a.space(24);
+  }
+
+  &__text {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  &__card {
+    min-inline-size: 0;
+    padding: a.space(5);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    color: var(--color-surface-foreground);
+    box-shadow: var(--shadow-xs);
+
+    @include a.breakpoint("md") {
+      padding: a.space(6);
+    }
+  }
+
+  // Beside the sections, staying in view while they scroll.
+  &__side {
+    display: none;
+
+    @include a.breakpoint("lg") {
+      position: sticky;
+      inset-block-start: a.space(20);
+      display: grid;
+      gap: a.space(3);
+      align-content: start;
+      align-self: start;
+    }
+  }
+
+  &__label {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+}

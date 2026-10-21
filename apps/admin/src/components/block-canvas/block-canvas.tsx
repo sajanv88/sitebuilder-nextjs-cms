@@ -2,7 +2,7 @@
 
 import { ColumnsIcon } from "@nuvui/icons";
 import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@nuvui/react";
-import { type BlockFrameProps, BlockList } from "@sitebuilder/blocks";
+import { type BlockFrameProps, BlockList, headingBlockId } from "@sitebuilder/blocks";
 import type { Block } from "@sitebuilder/schema";
 import { createContext, useContext, useEffect, useRef } from "react";
 import { useEditorData } from "@/components/block-editor/editor-data";
@@ -75,7 +75,12 @@ export function BlockCanvas({
         </Empty>
       ) : (
         <Selection.Provider value={{ selectedId, issueIds }}>
-          <BlockList blocks={blocks} context={context} frame={Frame} />
+          {/* A hero that opens the page holds its h1, as on the site (decisions #68). */}
+          <BlockList
+            blocks={blocks}
+            context={{ ...context, headingBlockId: headingBlockId(blocks) }}
+            frame={Frame}
+          />
         </Selection.Provider>
       )}
     </div>

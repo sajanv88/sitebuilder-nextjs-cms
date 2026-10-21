@@ -4,7 +4,9 @@ import { db, deleteEntry, restoreEntry, trashEntry } from "@sitebuilder/db";
 import { Uuid } from "@sitebuilder/schema";
 import * as v from "valibot";
 import { getViewer } from "@/auth/session";
+import type { ActionName } from "@/server/action-effects";
 import { authorizeEntry } from "@/server/entries";
+import { invalidate } from "@/server/invalidate";
 
 // Actions on rows of the Posts and Pages lists. Each id is checked on its own: a request can
 // carry any ids, whatever the list showed. `trash` covers trashing and restoring (§6.1);
@@ -21,7 +23,9 @@ type Outcome = { ok: boolean; note?: string };
 async function forEach(
   input: unknown,
   verb: "trash" | "delete",
-  run: (id: string) => Promise<Outcome>,
+  each: (id: string) => Promise<Outcome>,
+  // The entries that changed, for invalidating the public site.
+  changed: string[],
 ): Promise<ListActionResult> {
   const viewer = await getViewer();
   if (!viewer) return { ok: false, error: "Your session has ended. Sign in again." };
@@ -32,19 +36,35 @@ async function forEach(
   const notes: string[] = [];
   for (const id of new Set(ids.output)) {
     if (!(await authorizeEntry(viewer, id, verb))) continue;
-    const outcome = await run(id);
+    const outcome = await each(id);
     if (outcome.note && !notes.includes(outcome.note)) notes.push(outcome.note);
-    if (outcome.ok) done += 1;
+    if (outcome.ok) {
+      done += 1;
+      changed.push(id);
+    }
   }
   return { ok: true, done, skipped: ids.output.length - done, notes };
 }
 
+// Runs one list action and invalidates the entries it changed.
+async function run(
+  action: Extract<ActionName, "trashEntries" | "restoreEntries" | "deleteEntries">,
+  ids: unknown,
+  verb: "trash" | "delete",
+  each: (id: string) => Promise<Outcome>,
+): Promise<ListActionResult> {
+  const changed: string[] = [];
+  const result = await forEach(ids, verb, each, changed);
+  if (changed.length > 0) invalidate(action, { entryIds: changed });
+  return result;
+}
+
 export async function trashEntries(ids: unknown): Promise<ListActionResult> {
-  return forEach(ids, "trash", async (id) => trashEntry(db, id));
+  return run("trashEntries", ids, "trash", async (id) => trashEntry(db, id));
 }
 
 export async function restoreEntries(ids: unknown): Promise<ListActionResult> {
-  return forEach(ids, "trash", async (id) => {
+  return run("restoreEntries", ids, "trash", async (id) => {
     const result = await restoreEntry(db, id);
     if (!result.ok) return { ok: false };
     return result.asDraft
@@ -54,7 +74,7 @@ export async function restoreEntries(ids: unknown): Promise<ListActionResult> {
 }
 
 export async function deleteEntries(ids: unknown): Promise<ListActionResult> {
-  return forEach(ids, "delete", async (id) => {
+  return run("deleteEntries", ids, "delete", async (id) => {
     const result = await deleteEntry(db, id);
     if (result.ok) return { ok: true };
     return result.error === "has-children"

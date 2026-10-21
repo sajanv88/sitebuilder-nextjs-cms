@@ -2,11 +2,41 @@
 
 .media-details {
   display: grid;
-  gap: a.space(6);
+  gap: a.space(4);
   align-content: start;
 
   &__loading {
     block-size: 12rem;
+  }
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2) a.space(3);
+    align-items: center;
+  }
+
+  &__name {
+    min-inline-size: 0;
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-semibold);
+    overflow-wrap: anywhere;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+  }
+
+  // Under everything else, with a line to set it apart, as in nuvui's file-browser block.
+  &__danger {
+    display: grid;
+    gap: a.space(2);
+    justify-items: start;
+    padding-block-start: a.space(4);
+    border-block-start: var(--nuv-border-width) solid var(--color-border);
   }
 
   &__preview {
@@ -56,7 +86,7 @@
   }
 
   &__note {
-    margin: a.space(2) 0 0;
+    margin: 0;
     color: var(--color-muted-foreground);
     font-size: var(--text-sm);
   }

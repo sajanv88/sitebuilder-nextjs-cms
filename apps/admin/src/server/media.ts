@@ -2,6 +2,7 @@ import "server-only";
 import type { RenderMedia } from "@sitebuilder/blocks";
 import { db, getMediaForRender, getSettings } from "@sitebuilder/db";
 import {
+  mediaUrl,
   type StorageResult,
   type StorageSources,
   storageFor,
@@ -32,9 +33,7 @@ export function storageProblem(reason: "secret-unreadable" | "not-configured"): 
     : "This file is stored in S3, but no S3 storage is set up any more. An admin can set it up in Settings → Media storage.";
 }
 
-// Every file is served by the site zone at /media/<key>, whichever storage holds it
-// (decisions #47), so the address is the same on both zones.
-export const mediaUrl = (storageKey: string): string => `/media/${storageKey}`;
+export { mediaUrl };
 
 // The files a list of blocks uses, ready for the renderer.
 export async function renderMedia(ids: readonly string[]): Promise<Record<string, RenderMedia>> {

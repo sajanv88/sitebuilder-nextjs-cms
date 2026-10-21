@@ -69,6 +69,9 @@ export function MediaStorageForm({
   useEffect(() => {
     if (saved.result === "saved" && saved.message && saved.at) {
       toast(saved.message, { intent: "success", id: `storage-${saved.at}` });
+      // React resets the form after its action, and the choice follows the reset back to its
+      // first value: put the saved one back.
+      setDriver(saved.values.driver);
     }
     if (saved.result === "confirm") setConfirmOpen(true);
   }, [saved]);

@@ -1,27 +1,76 @@
 @use "abstracts" as a;
 
-// Fluid: it fills the page area up to --app-content-max-width, then stays that wide in the
-// middle of a larger screen.
+// The header runs edge to edge with a line under it, as nuvui's page-header block; its content
+// and the screen's content share one width, centred on a wide window.
 .admin-page {
+  --admin-page-width: var(--app-content-max-width);
+
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: a.space(6);
   align-content: start;
-  max-inline-size: var(--app-content-max-width);
-  margin-inline: auto;
-  padding: a.space(4);
 
-  @include a.breakpoint("md") {
-    padding: a.space(8);
+  &--narrow {
+    --admin-page-width: 52rem;
   }
 
-  // The title, and the actions beside it once there's room; under it before that.
-  &__head {
+  &--wide {
+    --admin-page-width: 96rem;
+  }
+
+  &__header {
+    padding: a.space(6) a.space(4);
+    border-block-end: var(--nuv-border-width) solid var(--color-border);
+    background-color: var(--color-background);
+
+    @include a.breakpoint("md") {
+      padding: a.space(8);
+    }
+  }
+
+  &__inner {
+    display: grid;
+    gap: a.space(5);
+    inline-size: 100%;
+    max-inline-size: var(--admin-page-width);
+    margin-inline: auto;
+  }
+
+  // The title on one side and the actions on the other, once there's room.
+  &__row {
+    display: grid;
+    gap: a.space(5);
+
+    @include a.breakpoint("md") {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+    }
+  }
+
+  &__about {
+    display: grid;
+    gap: a.space(2);
+  }
+
+  &__heading {
     display: flex;
     flex-wrap: wrap;
-    gap: a.space(4);
+    gap: a.space(2) a.space(3);
     align-items: center;
-    justify-content: space-between;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: clamp(1.5rem, 1.25rem + 1.2vw, 2rem);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    overflow-wrap: anywhere;
+  }
+
+  &__description {
+    max-inline-size: 65ch;
+    margin: 0;
+    color: var(--color-muted-foreground);
   }
 
   &__actions {
@@ -30,14 +79,46 @@
     gap: a.space(2);
   }
 
-  &__title {
+  &__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(4) a.space(10);
     margin: 0;
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-semibold);
-    line-height: var(--leading-tight);
-    letter-spacing: var(--tracking-tight);
+    padding-block-start: a.space(5);
+    border-block-start: var(--nuv-border-width) solid var(--color-border);
   }
 
+  &__fact {
+    display: grid;
+    gap: a.space(1);
+  }
+
+  &__label {
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  &__value {
+    margin: 0;
+    font-weight: var(--font-weight-medium);
+  }
+
+  &__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: a.space(6);
+    align-content: start;
+
+    // The side padding grows to centre the content at the page's width, so it lines up with
+    // the header's at every width.
+    padding: a.space(6) max(#{a.space(4)}, calc((100% - var(--admin-page-width)) / 2));
+
+    @include a.breakpoint("md") {
+      padding: a.space(8) max(#{a.space(8)}, calc((100% - var(--admin-page-width)) / 2));
+    }
+  }
+
+  // A line of text in the content, such as a note under a list.
   &__text {
     margin: 0;
     color: var(--color-muted-foreground);

@@ -1,5 +1,6 @@
 "use server";
 
+import { can } from "@sitebuilder/auth";
 import { validateContent } from "@sitebuilder/blocks/server";
 import {
   autosaveEntry,
@@ -31,7 +32,6 @@ import {
 import type { Route } from "next";
 import { redirect } from "next/navigation";
 import * as v from "valibot";
-import { can } from "@/auth/can";
 import { getViewer, type Viewer } from "@/auth/session";
 import { issueTarget } from "@/components/block-editor/editor-model";
 import {
@@ -43,6 +43,7 @@ import {
   toEditorValues,
 } from "@/components/entry-editor/editor-state";
 import { authorizeEntry } from "@/server/entries";
+import { invalidate } from "@/server/invalidate";
 
 // The editor's actions. Each one: who's asking → valibot → can() against the entry → query.
 
@@ -229,6 +230,7 @@ export async function saveEntry(prev: EditorState, form: FormData): Promise<Edit
     if (!result.ok) return writeFailure(fail, result.error);
     saved = result;
   }
+  invalidate("saveEntry", { entryIds: [saved.id] });
 
   if (intent !== "save") {
     const status = await setEntryStatus(db, {
@@ -240,6 +242,7 @@ export async function saveEntry(prev: EditorState, form: FormData): Promise<Edit
       writeRevision: false,
     });
     if (!status.ok) return writeFailure(fail, status.error);
+    invalidate("saveEntry", { entryIds: [saved.id] });
   }
 
   if (!id) redirect(`/admin/${type}s/${saved.id}?created=1` as Route);
@@ -455,7 +458,10 @@ export async function restoreEntryRevision(
     expectedUpdatedAt: updatedAt,
     actorId: viewer.id,
   });
-  if (result.ok) return { ok: true };
+  if (result.ok) {
+    invalidate("restoreEntryRevision", { entryIds: [entryId] });
+    return { ok: true };
+  }
   return {
     ok: false,
     error:
@@ -480,5 +486,6 @@ export async function createTermFromEditor(
   if (!parsed.success) return { ok: false, error: "Enter a name of up to 80 characters." };
   const result = await createTerm(db, { ...parsed.output, slug: "" });
   if (!result.ok) return { ok: false, error: "That term couldn't be added." };
+  invalidate("createTermFromEditor");
   return { ok: true, term: { id: result.term.id, name: result.term.name } };
 }

@@ -4,6 +4,7 @@ import type { PostSummary, RenderContext, RenderMedia } from "@sitebuilder/block
 import type { LinkTarget } from "@sitebuilder/schema";
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import type { LinkOption } from "@/actions/entry-editor";
+import { useDateSettings } from "@/components/date-settings/date-settings";
 
 // What the editor knows beyond the blocks: the files and entries they point at (so the canvas
 // can draw them and the inspector can name them), the latest posts, the terms, and whether the
@@ -43,6 +44,7 @@ export function EditorDataProvider({
     setLinks((now) => ({ ...now, [link.id]: link }));
   }, []);
 
+  const dates = useDateSettings();
   const value = useMemo<EditorDataValue>(() => {
     const context: RenderContext = {
       media: (id) => media[id],
@@ -51,9 +53,12 @@ export function EditorDataProvider({
         target.kind === "url" ? target.url : links[target.entryId]?.path,
       posts: initial.posts,
       editing: true,
+      dates,
+      // The canvas sets it from the blocks it draws (block-canvas.tsx).
+      headingBlockId: null,
     };
     return { ...initial, media, links, addMedia, addLink, context };
-  }, [initial, media, links, addMedia, addLink]);
+  }, [initial, media, links, addMedia, addLink, dates]);
 
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

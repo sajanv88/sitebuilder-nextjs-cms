@@ -1,5 +1,6 @@
 "use server";
 
+import { can } from "@sitebuilder/auth";
 import {
   countMediaByStorage,
   db,
@@ -16,11 +17,10 @@ import {
   uploadStorage,
 } from "@sitebuilder/media";
 import { type Env, MediaStorageInput, type MediaStorageSettings } from "@sitebuilder/schema";
-import { updateTag } from "next/cache";
 import * as v from "valibot";
-import { can } from "@/auth/can";
 import { getViewer } from "@/auth/session";
 import { env } from "@/env";
+import { invalidate } from "@/server/invalidate";
 
 // Settings → Media storage (decisions #45), admins only (settings.update, design §6.2). Both
 // actions check the connection first: Test reports it, Save refuses to switch to storage that
@@ -200,7 +200,7 @@ async function save(form: FormData): Promise<StorageFormState> {
   } else {
     await deleteSettings(db, "media");
   }
-  updateTag("settings");
+  invalidate("saveStorage");
   return {
     result: "saved",
     message: "Media storage saved. New uploads go there.",

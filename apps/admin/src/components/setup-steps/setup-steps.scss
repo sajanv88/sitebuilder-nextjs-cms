@@ -1,0 +1,61 @@
+@use "abstracts" as a;
+
+.setup-steps {
+  &__body {
+    display: grid;
+    gap: a.space(5);
+  }
+
+  &__progress {
+    display: grid;
+    gap: a.space(2);
+  }
+
+  &__count {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  &__list {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  // The mark, the words, and the step's button at the far end.
+  &__step {
+    display: grid;
+    gap: a.space(3);
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    padding-block: a.space(3);
+  }
+
+  &__done {
+    color: var(--color-success);
+  }
+
+  &__todo {
+    color: var(--color-muted-foreground);
+  }
+
+  &__words {
+    display: grid;
+    gap: a.space(0.5);
+  }
+
+  &__name {
+    font-weight: var(--font-weight-medium);
+  }
+
+  &__hint {
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+}
+
+// A line between steps.
+.setup-steps__step + .setup-steps__step {
+  border-block-start: var(--nuv-border-width) solid var(--color-border);
+}

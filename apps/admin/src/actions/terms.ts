@@ -1,10 +1,11 @@
 "use server";
 
+import { can } from "@sitebuilder/auth";
 import { createTerm, db, deleteTerm, updateTerm } from "@sitebuilder/db";
 import { TAXONOMIES, TermInput, Uuid } from "@sitebuilder/schema";
 import * as v from "valibot";
-import { can } from "@/auth/can";
 import { getViewer } from "@/auth/session";
+import { invalidate } from "@/server/invalidate";
 
 // The Categories and Tags screens (design §4.3). Making and renaming terms is term.create and
 // term.update; deleting is term.delete (§6.1).
@@ -63,6 +64,7 @@ export async function saveTerm(_: TermFormState, form: FormData): Promise<TermFo
         })
       : fail("failed", "It no longer exists. Reload the page.");
   }
+  invalidate("saveTerm");
   return {
     result: "saved",
     message: id ? `Saved ${result.term.name}.` : `Added ${result.term.name}.`,
@@ -80,5 +82,7 @@ export async function removeTerm(
     return { ok: false, error: "It couldn't be deleted." };
   }
   const result = await deleteTerm(db, parsed.output);
-  return result.ok ? { ok: true } : { ok: false, error: "It no longer exists." };
+  if (!result.ok) return { ok: false, error: "It no longer exists." };
+  invalidate("removeTerm");
+  return { ok: true };
 }

@@ -1,0 +1,45 @@
+@use "abstracts" as a;
+
+.settings-forms {
+  display: grid;
+  gap: a.space(5);
+
+  // Two fields side by side from md; one above the other on a phone.
+  &__pair {
+    display: grid;
+    gap: a.space(5);
+
+    @include a.breakpoint("md") {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  &__choices {
+    display: grid;
+    gap: a.space(2);
+  }
+
+  &__label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  &__cards {
+    display: grid;
+    gap: a.space(3);
+
+    @include a.breakpoint("md") {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  &__error {
+    margin: 0;
+    color: var(--color-danger);
+    font-size: var(--text-sm);
+  }
+
+  &__submit {
+    justify-self: start;
+  }
+}

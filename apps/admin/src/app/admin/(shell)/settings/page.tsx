@@ -1,6 +1,6 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@nuvui/react";
-import { db, getSettings } from "@sitebuilder/db";
+import { DEFAULT_READING, db, getSettings, listPublishedPages } from "@sitebuilder/db";
 import { describeEnvironment, openSecret } from "@sitebuilder/media";
+import { defaultSettings, timeZoneNames } from "@sitebuilder/schema";
 import type { Metadata } from "next";
 import type { StorageFormValues } from "@/actions/media-storage";
 import { requirePermission } from "@/auth/session";
@@ -9,16 +9,30 @@ import {
   type EnvironmentSummary,
   MediaStorageForm,
 } from "@/components/media-storage-form/media-storage-form";
+import { DatesForm, ReadingForm, SiteForm } from "@/components/settings-forms/settings-forms";
+import { SettingsLayout, SettingsSection } from "@/components/settings-layout/settings-layout";
 import { env } from "@/env";
-import "./settings.scss";
+import { LATEST_POSTS } from "@/lib/reading";
 
 export const metadata: Metadata = { title: "Settings" };
 
-// Settings (design §8). Phase 3 brings the first section, Media storage (decisions #45); the
-// site, reading and date settings come in phase 4.
+// The page's sections, for its contents list and the sidebar's links (admin-nav.tsx).
+const SECTIONS = [
+  { id: "site", title: "Site" },
+  { id: "reading", title: "Reading" },
+  { id: "dates", title: "Dates" },
+  { id: "media-storage", title: "Media storage" },
+];
+
+// Settings (design §5.4, §8): the site, reading, dates, and media storage (decisions #45).
+// Admins only.
 export default async function SettingsPage() {
   await requirePermission("settings.update");
   const config = env();
+  const defaults = defaultSettings(config.SITE_URL);
+  const site = (await getSettings(db, "site")) ?? defaults.site;
+  const reading = (await getSettings(db, "reading")) ?? DEFAULT_READING;
+  const pages = await listPublishedPages(db);
   const saved = await getSettings(db, "media");
 
   const described = describeEnvironment(config);
@@ -54,21 +68,59 @@ export default async function SettingsPage() {
         : "saved";
 
   return (
-    <AdminPage title="Settings">
-      <Card className="settings__card">
-        <CardHeader>
-          <CardTitle asChild>
-            <h2>Media storage</h2>
-          </CardTitle>
-          <CardDescription>
-            Where uploaded images, videos and documents are kept. Files already uploaded stay where
-            they are when this changes.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+    <AdminPage
+      title="Settings"
+      description="How the site is named, what visitors see first, how dates are written, and where uploads are kept."
+      trail={[]}
+    >
+      <SettingsLayout sections={SECTIONS}>
+        <SettingsSection
+          id="site"
+          title="Site"
+          description="The site's name and tagline, its language, and the address visitors use."
+        >
+          <SiteForm
+            initial={{
+              title: site.title,
+              tagline: site.tagline,
+              language: site.language,
+              siteUrl: site.siteUrl,
+            }}
+          />
+        </SettingsSection>
+        <SettingsSection
+          id="reading"
+          title="Reading"
+          description="What the site's address shows, and where and how posts are listed."
+        >
+          <ReadingForm
+            initial={{
+              homepage: reading.homepageEntryId ?? LATEST_POSTS,
+              postsPerPage: String(reading.postsPerPage),
+              postsPath: reading.postsPath,
+            }}
+            pages={pages}
+          />
+        </SettingsSection>
+        <SettingsSection
+          id="dates"
+          title="Dates"
+          description="How dates are written on the site and here, and the time zone they're in."
+        >
+          <DatesForm
+            initial={{ dateFormat: site.dateFormat, timeZone: site.timeZone }}
+            zones={timeZoneNames()}
+            language={site.language}
+          />
+        </SettingsSection>
+        <SettingsSection
+          id="media-storage"
+          title="Media storage"
+          description="Where uploaded images, videos and documents are kept. Files already uploaded stay where they are when this changes."
+        >
           <MediaStorageForm initial={initial} environment={environment} secret={secret} />
-        </CardContent>
-      </Card>
+        </SettingsSection>
+      </SettingsLayout>
     </AdminPage>
   );
 }

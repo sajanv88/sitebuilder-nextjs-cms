@@ -1,12 +1,12 @@
 "use server";
 
+import { can } from "@sitebuilder/auth";
 import { db, deleteUser, setUserBanned, setUserRole } from "@sitebuilder/db";
 import { NewUserInput, Password, RoleSchema, UserId } from "@sitebuilder/schema";
 import { isAPIError } from "better-auth/api";
 import { headers } from "next/headers";
 import * as v from "valibot";
 import { auth } from "@/auth/auth";
-import { can } from "@/auth/can";
 import { getViewer, type Viewer } from "@/auth/session";
 
 // The Users screen (design §6, §6.3), admin only by the permissions table. Creating a user and

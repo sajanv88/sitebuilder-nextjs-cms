@@ -9,7 +9,15 @@ export const metadata: Metadata = { title: "My account" };
 export default async function AccountPage() {
   const viewer = await requireViewer();
   return (
-    <AdminPage title="My account">
+    <AdminPage
+      title="My account"
+      description="Your name as others see it, and the password you sign in with."
+      width="narrow"
+      facts={[
+        { label: "Email", value: viewer.email },
+        { label: "Role", value: viewer.role[0]?.toUpperCase() + viewer.role.slice(1) },
+      ]}
+    >
       <AccountForms name={viewer.name} email={viewer.email} />
     </AdminPage>
   );

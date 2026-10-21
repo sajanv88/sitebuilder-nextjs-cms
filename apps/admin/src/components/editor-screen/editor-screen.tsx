@@ -1,3 +1,4 @@
+import { can } from "@sitebuilder/auth";
 import { collectEntryIds, collectMediaIds } from "@sitebuilder/blocks";
 import {
   db,
@@ -12,7 +13,6 @@ import { type BlockList, type EntryKind, Uuid } from "@sitebuilder/schema";
 import type { Route } from "next";
 import { notFound, redirect } from "next/navigation";
 import * as v from "valibot";
-import { can } from "@/auth/can";
 import { requireViewer } from "@/auth/session";
 import type { EditorData } from "@/components/block-editor/editor-data";
 import {

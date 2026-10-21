@@ -45,7 +45,7 @@ import {
   restoreEntries,
   trashEntries,
 } from "@/actions/entry-list";
-import { formatDateTime } from "@/lib/dates";
+import { useFormatDateTime } from "@/components/date-settings/date-settings";
 import "./entry-table.scss";
 
 // The Posts and Pages lists, from nuvui's table-toolbar block, as a DataTable in server mode.
@@ -92,7 +92,7 @@ function search(query: EntryListQuery): string {
   return text ? `?${text}` : "";
 }
 
-function dateLine(row: EntryListRow): string {
+function dateLine(row: EntryListRow, formatDateTime: (date: Date) => string): string {
   if (row.deletedAt) return `Trashed ${formatDateTime(row.deletedAt)}`;
   if (row.status === "published" && row.publishedAt) {
     return `Published ${formatDateTime(row.publishedAt)}`;
@@ -118,6 +118,7 @@ export function EntryTable({
   query: EntryListQuery;
   allowed: { trash: boolean; delete: boolean };
 }) {
+  const formatDateTime = useFormatDateTime();
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
@@ -208,7 +209,7 @@ export function EntryTable({
             );
           },
         }),
-        helper.accessor((row) => dateLine(row), { id: "date", header: "Date" }),
+        helper.accessor((row) => dateLine(row, formatDateTime), { id: "date", header: "Date" }),
         helper.display({
           id: "actions",
           header: "Actions",
@@ -264,7 +265,7 @@ export function EntryTable({
           },
         }),
       ]),
-    [type, base, inTrash, allowed.trash, allowed.delete, run],
+    [type, base, inTrash, allowed.trash, allowed.delete, run, formatDateTime],
   );
 
   const table = useDataTable({

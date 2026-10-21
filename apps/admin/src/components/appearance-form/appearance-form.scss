@@ -1,0 +1,161 @@
+@use "abstracts" as a;
+
+// The settings, then the preview beside them from xl; one above the other below it.
+.appearance-form {
+  display: grid;
+  gap: a.space(8);
+  align-items: start;
+
+  @include a.breakpoint("xl") {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+
+  &__settings {
+    display: grid;
+    gap: a.space(8);
+  }
+
+  &__section {
+    display: grid;
+    gap: a.space(3);
+  }
+
+  &__heading {
+    margin: 0;
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &__note {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  &__presets {
+    display: grid;
+    gap: a.space(3);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  }
+
+  // Three colors of the preset, read from its own tokens through data-preset.
+  &__swatches {
+    display: flex;
+    gap: a.space(1);
+    margin-block-end: a.space(2);
+  }
+
+  &__swatch {
+    inline-size: a.space(6);
+    block-size: a.space(6);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-sm);
+  }
+
+  &__swatch--primary {
+    background-color: var(--color-primary);
+  }
+
+  &__swatch--muted {
+    background-color: var(--color-muted);
+  }
+
+  &__swatch--border {
+    background-color: var(--color-background);
+  }
+
+  &__pair {
+    display: grid;
+    gap: a.space(6);
+
+    @include a.breakpoint("md") {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  &__tokens {
+    display: grid;
+    gap: a.space(4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  // Token, light, dark and remove in a row from md; stacked on a phone.
+  &__token {
+    display: grid;
+    gap: a.space(2) a.space(3);
+    align-items: end;
+
+    @include a.breakpoint("md") {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    }
+  }
+
+  &__remove {
+    justify-self: start;
+  }
+
+  &__problem {
+    margin: 0;
+    color: var(--color-danger);
+    font-size: var(--text-sm);
+    grid-column: 1 / -1;
+  }
+
+  &__add,
+  &__save {
+    justify-self: start;
+  }
+
+  &__preview-wrap {
+    display: grid;
+    gap: a.space(3);
+
+    @include a.breakpoint("xl") {
+      position: sticky;
+      inset-block-start: a.space(4);
+    }
+  }
+
+  &__preview-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(3);
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  // Its own theme, from data-preset, data-theme and data-density on it.
+  &__preview {
+    display: grid;
+    gap: a.space(4);
+    padding: a.space(6);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+
+  &__preview-title {
+    margin: 0;
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-bold);
+  }
+
+  &__preview-text {
+    margin: 0;
+  }
+
+  &__preview-muted {
+    color: var(--color-muted-foreground);
+  }
+
+  &__preview-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+    align-items: center;
+  }
+}

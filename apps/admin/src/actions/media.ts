@@ -1,5 +1,6 @@
 "use server";
 
+import { type Action, can } from "@sitebuilder/auth";
 import {
   db,
   deleteMedia,
@@ -12,8 +13,8 @@ import {
 } from "@sitebuilder/db";
 import { MediaAlt, MediaId, MediaListQuery } from "@sitebuilder/schema";
 import * as v from "valibot";
-import { type Action, can } from "@/auth/can";
 import { getViewer, type Viewer } from "@/auth/session";
+import { invalidate } from "@/server/invalidate";
 import { mediaUrl, storageOfFile } from "@/server/media";
 
 // The media library (design §4.2, §8). Authors manage only their own files (media.readOwn,
@@ -133,6 +134,7 @@ export async function saveAlt(_: AltState, form: FormData): Promise<AltState> {
   }
   const updated = await updateMediaAlt(db, row.id, parsed.output);
   if (!updated.ok) return { result: "failed", message: NOT_FOUND, alt };
+  invalidate("saveAlt");
   return { result: "saved", message: "Alt text saved.", alt: parsed.output, at: Date.now() };
 }
 
@@ -158,6 +160,7 @@ export async function deleteMediaFile(id: unknown): Promise<DeleteMediaResult> {
         }
       : { ok: false, error: NOT_FOUND };
   }
+  invalidate("deleteMediaFile");
 
   const storage = await storageOfFile(deleted.storage);
   try {

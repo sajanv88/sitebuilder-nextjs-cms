@@ -1,0 +1,116 @@
+@use "abstracts" as a;
+
+.menu-editor {
+  display: grid;
+  gap: a.space(4);
+
+  &__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2) a.space(3);
+    align-items: center;
+  }
+
+  &__state {
+    margin-inline-start: auto;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  // One under the other on a phone; from md the tree at a width that suits labels and the
+  // details with the rest, as in nuvui's file-browser block.
+  &__panes {
+    display: grid;
+    gap: a.space(4);
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+
+    @include a.breakpoint("md") {
+      gap: a.space(6);
+      grid-template-columns: 20rem minmax(0, 1fr);
+    }
+  }
+
+  &__tree-pane {
+    display: grid;
+    gap: a.space(3);
+  }
+
+  &__tree {
+    padding: a.space(2);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  &__empty {
+    border: var(--nuv-border-width) dashed var(--color-border-strong);
+    border-radius: var(--radius-lg);
+  }
+
+  &__hint {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  &__row {
+    display: inline-flex;
+    gap: a.space(2);
+    align-items: center;
+    min-inline-size: 0;
+  }
+
+  &__icon {
+    flex: none;
+    color: var(--color-muted-foreground);
+  }
+
+  &__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__warning {
+    flex: none;
+    color: var(--color-warning);
+  }
+
+  &__detail {
+    display: grid;
+    gap: a.space(4);
+    align-content: start;
+    min-inline-size: 0;
+    padding: a.space(5);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    color: var(--color-surface-foreground);
+  }
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2) a.space(3);
+    align-items: center;
+  }
+
+  &__heading {
+    min-inline-size: 0;
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-semibold);
+    overflow-wrap: anywhere;
+  }
+
+  &__path {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+  }
+
+  &__remove {
+    margin-inline-start: auto;
+  }
+}

@@ -25,7 +25,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { loadRevisions, type RevisionItem, restoreEntryRevision } from "@/actions/entry-editor";
-import { formatDateTime } from "@/lib/dates";
+import { useFormatDateTime } from "@/components/date-settings/date-settings";
 import "./revision-history.scss";
 
 type Loaded =
@@ -36,6 +36,7 @@ type Loaded =
 // An entry's revisions in a sheet, newest first (design §4.1). Restoring copies a revision's
 // title and content back, as a new revision; the editor then reloads with what was restored.
 export function RevisionHistory({ entryId, updatedAt }: { entryId: string; updatedAt: string }) {
+  const formatDateTime = useFormatDateTime();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState<Loaded>({ state: "loading" });

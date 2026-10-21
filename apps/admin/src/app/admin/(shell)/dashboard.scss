@@ -1,0 +1,14 @@
+@use "abstracts" as a;
+
+// Recent changes beside the steps from lg; one above the other before that.
+.dashboard-screen {
+  &__columns {
+    display: grid;
+    gap: a.space(6);
+    align-items: start;
+
+    @include a.breakpoint("lg") {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    }
+  }
+}

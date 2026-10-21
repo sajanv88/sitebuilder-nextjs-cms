@@ -1,0 +1,17 @@
+@use "abstracts" as a;
+
+// The arrow at the far end of a section's row, pointing down while the section is open, as in
+// nuvui's sidebar-nested block.
+.admin-nav {
+  &__arrow {
+    margin-inline-start: auto;
+
+    @include a.motion-safe {
+      transition: transform var(--nuv-duration-fast) var(--ease-out);
+    }
+  }
+}
+
+.admin-nav__section[data-state="open"] > .admin-nav__arrow {
+  transform: rotate(90deg);
+}

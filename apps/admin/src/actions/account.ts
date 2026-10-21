@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import * as v from "valibot";
 import { auth } from "@/auth/auth";
 import { getViewer } from "@/auth/session";
+import { invalidate } from "@/server/invalidate";
 
 // My account: every signed-in user may change their own name and password (design §6.1). No
 // permission is needed; Better Auth acts on the session's own user only.
@@ -24,6 +25,7 @@ export async function updateName(_: AccountState, form: FormData): Promise<Accou
     return { result: "invalid", errors: { name: name.issues[0]?.message ?? "Enter a name" } };
   }
   await auth().api.updateUser({ body: { name: name.output }, headers: await headers() });
+  invalidate("updateName");
   return { result: "saved", message: "Name saved.", savedAt: Date.now() };
 }
 

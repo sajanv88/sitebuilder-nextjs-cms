@@ -2,7 +2,7 @@
 
 import { DatePicker } from "@nuvui/date-picker";
 import { enGB } from "@nuvui/date-picker/locale";
-import { TrashIcon } from "@nuvui/icons";
+import { EyeIcon, TrashIcon } from "@nuvui/icons";
 import {
   Alert,
   AlertDescription,
@@ -35,7 +35,17 @@ import {
   toast,
 } from "@nuvui/react";
 import { createBlock } from "@sitebuilder/blocks";
-import { type BlockList, ENTRY_LIMITS, type EntryKind } from "@sitebuilder/schema";
+import {
+  type BlockList,
+  ENTRY_LIMITS,
+  type EntryKind,
+  formatHint,
+  formatTime,
+  fromZoned,
+  inputFormat,
+  weekStartsOn,
+  zonedParts,
+} from "@sitebuilder/schema";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -67,9 +77,9 @@ import { snapshotOf, useAutosave } from "@/components/block-editor/use-autosave"
 import { BlockInserter } from "@/components/block-inserter/block-inserter";
 import { BlockInspector } from "@/components/block-inspector/block-inspector";
 import { BlockOutline } from "@/components/block-outline/block-outline";
+import { useDateSettings, useFormatDateTime } from "@/components/date-settings/date-settings";
 import { type EditorOptions, EntrySettings } from "@/components/entry-settings/entry-settings";
 import { RevisionHistory } from "@/components/revision-history/revision-history";
-import { formatDateTime } from "@/lib/dates";
 import type { BlockIssue, EditorEntry, EditorState } from "./editor-state";
 import "./entry-editor.scss";
 
@@ -104,18 +114,9 @@ function useInBrowser(): boolean {
 
 // The publish date is nuvui's DatePicker, which picks days only (nuvui has no time picker
 // yet), and the time is a Combobox of quarter hours beside it (decisions #44). Both are in the
-// browser's time zone; the form sends the moment they make together, in UTC.
+// site's time zone, in the site's date format (Settings → Dates, decisions #69); the form sends
+// the moment they make together, in UTC.
 const pad = (n: number) => String(n).padStart(2, "0");
-
-// Dates are typed day first (dd/mm/yyyy) and weeks start on Monday. The Settings screen will
-// choose the date format later (docs/next.md); until then it's this European default.
-const DATE_LOCALE = enGB;
-const DATE_PATTERN = "dd/mm/yyyy";
-
-// "14:05", the time of day in the browser's time zone.
-function timeOf(date: Date): string {
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
 
 // "00:00" to "23:45".
 const QUARTER_HOURS = Array.from(
@@ -123,25 +124,23 @@ const QUARTER_HOURS = Array.from(
   (_, i) => `${pad(Math.floor(i / 4))}:${pad((i % 4) * 15)}`,
 );
 
-// The next quarter hour from now, for a date picked before a time.
-function nextQuarterHour(): string {
-  const now = new Date();
-  now.setMinutes(Math.ceil((now.getMinutes() + 1) / 15) * 15, 0, 0);
-  return timeOf(now);
+// The next quarter hour from now, for a date picked before a time. Every zone's offset is a
+// whole number of quarter hours, so rounding the moment rounds the zone's clock too.
+function nextQuarterHour(timeZone: string): string {
+  const quarter = 15 * 60_000;
+  return formatTime(new Date(Math.ceil((Date.now() + 60_000) / quarter) * quarter), timeZone);
 }
 
-// The day at "HH:mm", in the browser's time zone.
-function atTime(day: Date, time: string): Date {
-  return new Date(
-    day.getFullYear(),
-    day.getMonth(),
-    day.getDate(),
-    Number(time.slice(0, 2)),
-    Number(time.slice(3, 5)),
+// The picked day at "HH:mm", both in the site's zone.
+function atTime(day: Date, time: string, timeZone: string): Date {
+  const { year, month, day: date } = zonedParts(day, timeZone);
+  return fromZoned(
+    { year, month, day: date, hour: Number(time.slice(0, 2)), minute: Number(time.slice(3, 5)) },
+    timeZone,
   );
 }
 
-function statusLine(entry: EditorEntry | null): string {
+function statusLine(entry: EditorEntry | null, formatDateTime: (date: Date) => string): string {
   if (!entry) return "Not saved yet.";
   if (entry.status === "published" && entry.publishedAt) {
     return `Published ${formatDateTime(new Date(entry.publishedAt))}.`;
@@ -178,6 +177,8 @@ export function EntryEditor({
   const [state, action, saving] = useActionState(saveEntry, { result: "idle", ...initial });
   const [trashing, startTrash] = useTransition();
   const inBrowser = useInBrowser();
+  const dates = useDateSettings();
+  const formatDateTime = useFormatDateTime();
   const noun = NOUNS[type];
   const errors = state.errors ?? {};
   const busy = saving || trashing;
@@ -255,23 +256,24 @@ export function EntryEditor({
   const [dayInvalid, setDayInvalid] = useState(false);
   const dayField = useRef<HTMLInputElement>(null);
   const scheduled = useMemo(() => {
-    if (!inBrowser || entry?.status !== "scheduled" || !entry.publishedAt) return null;
+    if (entry?.status !== "scheduled" || !entry.publishedAt) return null;
     const at = new Date(entry.publishedAt);
-    return { day: new Date(at.getFullYear(), at.getMonth(), at.getDate()), time: timeOf(at) };
-  }, [inBrowser, entry?.status, entry?.publishedAt]);
+    return { day: at, time: formatTime(at, dates.timeZone) };
+  }, [entry?.status, entry?.publishedAt, dates.timeZone]);
   const day = pickedDay === undefined ? (scheduled?.day ?? null) : pickedDay;
   const time = pickedTime ?? scheduled?.time ?? "";
   // A time saved off the quarter hour (14:05) stays in the list, in its place.
   const times =
     time && !QUARTER_HOURS.includes(time) ? [...QUARTER_HOURS, time].sort() : QUARTER_HOURS;
-  const publishAt = day && time ? atTime(day, time).toISOString() : "";
-  const future = publishAt !== "" && Date.parse(publishAt) > Date.now();
-  const zone = inBrowser ? Intl.DateTimeFormat().resolvedOptions().timeZone : "";
+  const publishAt = day && time ? atTime(day, time, dates.timeZone).toISOString() : "";
+  // "Now" only exists in the browser; the server's render doesn't guess.
+  const future = inBrowser && publishAt !== "" && Date.parse(publishAt) > Date.now();
+  const datePattern = formatHint(dates.dateFormat);
 
   function pickDay(next: Date | null) {
     setPickedDay(next);
     setDayInvalid(false);
-    if (next && !time) setPickedTime(nextQuarterHour());
+    if (next && !time) setPickedTime(nextQuarterHour(dates.timeZone));
   }
 
   // Text in the date field that isn't a date leaves no date, which would publish now. The form
@@ -380,7 +382,7 @@ export function EntryEditor({
 
   const publishing = (
     <>
-      <p className="entry-editor__note">{statusLine(entry)}</p>
+      <p className="entry-editor__note">{statusLine(entry, formatDateTime)}</p>
       {allowed.publish ? (
         <>
           <Field>
@@ -390,16 +392,19 @@ export function EntryEditor({
                 ref={dayField}
                 value={day}
                 onValueChange={pickDay}
-                locale={DATE_LOCALE}
-                placeholder={DATE_PATTERN}
-                invalidMessage={`Enter a date as ${DATE_PATTERN}.`}
+                locale={enGB}
+                timeZone={dates.timeZone}
+                format={inputFormat(dates.dateFormat)}
+                weekStartsOn={weekStartsOn(dates.dateFormat)}
+                placeholder={datePattern}
+                invalidMessage={`Enter a date as ${datePattern}.`}
               />
             </FieldControl>
             <FieldDescription>
               Empty publishes now. A later date and time schedules it.
             </FieldDescription>
             <FieldError>
-              {dayInvalid ? `Enter a date as ${DATE_PATTERN}, or clear it.` : errors.publishAt}
+              {dayInvalid ? `Enter a date as ${datePattern}, or clear it.` : errors.publishAt}
             </FieldError>
           </Field>
           <Field>
@@ -424,7 +429,7 @@ export function EntryEditor({
               </ComboboxContent>
             </Combobox>
             <FieldDescription>
-              24-hour clock{zone ? `, in your time zone, ${zone}` : null}.
+              24-hour clock, in the site's time zone, {dates.timeZone}.
             </FieldDescription>
           </Field>
         </>
@@ -470,6 +475,16 @@ export function EntryEditor({
             </div>
             <div className="entry-editor__actions">
               {entry ? <RevisionHistory entryId={entry.id} updatedAt={token} /> : null}
+              {entry ? (
+                // The site zone's preview (design §7): the last saved version, in a new tab.
+                // A plain link: it's another zone, and it sets the draft-mode cookie there.
+                <Button asChild intent="ghost">
+                  <a href={`/api/preview/${entry.id}`} target="_blank" rel="noopener">
+                    <EyeIcon aria-hidden="true" size={16} />
+                    Preview
+                  </a>
+                </Button>
+              ) : null}
               {entry && allowed.trash ? (
                 <Button intent="ghost" onClick={trash} disabled={busy}>
                   <TrashIcon size={16} />

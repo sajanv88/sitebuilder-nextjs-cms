@@ -29,7 +29,6 @@ import {
 } from "@nuvui/react";
 import type { MediaUse } from "@sitebuilder/db";
 import type { Route } from "next";
-import Link from "next/link";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import {
   type AltState,
@@ -39,12 +38,13 @@ import {
   type MediaItem,
   saveAlt,
 } from "@/actions/media";
-import { formatDateTime } from "@/lib/dates";
+import { useFormatDateTime } from "@/components/date-settings/date-settings";
+import { TextLink } from "@/components/text-link/text-link";
 import { describeType, formatBytes, isImage } from "@/lib/format";
 import "./media-details.scss";
 
-// One file's details, in a sheet from the Media screen: a preview, its alt text, what it is,
-// where it's used, and Delete, which is refused while it's used (design §4.2).
+// One file's details: a preview, its alt text, what it is, where it's used, and Delete, which
+// is refused while it's used (design §4.2).
 
 function UsedIn({ uses }: { uses: MediaUse[] }) {
   if (uses.length === 0) return <p className="media-details__note">Not used anywhere yet.</p>;
@@ -52,7 +52,7 @@ function UsedIn({ uses }: { uses: MediaUse[] }) {
     <ul className="media-details__uses">
       {uses.map((use) => (
         <li key={use.id}>
-          <Link href={`/admin/${use.type}s/${use.id}` as Route}>{use.title}</Link>
+          <TextLink href={`/admin/${use.type}s/${use.id}` as Route}>{use.title}</TextLink>
           {use.inTrash ? (
             <Badge variant="outline" intent="warning">
               In the trash
@@ -100,15 +100,21 @@ function AltForm({ item, onSaved }: { item: MediaItem; onSaved: () => void }) {
   );
 }
 
-export function MediaDetailsSheet({
+// One file's details: in the Media screen's side panel on a wide screen, in a sheet on a
+// narrow one (MediaDetailsSheet). The file is loaded by id when it changes.
+export function MediaFileDetails({
   id,
-  onClose,
+  headingId,
   onChanged,
+  onDeleted,
 }: {
-  id: string | null;
-  onClose: () => void;
+  id: string;
+  // The id the file's name gets, for whatever it's in to be named by.
+  headingId: string;
   onChanged: () => void;
+  onDeleted: () => void;
 }) {
+  const formatDateTime = useFormatDateTime();
   const [details, setDetails] = useState<MediaDetails | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [problem, setProblem] = useState<{ error: string; usedIn?: MediaUse[] } | null>(null);
@@ -117,7 +123,6 @@ export function MediaDetailsSheet({
   useEffect(() => {
     setDetails(null);
     setProblem(null);
-    if (!id) return;
     let current = true;
     getMediaDetails(id).then((loaded) => {
       if (current) setDetails(loaded);
@@ -128,7 +133,6 @@ export function MediaDetailsSheet({
   }, [id]);
 
   function remove() {
-    if (!id) return;
     startTransition(async () => {
       const result = await deleteMediaFile(id);
       setConfirming(false);
@@ -137,109 +141,112 @@ export function MediaDetailsSheet({
         return;
       }
       toast(result.message, { intent: "success" });
-      onClose();
-      onChanged();
+      onDeleted();
     });
   }
 
-  const item = details?.ok ? details.item : null;
+  if (details === null) {
+    return (
+      <div className="media-details">
+        <h2 id={headingId} className="media-details__name">
+          Loading…
+        </h2>
+        <Skeleton className="media-details__loading" />
+      </div>
+    );
+  }
+  if (!details.ok) {
+    return (
+      <div className="media-details">
+        <h2 id={headingId} className="media-details__name">
+          File
+        </h2>
+        <Alert intent="danger">
+          <AlertDescription>{details.error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+  const { item } = details;
 
   return (
-    <>
-      <Sheet open={id !== null} onOpenChange={(open) => !open && onClose()}>
-        <SheetContent side="end" size="md">
-          <SheetHeader>
-            <SheetTitle>{item?.filename ?? "File"}</SheetTitle>
-            <SheetDescription>
-              {item ? `${describeType(item.mimeType)}, ${formatBytes(item.sizeBytes)}` : "Loading…"}
-            </SheetDescription>
-          </SheetHeader>
-          <SheetBody className="media-details">
-            {details === null ? (
-              <Skeleton className="media-details__loading" />
-            ) : !details.ok ? (
-              <Alert intent="danger">
-                <AlertDescription>{details.error}</AlertDescription>
-              </Alert>
-            ) : (
-              <>
-                {isImage(details.item.mimeType) ? (
-                  // biome-ignore lint/performance/noImgElement: served by the site zone at /media/ (decisions #58).
-                  <img
-                    className="media-details__preview"
-                    src={details.item.url}
-                    alt={details.item.alt ?? ""}
-                  />
-                ) : null}
+    <div className="media-details">
+      <div className="media-details__head">
+        <h2 id={headingId} className="media-details__name">
+          {item.filename}
+        </h2>
+        <Badge variant="outline">{describeType(item.mimeType)}</Badge>
+      </div>
+      <p className="media-details__note">
+        {formatBytes(item.sizeBytes)}
+        {item.width && item.height ? `, ${item.width} × ${item.height} pixels` : null}
+      </p>
 
-                {details.canEdit && isImage(details.item.mimeType) ? (
-                  <AltForm key={details.item.id} item={details.item} onSaved={onChanged} />
-                ) : null}
+      {isImage(item.mimeType) ? (
+        // biome-ignore lint/performance/noImgElement: served by the site zone at /media/ (decisions #58).
+        <img className="media-details__preview" src={item.url} alt={item.alt ?? ""} />
+      ) : null}
 
-                <dl className="media-details__facts">
-                  <div>
-                    <dt>Dimensions</dt>
-                    <dd>
-                      {details.item.width && details.item.height
-                        ? `${details.item.width} × ${details.item.height} pixels`
-                        : "None"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Uploaded</dt>
-                    <dd>
-                      {formatDateTime(new Date(details.item.createdAt))} by{" "}
-                      {details.item.uploadedBy}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Stored</dt>
-                    <dd>
-                      {details.item.storage === "s3" ? "In S3 storage" : "On the server's disk"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Address</dt>
-                    <dd className="media-details__url">{details.item.url}</dd>
-                  </div>
-                </dl>
+      <div className="media-details__actions">
+        <Button asChild intent="secondary" size="sm">
+          <a href={item.url} target="_blank" rel="noopener">
+            Open the file
+          </a>
+        </Button>
+      </div>
 
-                <section className="media-details__section" aria-labelledby="media-used-in">
-                  <h3 id="media-used-in" className="media-details__heading">
-                    Used in
-                  </h3>
-                  <UsedIn uses={details.usedIn} />
-                </section>
+      {details.canEdit && isImage(item.mimeType) ? (
+        <AltForm key={item.id} item={item} onSaved={onChanged} />
+      ) : null}
 
-                {problem ? (
-                  <Alert intent="warning" role="alert">
-                    <AlertDescription>{problem.error}</AlertDescription>
-                  </Alert>
-                ) : null}
+      <dl className="media-details__facts">
+        <div>
+          <dt>Uploaded</dt>
+          <dd>
+            {formatDateTime(new Date(item.createdAt))} by {item.uploadedBy}
+          </dd>
+        </div>
+        <div>
+          <dt>Stored</dt>
+          <dd>{item.storage === "s3" ? "In S3 storage" : "On the server's disk"}</dd>
+        </div>
+        <div>
+          <dt>Address</dt>
+          <dd className="media-details__url">{item.url}</dd>
+        </div>
+      </dl>
 
-                {details.canDelete ? (
-                  <div>
-                    <Button
-                      intent="danger"
-                      disabled={pending || details.usedIn.length > 0}
-                      onClick={() => setConfirming(true)}
-                    >
-                      Delete file
-                    </Button>
-                    {details.usedIn.length > 0 ? (
-                      <p className="media-details__note">It can be deleted once nothing uses it.</p>
-                    ) : null}
-                  </div>
-                ) : null}
-              </>
-            )}
-          </SheetBody>
-        </SheetContent>
-      </Sheet>
+      <section className="media-details__section" aria-labelledby={`${headingId}-used`}>
+        <h3 id={`${headingId}-used`} className="media-details__heading">
+          Used in
+        </h3>
+        <UsedIn uses={details.usedIn} />
+      </section>
+
+      {problem ? (
+        <Alert intent="warning" role="alert">
+          <AlertDescription>{problem.error}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {details.canDelete ? (
+        <div className="media-details__danger">
+          <Button
+            intent="danger"
+            disabled={pending || details.usedIn.length > 0}
+            onClick={() => setConfirming(true)}
+          >
+            Delete file
+          </Button>
+          {details.usedIn.length > 0 ? (
+            <p className="media-details__note">It can be deleted once nothing uses it.</p>
+          ) : null}
+        </div>
+      ) : null}
 
       <AlertDialog open={confirming} onOpenChange={setConfirming}>
         <AlertDialogContent size="sm">
-          <AlertDialogTitle>Delete {item?.filename ?? "this file"}?</AlertDialogTitle>
+          <AlertDialogTitle>Delete {item.filename}?</AlertDialogTitle>
           <AlertDialogDescription>
             It's removed from the library and from storage. This can't be undone.
           </AlertDialogDescription>
@@ -258,6 +265,41 @@ export function MediaDetailsSheet({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
+  );
+}
+
+// The same details in a sheet, for a screen too narrow for the panel beside the files.
+export function MediaDetailsSheet({
+  id,
+  onClose,
+  onChanged,
+}: {
+  id: string | null;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  return (
+    <Sheet open={id !== null} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent side="end" size="md">
+        <SheetHeader>
+          <SheetTitle>File details</SheetTitle>
+          <SheetDescription>What it is, where it's used, and its alt text.</SheetDescription>
+        </SheetHeader>
+        <SheetBody>
+          {id ? (
+            <MediaFileDetails
+              id={id}
+              headingId="media-sheet-file"
+              onChanged={onChanged}
+              onDeleted={() => {
+                onClose();
+                onChanged();
+              }}
+            />
+          ) : null}
+        </SheetBody>
+      </SheetContent>
+    </Sheet>
   );
 }

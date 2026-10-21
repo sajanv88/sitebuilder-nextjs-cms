@@ -1,0 +1,25 @@
+@use "abstracts" as a;
+
+.recent-changes {
+  &__title {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(1) a.space(2);
+    align-items: center;
+  }
+
+  &__link {
+    border-radius: var(--radius-sm);
+    color: inherit;
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+
+    @include a.focus-ring;
+
+    @include a.hover {
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+  }
+}

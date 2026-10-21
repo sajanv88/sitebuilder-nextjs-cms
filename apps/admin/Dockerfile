@@ -74,6 +74,9 @@ COPY --from=builder /repo/apps/admin/public ./apps/admin/public
 # nuvraxis-fullstack: the migrate Job's runner (one bundled file) and the SQL migrations it applies.
 COPY --from=builder /repo/packages/db/dist/migrate.mjs ./packages/db/dist/migrate.mjs
 COPY --from=builder /repo/packages/db/drizzle ./packages/db/drizzle
+# The "use cache" handler next.config.ts names (decisions #63): one bundled file, loaded by path
+# from .next, so it sits at the same place relative to the server as in the repo.
+COPY --from=builder /repo/packages/db/dist/cache-handler.mjs ./packages/db/dist/cache-handler.mjs
 # The non-interactive first admin (design §8.1), one bundled file like the migrator:
 # `node packages/db/dist/create-admin.mjs [--force]` with ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD.
 COPY --from=builder /repo/packages/db/dist/create-admin.mjs ./packages/db/dist/create-admin.mjs

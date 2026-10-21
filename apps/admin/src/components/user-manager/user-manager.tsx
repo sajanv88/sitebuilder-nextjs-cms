@@ -56,7 +56,7 @@ import {
   setPassword,
   type UserActionResult,
 } from "@/actions/users";
-import { formatDateTime } from "@/lib/dates";
+import { useFormatDateTime } from "@/components/date-settings/date-settings";
 import "./user-manager.scss";
 
 // The Users screen (design §6): everyone who can sign in, with their role, and what an admin may
@@ -148,6 +148,7 @@ function NewUserForm({ onSaved }: { onSaved: (message: string) => void }) {
 const helper = createColumnHelper<UserRow>();
 
 export function UserManager({ users, viewerId }: { users: UserRow[]; viewerId: string }) {
+  const formatDateTime = useFormatDateTime();
   const router = useRouter();
   const [open, setOpen] = useState<Open>(null);
   const [pending, startTransition] = useTransition();
@@ -269,7 +270,7 @@ export function UserManager({ users, viewerId }: { users: UserRow[]; viewerId: s
           },
         }),
       ]),
-    [viewerId, run],
+    [viewerId, run, formatDateTime],
   );
 
   const table = useDataTable({

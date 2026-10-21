@@ -239,3 +239,58 @@ Plan: [docs/phase-3-plan.md](docs/phase-3-plan.md), approved 2026-10-21. Storage
 - [x] Gate in the browser: landing page built, reloaded intact; uploads with local storage (dev and Compose); draft autosave; published waits for Update; phone width
 - [ ] Gate with MinIO entered in Settings: needs your bucket and keys, typed by you
 - [x] decisions.md, next.md, licences.md updated
+
+# Phase 4 (Public site) checklist
+
+Plan: [docs/phase-4-plan.md](docs/phase-4-plan.md), approved 2026-10-21. Cache invalidation through a tag store in Postgres; `next/image` on the site; a hero that opens a page holds its `h1`; Settings choose the date format and time zone.
+
+## 0. Spikes
+- [x] The shared cache handler: an invalidation in the admin zone reaches the site zone through `cache_tags`
+- [x] Status codes: a page can't set 404 or 301 under the nonce layout; the proxy routes instead
+
+## 1. packages/schema
+- [x] Site settings: date format and time zone, with defaults for older rows; date helpers (format, zone, wall-clock round trip)
+- [x] Cache tag names; reserved post slugs; archive and page paths; settings form inputs; theme tokens offered
+- [x] Tests
+
+## 2. packages/db
+- [x] Migration `cache_tags`; the cache handler, bundled to `dist/cache-handler.mjs`, with PGlite tests across two processes
+- [x] `resolveRoute`; public entries, post lists, terms, sitemap, preview reads
+- [x] Menus: read, save, resolve with broken links marked; reading settings with the posts-path move and redirects
+- [x] Tests
+
+## 3. packages/auth
+- [x] Better Auth (`createAuth`), `can()` and the permissions moved from the admin zone; tests moved with them
+
+## 4. packages/blocks
+- [x] Pictures through the zone's own image component; the h1 rule; dates from the render context
+- [x] Tests
+
+## 5. Site zone
+- [x] Proxy routing to `/_site/…`, real 404s and redirects; CSP kept on every page
+- [x] Layout with theme settings (preset, mode, density, token overrides), header and footer from the menus
+- [x] Home, entry, blog, archives with pagination, preview with draft mode; not-found in the site's frame
+- [x] Metadata, Open Graph, canonical; `sitemap.xml`, `robots.txt`, `feed.xml`; `next/image` for `/media/**`
+
+## 6. Admin
+- [x] Every write invalidates the public site's tags; a test fails on an action that isn't listed
+- [x] Settings: Site, Reading (home page, posts per page, posts path with confirmation), Dates
+- [x] Menus (Tree, item dialog, broken links marked) and Appearance (presets, mode, density, tokens, preview)
+- [x] Dates everywhere in the site's format and zone; the editor picks publish times in the site's zone; Preview button
+
+## 7. Images and Dockerfiles
+- [x] Both images carry the cache handler; turbo's `dev` builds dependencies first
+
+## 8. Verify and report
+- [x] Biome, stylelint, typecheck, 232 tests, build
+- [x] Gate in the browser: publish → live within a second; unpublished and unknown paths 404; rename → 301; menus with a draft skipped; Appearance on the site; preview signed in, 404 signed out; sitemap, robots, feed
+- [x] Settings: posts path moved and back with redirects; date format and zone in the admin, the site and the editor's publish time
+- [x] Compose with two site replicas: one admin change reached both; images resized inside the read-only container
+- [ ] Phone width in the browser: the window couldn't be resized in this session
+- [x] decisions.md, next.md updated
+
+## Admin layout (after phase 4, on request)
+- [x] Frame on sidebar-nested and app-shell; page-header on every screen
+- [x] Dashboard: figures, recent changes, get-started steps; Settings and My account on article; Menus and Media on file-browser
+- [x] Biome, stylelint, typecheck, 234 tests, build; every screen checked in the browser
+- [ ] Phone width in the browser (the window still can't be resized here)

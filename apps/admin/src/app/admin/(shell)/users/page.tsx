@@ -11,7 +11,15 @@ export default async function UsersPage() {
   const viewer = await requirePermission("user.read");
   const users = await listUsers(db);
   return (
-    <AdminPage title="Users">
+    <AdminPage
+      title="Users"
+      description="The people who can sign in, and what each may do: admins run the site, editors look after all content, authors write their own posts."
+      facts={[
+        { label: "Admins", value: users.filter((u) => u.role === "admin").length },
+        { label: "Editors", value: users.filter((u) => u.role === "editor").length },
+        { label: "Authors", value: users.filter((u) => u.role === "author").length },
+      ]}
+    >
       <UserManager users={users} viewerId={viewer.id} />
     </AdminPage>
   );

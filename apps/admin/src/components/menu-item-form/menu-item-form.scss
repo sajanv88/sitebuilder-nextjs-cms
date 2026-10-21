@@ -1,0 +1,28 @@
+@use "abstracts" as a;
+
+.menu-item-form {
+  display: grid;
+  gap: a.space(4);
+
+  &__option {
+    display: grid;
+  }
+
+  &__hint {
+    color: var(--color-muted-foreground);
+    font-size: var(--text-xs);
+  }
+
+  &__note {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+    padding-block-start: a.space(2);
+  }
+}

@@ -1,6 +1,6 @@
+import { can } from "@sitebuilder/auth";
 import { db, listTerms } from "@sitebuilder/db";
 import type { TaxonomyKind } from "@sitebuilder/schema";
-import { can } from "@/auth/can";
 import { requirePermission } from "@/auth/session";
 import { AdminPage } from "@/components/admin-page/admin-page";
 import { TermManager } from "@/components/term-manager/term-manager";
@@ -11,7 +11,16 @@ export async function TermScreen({ taxonomy }: { taxonomy: TaxonomyKind }) {
   const viewer = await requirePermission("term.update");
   const terms = await listTerms(db, taxonomy);
   return (
-    <AdminPage title={taxonomy === "category" ? "Categories" : "Tags"}>
+    <AdminPage
+      title={taxonomy === "category" ? "Categories" : "Tags"}
+      trail={[{ label: "Posts", href: "/admin/posts" }]}
+      description={
+        taxonomy === "category"
+          ? "The few broad subjects posts are filed under. Each has its own page on the site, listing its posts."
+          : "Finer labels for posts, as many as help. Each has its own page on the site, listing its posts."
+      }
+      facts={[{ label: taxonomy === "category" ? "Categories" : "Tags", value: terms.length }]}
+    >
       <TermManager
         taxonomy={taxonomy}
         terms={terms}

@@ -1,7 +1,7 @@
+import { can } from "@sitebuilder/auth";
 import { createMedia, db } from "@sitebuilder/db";
 import { readDimensions, StorageError, sniffType, storageKey } from "@sitebuilder/media";
 import { MEDIA_TYPES } from "@sitebuilder/schema";
-import { can } from "@/auth/can";
 import { env } from "@/env";
 import { currentUploadStorage, mediaUrl, storageProblem } from "@/server/media";
 import { errorResponse, guardRequest } from "@/server/route-guard";

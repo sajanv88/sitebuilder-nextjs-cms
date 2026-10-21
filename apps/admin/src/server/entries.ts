@@ -1,7 +1,7 @@
 import "server-only";
+import { type Action, can, type Resource } from "@sitebuilder/auth";
 import { db, type EntryList, getEntryOwner, listEntries } from "@sitebuilder/db";
 import type { EntryKind, EntryListQuery } from "@sitebuilder/schema";
-import { type Action, can, type Resource } from "@/auth/can";
 import type { Viewer } from "@/auth/session";
 
 // The data layer for entries: each function is given the signed-in viewer, checks can() against

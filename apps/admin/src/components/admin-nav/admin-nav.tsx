@@ -2,6 +2,7 @@
 
 import {
   BookOpenIcon,
+  ChevronRightIcon,
   FileTextIcon,
   ImageIcon,
   LayoutDashboardIcon,
@@ -11,6 +12,11 @@ import {
   UsersIcon,
 } from "@nuvui/icons";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+  SidebarGroup,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -23,6 +29,12 @@ import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
+import "./admin-nav.scss";
+
+// The sidebar's navigation, after nuvui's sidebar-nested block: labelled groups, and sections
+// that open to show their pages, with the open page marked and its section open. Which links
+// show is decided on the server (the shell layout passes the keys the viewer may use); hiding
+// one is never the check (each page checks again).
 
 export const NAV_KEYS = [
   "dashboard",
@@ -38,66 +50,152 @@ export const NAV_KEYS = [
 ] as const;
 export type NavKey = (typeof NAV_KEYS)[number];
 
-const items: Record<
-  Exclude<NavKey, "terms">,
-  { label: string; href: Route; Icon: ComponentType }
-> = {
-  dashboard: { label: "Dashboard", href: "/admin", Icon: LayoutDashboardIcon },
-  pages: { label: "Pages", href: "/admin/pages", Icon: FileTextIcon },
-  posts: { label: "Posts", href: "/admin/posts", Icon: BookOpenIcon },
-  media: { label: "Media", href: "/admin/media", Icon: ImageIcon },
-  menus: { label: "Menus", href: "/admin/menus", Icon: ListIcon },
-  appearance: { label: "Appearance", href: "/admin/appearance", Icon: PaletteIcon },
-  users: { label: "Users", href: "/admin/users", Icon: UsersIcon },
-  settings: { label: "Settings", href: "/admin/settings", Icon: SettingsIcon },
-};
+interface Page {
+  label: string;
+  href: Route;
+  // Shown only with this key, on top of the section's own.
+  needs?: NavKey;
+}
 
-// The sidebar's links. Which ones show is decided on the server (the shell layout passes the
-// keys the viewer may use); this only marks the open page, and closes the panel the sidebar
-// becomes on a phone once a link is followed: client navigation doesn't leave the page.
-const termLinks = [
-  { label: "Categories", href: "/admin/posts/categories" },
-  { label: "Tags", href: "/admin/posts/tags" },
-] as const satisfies readonly { label: string; href: Route }[];
+interface Item {
+  key: Exclude<NavKey, "terms">;
+  label: string;
+  href: Route;
+  Icon: ComponentType<{ "aria-hidden"?: boolean | "true" }>;
+  // A section: it opens to these pages instead of being a link itself.
+  pages?: Page[];
+}
+
+const GROUPS: { label: string | null; items: Item[] }[] = [
+  {
+    label: null,
+    items: [{ key: "dashboard", label: "Dashboard", href: "/admin", Icon: LayoutDashboardIcon }],
+  },
+  {
+    label: "Content",
+    items: [
+      { key: "pages", label: "Pages", href: "/admin/pages", Icon: FileTextIcon },
+      {
+        key: "posts",
+        label: "Posts",
+        href: "/admin/posts",
+        Icon: BookOpenIcon,
+        pages: [
+          { label: "All posts", href: "/admin/posts" },
+          { label: "Categories", href: "/admin/posts/categories", needs: "terms" },
+          { label: "Tags", href: "/admin/posts/tags", needs: "terms" },
+        ],
+      },
+      { key: "media", label: "Media", href: "/admin/media", Icon: ImageIcon },
+    ],
+  },
+  {
+    label: "Site",
+    items: [
+      { key: "menus", label: "Menus", href: "/admin/menus", Icon: ListIcon },
+      { key: "appearance", label: "Appearance", href: "/admin/appearance", Icon: PaletteIcon },
+    ],
+  },
+  {
+    label: "Administration",
+    items: [
+      { key: "users", label: "Users", href: "/admin/users", Icon: UsersIcon },
+      {
+        key: "settings",
+        label: "Settings",
+        href: "/admin/settings",
+        Icon: SettingsIcon,
+        // One page; these are its sections (the page's own contents list marks where you are).
+        pages: [
+          { label: "Site", href: "/admin/settings#site" as Route },
+          { label: "Reading", href: "/admin/settings#reading" as Route },
+          { label: "Dates", href: "/admin/settings#dates" as Route },
+          { label: "Media storage", href: "/admin/settings#media-storage" as Route },
+        ],
+      },
+    ],
+  },
+];
+
+// The page a path belongs to: the longest href that starts it, so /admin/posts/categories
+// marks Categories and not All posts.
+function isOpen(pathname: string, href: string, all: readonly string[]): boolean {
+  const path = href.split("#")[0] ?? href;
+  if (href.includes("#")) return false;
+  if (path === "/admin") return pathname === "/admin";
+  if (pathname !== path && !pathname.startsWith(`${path}/`)) return false;
+  return !all.some((other) => other.length > path.length && pathname.startsWith(other));
+}
 
 export function AdminNav({ allowed }: { allowed: readonly NavKey[] }) {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
+  // On a phone the sidebar is a panel over the page: following a link closes it.
   const close = () => setOpenMobile(false);
-  const onTerms = termLinks.some((link) => pathname.startsWith(link.href));
+  const hrefs = GROUPS.flatMap((group) =>
+    group.items.flatMap((item) => [item.href, ...(item.pages ?? []).map((page) => page.href)]),
+  ).filter((href) => !href.includes("#"));
 
-  return (
-    <SidebarMenu>
-      {allowed.map((key) => {
-        if (key === "terms") return null;
-        const { label, href, Icon } = items[key];
-        // One item is the open page: on Categories or Tags it's the sub-item, not Posts.
-        const active =
-          href === "/admin" ? pathname === href : pathname.startsWith(href) && !onTerms;
-        return (
-          <SidebarMenuItem key={key}>
-            <SidebarMenuButton asChild active={active} tooltip={label}>
-              <Link href={href} aria-current={active ? "page" : undefined} onClick={close}>
-                <Icon />
-                <span>{label}</span>
-              </Link>
-            </SidebarMenuButton>
-            {key === "posts" && allowed.includes("terms") ? (
-              <SidebarMenuSub>
-                {termLinks.map((link) => (
-                  <SidebarMenuSubItem key={link.href}>
-                    <SidebarMenuSubButton asChild active={pathname.startsWith(link.href)}>
-                      <Link href={link.href} onClick={close}>
-                        {link.label}
-                      </Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                ))}
-              </SidebarMenuSub>
-            ) : null}
-          </SidebarMenuItem>
-        );
-      })}
-    </SidebarMenu>
-  );
+  return GROUPS.map((group) => {
+    const items = group.items.filter((item) => allowed.includes(item.key));
+    if (items.length === 0) return null;
+    return (
+      <SidebarGroup key={group.label ?? "top"}>
+        {group.label ? <SidebarGroupLabel>{group.label}</SidebarGroupLabel> : null}
+        <SidebarMenu>
+          {items.map(({ key, label, href, Icon, pages }) => {
+            if (!pages) {
+              const active = isOpen(pathname, href, hrefs);
+              return (
+                <SidebarMenuItem key={key}>
+                  <SidebarMenuButton asChild active={active}>
+                    <Link href={href} aria-current={active ? "page" : undefined} onClick={close}>
+                      <Icon aria-hidden="true" />
+                      <span>{label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            }
+            const shown = pages.filter((page) => !page.needs || allowed.includes(page.needs));
+            const inside = pathname === href || pathname.startsWith(`${href}/`);
+            return (
+              // The section with the open page in it starts open.
+              <Collapsible key={key} asChild defaultOpen={inside}>
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton className="admin-nav__section">
+                      <Icon aria-hidden="true" />
+                      <span>{label}</span>
+                      <ChevronRightIcon aria-hidden="true" className="admin-nav__arrow" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {shown.map((page) => {
+                        const active = isOpen(pathname, page.href, hrefs);
+                        return (
+                          <SidebarMenuSubItem key={page.href}>
+                            <SidebarMenuSubButton asChild active={active}>
+                              <Link
+                                href={page.href}
+                                aria-current={active ? "page" : undefined}
+                                onClick={close}
+                              >
+                                {page.label}
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        );
+                      })}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroup>
+    );
+  });
 }

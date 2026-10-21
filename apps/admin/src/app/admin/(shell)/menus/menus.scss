@@ -1,0 +1,21 @@
+@use "abstracts" as a;
+
+.menus {
+  display: grid;
+  gap: a.space(5);
+
+  &__panel {
+    display: grid;
+    gap: a.space(4);
+  }
+
+  &__about {
+    margin: 0;
+    color: var(--color-muted-foreground);
+  }
+}
+
+// Both menus stay mounted; the one whose tab isn't chosen is out of sight.
+.menus__panel[data-state="inactive"] {
+  display: none;
+}
