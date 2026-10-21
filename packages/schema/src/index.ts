@@ -1,12 +1,17 @@
 // valibot schemas and types shared by both zones and packages/db. Depends on valibot only.
 
 export {
+  ChangePasswordInput,
   Email,
   NewAdminInput,
+  NewUserInput,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   Password,
   PersonName,
+  ROLES,
+  type Role,
+  RoleSchema,
   SignInInput,
 } from "./accounts";
 export {
@@ -22,6 +27,36 @@ export {
   MAX_BLOCKS,
   MAX_DEPTH,
 } from "./blocks";
+export {
+  ENTRY_LIMITS,
+  ENTRY_SORT_KEYS,
+  ENTRY_SORTS,
+  ENTRY_TYPES,
+  ENTRY_VIEWS,
+  EntryFields,
+  type EntryKind,
+  EntryListQuery,
+  type EntrySort,
+  type EntrySortKey,
+  type EntryView,
+  isReservedRootSlug,
+  PAGE_SIZES,
+  PublishAt,
+  pagePath,
+  postPath,
+  RESERVED_SEGMENTS,
+  SaveIntent,
+  SLUG_MAX_LENGTH,
+  Slug,
+  SlugField,
+  slugify,
+  TAXONOMIES,
+  type TaxonomyKind,
+  TermInput,
+  UpdatedAt,
+  UserId,
+  withSuffix,
+} from "./entries";
 export { type Env, type EnvResult, EnvSchema, parseEnv } from "./env";
 export {
   MENU_LOCATIONS,
