@@ -66,12 +66,20 @@ describe("MediaStorageSettings", () => {
 
 describe("MediaListQuery", () => {
   test("falls back to defaults for values it doesn't accept", () => {
-    expect(v.parse(MediaListQuery, {})).toEqual({ kind: "all", page: 1, size: 20, q: "" });
-    expect(v.parse(MediaListQuery, { kind: "audio", page: "-1", size: "7" })).toEqual({
-      kind: "all",
-      page: 1,
-      size: 20,
-      q: "",
+    const defaults = { kind: "all", page: 1, size: 20, q: "", month: "", view: "grid" };
+    expect(v.parse(MediaListQuery, {})).toEqual(defaults);
+    expect(
+      v.parse(MediaListQuery, {
+        kind: "audio",
+        page: "-1",
+        size: "7",
+        month: "2026-13",
+        view: "table",
+      }),
+    ).toEqual(defaults);
+    expect(v.parse(MediaListQuery, { month: "2026-10", view: "list" })).toMatchObject({
+      month: "2026-10",
+      view: "list",
     });
     expect(v.parse(MediaListQuery, { kind: "image", page: "3", q: " cat " })).toMatchObject({
       kind: "image",

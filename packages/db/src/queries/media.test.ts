@@ -22,6 +22,7 @@ import {
   getMediaByKey,
   getMediaForRender,
   listMedia,
+  mediaFolders,
   mediaUsage,
   type NewMediaInput,
   updateMediaAlt,
@@ -70,6 +71,8 @@ const query = (overrides: Partial<MediaListQuery> = {}): MediaListQuery => ({
   page: 1,
   size: 20,
   q: "",
+  month: "",
+  view: "grid",
   ...overrides,
 });
 
@@ -121,6 +124,26 @@ describe("media rows", () => {
     // LIKE wildcards in the search are text.
     expect((await listMedia(db, { ...query({ q: "%" }), uploadedBy: null })).total).toBe(0);
     expect((await listMedia(db, { ...query(), uploadedBy: "someone-else" })).total).toBe(0);
+  });
+
+  it("files by kind and by month, and lists one month", async () => {
+    await createMedia(db, file({ filename: "a.jpg" }));
+    await createMedia(db, file({ filename: "b.pdf", mimeType: "application/pdf" }));
+    const now = new Date();
+    const thisMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+    const folders = await mediaFolders(db, null);
+    expect(folders).toEqual({
+      all: 2,
+      kinds: { image: 1, video: 0, document: 1 },
+      months: [{ month: thisMonth, count: 2 }],
+    });
+    expect((await mediaFolders(db, "someone-else")).all).toBe(0);
+    expect((await listMedia(db, { ...query({ month: thisMonth }), uploadedBy: null })).total).toBe(
+      2,
+    );
+    expect((await listMedia(db, { ...query({ month: "2001-01" }), uploadedBy: null })).total).toBe(
+      0,
+    );
   });
 
   it("reads by id and by key, edits alt text, and counts by storage", async () => {

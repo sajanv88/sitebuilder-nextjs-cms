@@ -44,6 +44,10 @@ export const MediaListQuery = v.object({
   ),
   size: v.fallback(v.optional(v.pipe(v.string(), v.toNumber(), v.picklist(PAGE_SIZES)), "20"), 20),
   q: v.fallback(v.optional(v.pipe(v.string(), v.trim(), v.maxLength(200)), ""), ""),
+  // Files uploaded in one month, as 2026-10 (UTC, as storage keys are), or "" for any.
+  month: v.fallback(v.optional(v.pipe(v.string(), v.regex(/^\d{4}-(0[1-9]|1[0-2])$/)), ""), ""),
+  // Pictures in a grid, or rows in a list.
+  view: v.fallback(v.optional(v.picklist(["grid", "list"]), "grid"), "grid"),
 });
 export type MediaListQuery = v.InferOutput<typeof MediaListQuery>;
 

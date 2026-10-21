@@ -68,6 +68,42 @@ export interface MediaList {
   page: number;
 }
 
+// Uploaded within a month, "2026-10", in UTC as storage keys are.
+function monthWhere(month: string) {
+  const [year, number] = month.split("-").map(Number) as [number, number];
+  const start = new Date(Date.UTC(year, number - 1, 1));
+  const end = new Date(Date.UTC(year, number, 1));
+  return and(sql`${media.createdAt} >= ${start}`, sql`${media.createdAt} < ${end}`);
+}
+
+export interface MediaFolders {
+  all: number;
+  kinds: Record<MediaKind, number>;
+  // Newest first: "2026-10" and how many files.
+  months: { month: string; count: number }[];
+}
+
+// What the media library's folders hold: every file, by kind, and by the month it came.
+export async function mediaFolders(db: Executor, uploadedBy: string | null): Promise<MediaFolders> {
+  const mine = uploadedBy ? eq(media.uploadedBy, uploadedBy) : undefined;
+  const byType = await db
+    .select({ type: media.mimeType, total: count() })
+    .from(media)
+    .where(mine)
+    .groupBy(media.mimeType);
+  const kinds: Record<MediaKind, number> = { image: 0, video: 0, document: 0 };
+  for (const row of byType) kinds[MEDIA_TYPES[row.type]] += row.total;
+  const month = sql<string>`to_char(${media.createdAt} at time zone 'UTC', 'YYYY-MM')`;
+  const months = await db
+    .select({ month, count: count() })
+    .from(media)
+    .where(mine)
+    .groupBy(month)
+    .orderBy(desc(month))
+    .limit(240);
+  return { all: byType.reduce((sum, row) => sum + row.total, 0), kinds, months };
+}
+
 // Newest first.
 export async function listMedia(db: Executor, input: ListMediaInput): Promise<MediaList> {
   const where = and(
@@ -79,6 +115,7 @@ export async function listMedia(db: Executor, input: ListMediaInput): Promise<Me
           ilike(media.alt, `%${escapeLike(input.q)}%`),
         )
       : undefined,
+    input.month ? monthWhere(input.month) : undefined,
   );
   const [found] = await db.select({ total: count() }).from(media).where(where);
   const total = found?.total ?? 0;

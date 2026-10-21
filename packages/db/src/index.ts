@@ -7,6 +7,13 @@ export { type Db, db } from "./client";
 export type { Executor } from "./executor";
 export { type BootstrapInput, type BootstrapResult, bootstrapSite } from "./queries/bootstrap";
 export {
+  type DashboardCounts,
+  type DashboardScope,
+  dashboardCounts,
+  type RecentEntry,
+  recentEntries,
+} from "./queries/dashboard";
+export {
   type AutosaveResult,
   autosaveEntry,
   countEntriesByAuthor,
@@ -49,15 +56,46 @@ export {
   getMediaForRender,
   type ListMediaInput,
   listMedia,
+  type MediaFolders,
   type MediaList,
   type MediaRow,
   type MediaUse,
+  mediaFolders,
   mediaUsage,
   type NewMediaInput,
   type RenderMedia,
   updateMediaAlt,
 } from "./queries/media";
-export { ensureMenus } from "./queries/menus";
+export {
+  ensureMenus,
+  getMenu,
+  type MenuLinkProblem,
+  type ResolvedMenuItem,
+  resolveMenu,
+  type SaveMenuResult,
+  saveMenu,
+} from "./queries/menus";
+export {
+  countPublicPosts,
+  DEFAULT_READING,
+  getEntryForPreview,
+  getPublicEntry,
+  getReading,
+  getTerm,
+  getTermBySlug,
+  isPublishedPage,
+  listArchiveTerms,
+  listPublicPosts,
+  listPublishedPages,
+  listSitemapEntries,
+  type PublicEntry,
+  type PublicPostCard,
+  type PublicRoute,
+  type PublicTerm,
+  resolveRoute,
+  type SitemapEntry,
+} from "./queries/public";
+export { countPosts, type SaveReadingResult, saveReadingSettings } from "./queries/reading";
 export {
   listRevisions,
   REVISIONS_KEPT,

@@ -8,7 +8,7 @@
     "./schema": "./src/schema/index.ts"
   },
   "scripts": {
-    "build": "esbuild src/migrate.ts src/seed.ts src/create-admin.ts --bundle --platform=node --format=esm --target=node26 --outdir=dist --out-extension:.js=.mjs --external:pg-native --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\"",
+    "build": "esbuild src/migrate.ts src/seed.ts src/create-admin.ts src/cache-handler.ts --bundle --platform=node --format=esm --target=node26 --outdir=dist --out-extension:.js=.mjs --external:pg-native --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\"",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",

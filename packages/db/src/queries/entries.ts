@@ -4,6 +4,7 @@ import {
   type EntryListQuery,
   type EntrySortKey,
   type EntryView,
+  isReservedPostSlug,
   isReservedRootSlug,
   pagePath,
   postPath,
@@ -274,7 +275,7 @@ export interface EntryLink {
   public: boolean;
 }
 
-const isPublic = sql<boolean>`(${entries.status} = 'published' and ${entries.publishedAt} <= now() and ${entries.deletedAt} is null)`;
+export const isPublic = sql<boolean>`(${entries.status} = 'published' and ${entries.publishedAt} <= now() and ${entries.deletedAt} is null)`;
 
 // The entries blocks link to, by id: their current paths, so links follow renames (§5.1).
 export async function getEntryLinks(
@@ -409,7 +410,9 @@ async function place(
 ): Promise<Placement> {
   const base = input.requested || slugify(input.title);
   const reserved =
-    input.type === "page" && input.parentPath === null && isReservedRootSlug(base, input.postsPath);
+    input.type === "page"
+      ? input.parentPath === null && isReservedRootSlug(base, input.postsPath)
+      : isReservedPostSlug(base);
   if (reserved && input.requested) return { ok: false, error: "reserved-slug" };
 
   for (let n = reserved ? 2 : 1; n <= 1000; n++) {
@@ -454,7 +457,7 @@ async function resolveParent(
   return parent ? { ok: true, path: parent.path } : { ok: false, error: "invalid-parent" };
 }
 
-interface Move {
+export interface Move {
   from: string;
   to: string;
 }
@@ -496,7 +499,7 @@ interface Public {
 // A path a live entry now has is no longer a redirect's source; redirects to an old path follow
 // it to the new one, so there are no chains; a redirect to itself is dropped. Together that
 // keeps redirects free of loops when an entry moves back to where it was.
-async function writeRedirects(db: Executor, moves: readonly Move[]): Promise<void> {
+export async function writeRedirects(db: Executor, moves: readonly Move[]): Promise<void> {
   if (moves.length === 0) return;
   await db.delete(redirects).where(
     inArray(

@@ -44,6 +44,8 @@ describe("bootstrapSite", () => {
       tagline: "",
       language: "en",
       siteUrl: "https://example.com",
+      dateFormat: "dd/MM/yyyy",
+      timeZone: "Europe/London",
     });
     expect(await getSettings(db, "reading")).toMatchObject({
       postsPath: "/blog",

@@ -1,4 +1,6 @@
 import * as v from "valibot";
+import { DateFormatSchema, DEFAULT_DATE_FORMAT, DEFAULT_TIME_ZONE, TimeZoneSchema } from "./dates";
+import { RESERVED_SEGMENTS } from "./entries";
 import { Uuid } from "./shared";
 
 // Settings rows (design §5.4). Each value is validated by its schema on every write.
@@ -8,6 +10,10 @@ export const SiteSettings = v.object({
   tagline: v.pipe(v.string(), v.maxLength(200)),
   language: v.pipe(v.string(), v.regex(/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/)), // "en", "nl-NL"
   siteUrl: v.pipe(v.string(), v.url()), // canonical base URL
+  // How dates are written and in which zone (decisions #69). Defaults for rows written before
+  // these existed.
+  dateFormat: v.optional(DateFormatSchema, DEFAULT_DATE_FORMAT),
+  timeZone: v.optional(TimeZoneSchema, DEFAULT_TIME_ZONE),
 });
 export type SiteSettings = v.InferOutput<typeof SiteSettings>;
 
@@ -40,6 +46,97 @@ export const ThemeSettings = v.object({
   ),
 });
 export type ThemeSettings = v.InferOutput<typeof ThemeSettings>;
+
+// The tokens Appearance offers to override: nuvui's semantic colors, the radius scale and the
+// font stacks (its theming page). Any name the TokenName rule allows is still accepted.
+export const THEME_TOKENS = [
+  "--color-primary",
+  "--color-primary-foreground",
+  "--color-background",
+  "--color-foreground",
+  "--color-surface",
+  "--color-surface-foreground",
+  "--color-muted",
+  "--color-muted-foreground",
+  "--color-border",
+  "--color-border-strong",
+  "--color-ring",
+  "--color-danger",
+  "--color-danger-foreground",
+  "--color-success",
+  "--color-warning",
+  "--radius-sm",
+  "--radius-md",
+  "--radius-lg",
+  "--radius-xl",
+  "--font-sans",
+  "--font-mono",
+] as const;
+
+export const THEME_PRESETS = ThemeSettings.entries.preset.options;
+
+// ── What the Settings forms send ─────────────────────────────────────────────────────────────
+// Form fields are text; these trim, convert and give messages written for the form.
+
+export const SiteSettingsInput = v.object({
+  title: v.pipe(
+    v.string(),
+    v.trim(),
+    v.minLength(1, "Enter the site's title"),
+    v.maxLength(120, "Use at most 120 characters"),
+  ),
+  tagline: v.pipe(v.string(), v.trim(), v.maxLength(200, "Use at most 200 characters")),
+  language: v.pipe(
+    v.string(),
+    v.trim(),
+    v.regex(/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/, "Use a language tag such as en or nl-NL"),
+  ),
+  siteUrl: v.pipe(
+    v.string(),
+    v.trim(),
+    v.url("Enter the site's address, such as https://example.com"),
+    v.check((s) => /^https?:\/\//.test(s), "The address must start with https:// or http://"),
+    v.transform((s) => s.replace(/\/+$/, "")),
+  ),
+});
+export type SiteSettingsInput = v.InferOutput<typeof SiteSettingsInput>;
+
+export const PostsPath = v.pipe(
+  v.string(),
+  v.trim(),
+  v.toLowerCase(),
+  v.regex(/^\/[a-z0-9-]+$/, "Use a slash and one word, such as /blog"),
+  v.check(
+    (s) => !(RESERVED_SEGMENTS as readonly string[]).includes(s.slice(1)),
+    "That address belongs to another part of the site",
+  ),
+);
+
+export const ReadingSettingsInput = v.object({
+  homepageEntryId: v.union([
+    v.pipe(
+      v.literal(""),
+      v.transform(() => null),
+    ),
+    Uuid,
+  ]),
+  postsPerPage: v.pipe(
+    v.string(),
+    v.trim(),
+    v.regex(/^\d+$/, "Enter a whole number"),
+    v.toNumber(),
+    v.minValue(1, "Show at least 1"),
+    v.maxValue(50, "Show at most 50"),
+  ),
+  postsPath: PostsPath,
+});
+export type ReadingSettingsInput = v.InferOutput<typeof ReadingSettingsInput>;
+
+export const DateSettingsInput = v.object({
+  dateFormat: DateFormatSchema,
+  timeZone: TimeZoneSchema,
+});
+export type DateSettingsInput = v.InferOutput<typeof DateSettingsInput>;
 
 // ── Media storage ────────────────────────────────────────────────────────────────────────────
 // Where uploads go, when an admin has chosen in Settings (decisions #45). No row means the
@@ -142,7 +239,14 @@ export function defaultSettings(siteUrl: string): {
   [K in DefaultSettingsKey]: SettingsValue<K>;
 } {
   return {
-    site: { title: "My Site", tagline: "", language: "en", siteUrl },
+    site: {
+      title: "My Site",
+      tagline: "",
+      language: "en",
+      siteUrl,
+      dateFormat: DEFAULT_DATE_FORMAT,
+      timeZone: DEFAULT_TIME_ZONE,
+    },
     reading: { homepageEntryId: null, postsPerPage: 10, postsPath: "/blog" },
     theme: { preset: "default", mode: "system", density: "default", tokens: {} },
   };

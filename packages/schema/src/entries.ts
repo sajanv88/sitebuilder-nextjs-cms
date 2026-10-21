@@ -77,6 +77,14 @@ export function isReservedRootSlug(slug: string, postsPath: string): boolean {
   return slug === postsSegment || (RESERVED_SEGMENTS as readonly string[]).includes(slug);
 }
 
+// The blog's own pages under the posts path (/blog/page/2, /blog/category/news, /blog/tag/x),
+// so no post can take these slugs (decisions #67).
+export const RESERVED_POST_SLUGS = ["page", "category", "tag"] as const;
+
+export function isReservedPostSlug(slug: string): boolean {
+  return (RESERVED_POST_SLUGS as readonly string[]).includes(slug);
+}
+
 // A page's path is its parent's path plus its slug; a root page's is "/" plus its slug.
 export function pagePath(parentPath: string | null, slug: string): string {
   return `${parentPath ?? ""}/${slug}`;
@@ -85,6 +93,16 @@ export function pagePath(parentPath: string | null, slug: string): string {
 // A post's path is the postsPath setting plus its slug.
 export function postPath(postsPath: string, slug: string): string {
   return `${postsPath}/${slug}`;
+}
+
+// A category's or tag's archive: under the posts path, as /blog/category/news.
+export function archivePath(postsPath: string, taxonomy: TaxonomyKind, slug: string): string {
+  return `${postsPath}/${taxonomy}/${slug}`;
+}
+
+// A list's page: the list itself for page 1, then /page/2 and on.
+export function listPagePath(base: string, page: number): string {
+  return page > 1 ? `${base === "/" ? "" : base}/page/${page}` : base;
 }
 
 // ── Inputs ───────────────────────────────────────────────────────────────────────────────────
