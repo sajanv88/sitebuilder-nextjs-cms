@@ -1,0 +1,23 @@
+import * as v from "valibot";
+
+// Shared pieces of the content schemas (design §5.1).
+
+export const Uuid = v.pipe(v.string(), v.uuid());
+
+// Ids of blocks and menu items: generated client-side with nanoid or similar.
+export const NodeId = v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{8,32}$/));
+
+// A site-relative path, or an absolute http, https, mailto or tel address. Nothing else:
+// javascript:, data: and protocol-relative links (//host) are rejected.
+export const Url = v.pipe(
+  v.string(),
+  v.maxLength(2048),
+  v.regex(/^(\/(?!\/)[^\s]*|https?:\/\/[^\s]+|mailto:[^\s@]+@[^\s@]+|tel:[+0-9 ()-]+)$/),
+);
+
+// A link target: another entry (follows renames) or a URL.
+export const LinkTarget = v.variant("kind", [
+  v.object({ kind: v.literal("entry"), entryId: Uuid }),
+  v.object({ kind: v.literal("url"), url: Url }),
+]);
+export type LinkTarget = v.InferOutput<typeof LinkTarget>;

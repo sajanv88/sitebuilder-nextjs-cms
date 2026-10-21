@@ -1,0 +1,44 @@
+{
+  "name": "@sitebuilder/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "build": "esbuild src/migrate.ts src/seed.ts src/create-admin.ts --bundle --platform=node --format=esm --target=node26 --outdir=dist --out-extension:.js=.mjs --external:pg-native --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:check": "drizzle-kit check",
+    "db:migrate": "pnpm run build && node --env-file-if-exists=../../.env dist/migrate.mjs",
+    "db:seed": "pnpm run build && node --env-file-if-exists=../../.env dist/seed.mjs",
+    "db:studio": "drizzle-kit studio",
+    "db:create-admin": "pnpm run build && node --env-file-if-exists=../../.env dist/create-admin.mjs",
+    "db:auth-schema": "pnpm --config.trust-policy-exclude=semver@6.3.1 dlx auth@1.7.11 generate --config auth.config.ts --output src/schema/auth-schema.ts --yes && biome check --write src/schema/auth-schema.ts"
+  },
+  "dependencies": {
+    "@better-auth/core": "catalog:",
+    "@better-auth/drizzle-adapter": "catalog:",
+    "@better-auth/utils": "catalog:",
+    "@sitebuilder/schema": "workspace:*",
+    "better-auth": "catalog:",
+    "drizzle-orm": "catalog:",
+    "pg": "catalog:",
+    "server-only": "catalog:",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "catalog:",
+    "@sitebuilder/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "drizzle-kit": "catalog:",
+    "esbuild": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "license": "GPL-2.0-or-later"
+}
