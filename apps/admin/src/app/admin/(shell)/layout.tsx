@@ -15,6 +15,7 @@ function navFor(viewer: Viewer): NavKey[] {
     appearance: can(viewer, "theme.update"),
     users: can(viewer, "user.read"),
     settings: can(viewer, "settings.update"),
+    terms: can(viewer, "term.update"),
   };
   return (Object.keys(shows) as NavKey[]).filter((key) => shows[key]);
 }

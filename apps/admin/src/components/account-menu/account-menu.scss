@@ -1,0 +1,16 @@
+// The trigger is a SidebarMenuButton; these only place what's inside it.
+.account-menu {
+  // The person's initials stand where an item's icon would, at a size that still fits the
+  // strip when the sidebar is folded.
+  &__avatar {
+    --nuv-avatar-size: 1.5rem;
+    --nuv-avatar-font-size: var(--text-xs);
+
+    flex: none;
+  }
+
+  // The arrow goes to the far end of the row.
+  &__chevron {
+    margin-inline-start: auto;
+  }
+}

@@ -41,6 +41,10 @@ const nextConfig: NextConfig = {
     useTypeScriptCli: true,
     // Each icon is its own module; this prunes the unused ones in development too.
     optimizePackageImports: ["@nuvui/icons"],
+    // Every admin screen reads the session and renders per request (the root layout's nonce,
+    // instant = false). Validate instant navigation only where a segment asks for it with
+    // `instant`, instead of flagging every page in development (decisions #43).
+    instantInsights: { validationLevel: "manual-warning" },
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
