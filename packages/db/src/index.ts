@@ -106,6 +106,7 @@ export {
   type RevisionRow,
   restoreRevision,
 } from "./queries/revisions";
+export { publishDueEntries } from "./queries/scheduled";
 export {
   deleteSettings,
   getSettings,

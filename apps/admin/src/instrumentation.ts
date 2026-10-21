@@ -23,6 +23,8 @@ export async function register() {
       console.error(error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
+    const { startScheduler } = await import("./server/scheduler");
+    startScheduler();
   }
 }
 
