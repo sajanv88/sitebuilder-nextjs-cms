@@ -1,18 +1,8 @@
-import { BookOpenIcon } from "@nuvui/icons";
 import type { Metadata } from "next";
-import { requireSomePermission } from "@/auth/session";
-import { AdminEmpty } from "@/components/admin-empty/admin-empty";
-import { AdminPage } from "@/components/admin-page/admin-page";
+import { EntryListScreen } from "@/components/entry-list-screen/entry-list-screen";
 
 export const metadata: Metadata = { title: "Posts" };
 
-export default async function PostsPage() {
-  await requireSomePermission("post.read");
-  return (
-    <AdminPage title="Posts">
-      <AdminEmpty icon={<BookOpenIcon size={24} />} title="No posts yet">
-        Posts you write will be listed here.
-      </AdminEmpty>
-    </AdminPage>
-  );
+export default function PostsPage({ searchParams }: PageProps<"/admin/posts">) {
+  return <EntryListScreen type="post" searchParams={searchParams} />;
 }

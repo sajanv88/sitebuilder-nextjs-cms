@@ -1,18 +1,8 @@
-import { FileTextIcon } from "@nuvui/icons";
 import type { Metadata } from "next";
-import { requireSomePermission } from "@/auth/session";
-import { AdminEmpty } from "@/components/admin-empty/admin-empty";
-import { AdminPage } from "@/components/admin-page/admin-page";
+import { EntryListScreen } from "@/components/entry-list-screen/entry-list-screen";
 
 export const metadata: Metadata = { title: "Pages" };
 
-export default async function PagesPage() {
-  await requireSomePermission("page.read");
-  return (
-    <AdminPage title="Pages">
-      <AdminEmpty icon={<FileTextIcon size={24} />} title="No pages yet">
-        Pages you create will be listed here.
-      </AdminEmpty>
-    </AdminPage>
-  );
+export default function PagesPage({ searchParams }: PageProps<"/admin/pages">) {
+  return <EntryListScreen type="page" searchParams={searchParams} />;
 }

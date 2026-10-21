@@ -1,0 +1,57 @@
+@use "abstracts" as a;
+
+// One column that may not grow past the room it has: the table is wider than a phone, and
+// scrolls in its own box.
+.entry-table {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: a.space(4);
+
+  &__views {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(1);
+  }
+
+  &__count {
+    margin-inline-start: a.space(1.5);
+    color: var(--color-muted-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__title {
+    display: grid;
+    gap: a.space(0.5);
+    min-inline-size: 12rem;
+  }
+
+  &__name {
+    color: var(--color-foreground);
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    @include a.focus-ring;
+  }
+
+  &__path {
+    color: var(--color-muted-foreground);
+    font-size: var(--text-xs);
+    overflow-wrap: anywhere;
+  }
+
+  // Pushes the column chooser to the far end.
+  &__gap {
+    flex: 1 1 0;
+  }
+
+  // A button that's only an icon: square, at the size of the button it is.
+  &__more {
+    aspect-ratio: 1;
+    padding: 0;
+  }
+}

@@ -1,14 +1,33 @@
 @use "abstracts" as a;
 
+// Fluid: it fills the page area up to --app-content-max-width, then stays that wide in the
+// middle of a larger screen.
 .admin-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: a.space(6);
   align-content: start;
   max-inline-size: var(--app-content-max-width);
+  margin-inline: auto;
   padding: a.space(4);
 
   @include a.breakpoint("md") {
     padding: a.space(8);
+  }
+
+  // The title, and the actions beside it once there's room; under it before that.
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(4);
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
   }
 
   &__title {

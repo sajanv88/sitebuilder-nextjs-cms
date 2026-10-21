@@ -13,6 +13,7 @@
   "dependencies": {
     "@nuvui/icons": "catalog:",
     "@nuvui/react": "catalog:",
+    "@nuvui/table": "catalog:",
     "@opentelemetry/api": "catalog:",
     "@opentelemetry/api-logs": "catalog:",
     "@opentelemetry/instrumentation": "catalog:",
@@ -22,6 +23,7 @@
     "@opentelemetry/sdk-trace-base": "catalog:",
     "@sitebuilder/db": "workspace:*",
     "@sitebuilder/schema": "workspace:*",
+    "@tanstack/react-table": "catalog:",
     "@vercel/otel": "catalog:",
     "better-auth": "catalog:",
     "next": "catalog:",

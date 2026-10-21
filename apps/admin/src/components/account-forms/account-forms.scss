@@ -1,0 +1,13 @@
+@use "abstracts" as a;
+
+// The two cards, one under the other, no wider than a form reads well at.
+.account-forms {
+  display: grid;
+  gap: a.space(6);
+  max-inline-size: 36rem;
+
+  &__fields {
+    display: grid;
+    gap: a.space(4);
+  }
+}

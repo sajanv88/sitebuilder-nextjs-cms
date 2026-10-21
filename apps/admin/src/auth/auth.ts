@@ -1,11 +1,28 @@
 import "server-only";
-import { authDatabase } from "@sitebuilder/db";
-import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@sitebuilder/schema";
+import {
+  authDatabase,
+  clearFailedSignIns,
+  db,
+  isSignInLocked,
+  recordFailedSignIn,
+} from "@sitebuilder/db";
+import { Email, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@sitebuilder/schema";
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins";
+import * as v from "valibot";
 import { env } from "@/env";
 import { ac, roles } from "./access-control";
+
+const SignInBody = v.object({ email: Email });
+
+// The account a sign-in is for, from the request body. Undefined for anything else.
+function signInEmail(path: string, body: unknown): string | undefined {
+  if (path !== "/sign-in/email") return undefined;
+  const parsed = v.safeParse(SignInBody, body);
+  return parsed.success ? parsed.output.email : undefined;
+}
 
 // Better Auth (design §6, §8.1). Plugins and the rate-limit storage add tables: change them in
 // packages/db/auth.config.ts too, then `pnpm --filter @sitebuilder/db db:auth-schema`.
@@ -35,6 +52,29 @@ function createAuth() {
       enabled: true,
       storage: "database",
       customRules: { "/sign-in/email": { window: 60, max: 5 } },
+    },
+    // Failed sign-ins are also counted per account (decisions #21, #37): 10 within 15 minutes
+    // locks the account's sign-in until 15 minutes after the last one. A success clears it.
+    hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        const email = signInEmail(ctx.path, ctx.body);
+        if (email && (await isSignInLocked(db, email))) {
+          throw new APIError("TOO_MANY_REQUESTS", {
+            code: "ACCOUNT_LOCKED",
+            message: "Too many failed attempts for this account. Try again in 15 minutes.",
+          });
+        }
+      }),
+      after: createAuthMiddleware(async (ctx) => {
+        const email = signInEmail(ctx.path, ctx.body);
+        if (!email) return;
+        const returned = ctx.context.returned;
+        if (isAPIError(returned)) {
+          if (returned.statusCode === 401) await recordFailedSignIn(db, email);
+        } else {
+          await clearFailedSignIns(db, email);
+        }
+      }),
     },
     plugins: [
       admin({ ac, roles, defaultRole: "author", adminRoles: ["admin"] }),

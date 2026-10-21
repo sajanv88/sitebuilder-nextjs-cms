@@ -2,8 +2,9 @@
 // can() reads it, and access-control.ts registers it with Better Auth's admin plugin.
 // `xOwn` is the action `x` restricted to entries or files the actor owns.
 
-export const ROLES = ["admin", "editor", "author"] as const;
-export type Role = (typeof ROLES)[number];
+import type { Role } from "@sitebuilder/schema";
+
+export { ROLES, type Role } from "@sitebuilder/schema";
 
 export const statements = {
   post: [

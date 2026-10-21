@@ -1,0 +1,51 @@
+@use "abstracts" as a;
+
+.revision-history {
+  &__list {
+    display: grid;
+    gap: a.space(2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__placeholder {
+    block-size: 3.5rem;
+  }
+
+  &__item {
+    display: flex;
+    gap: a.space(3);
+    align-items: center;
+    justify-content: space-between;
+    padding: a.space(3);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  &__about {
+    display: grid;
+    gap: a.space(0.5);
+    min-inline-size: 0;
+  }
+
+  &__when {
+    font-weight: var(--font-weight-medium);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__who,
+  &__title {
+    overflow: hidden;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__current {
+    flex: none;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+}

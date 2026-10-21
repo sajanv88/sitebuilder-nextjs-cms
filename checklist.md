@@ -145,3 +145,47 @@ Derived from [plan.md](plan.md). Only phase 1. Anything outside it goes in `docs
 - [x] No phase 2+ features (blocks, media, import-wordpress packages, Helm chart)
 - [ ] Small commits with conventional messages: not done, by request (no git commits)
 - [x] Each skill's verify commands run as you go
+
+# Phase 2 (Content) checklist
+
+Plan: [docs/phase-2-plan.md](docs/phase-2-plan.md), approved 2026-10-21. No post body until phase 3; the Users screen is in this phase.
+
+## 1. packages/schema
+- [x] Slug rules and `slugify`, reserved first segments (plus `admin-static`), path helpers
+- [x] Entry inputs (fields, publish, conflict token), list query with a sort allow-list
+- [x] Term input, user inputs (new user, role, password)
+- [x] Unit tests
+
+## 2. packages/db
+- [x] Entries: list, get for edit, create, update (conflict check, path cascade, redirects), publish/schedule/unpublish, trash/restore, delete from trash
+- [x] Revisions: write on save and publish, prune to 50, list, restore
+- [x] Terms: list, create, rename, delete, set an entry's terms
+- [x] Users: list, count admins, reassign content
+- [x] PGlite tests for each
+
+## 3. Admin: data layer and lists
+- [x] `src/server/` functions: session → valibot → load owner → `can()` → query
+- [x] Posts and Pages lists: DataTable in server mode, state in the URL, status views, row and bulk actions
+- [x] Toaster once in the root layout; dates shown in UTC with the zone named
+
+## 4. Admin: entry editor
+- [x] New and edit routes for posts and pages, page-header with status and actions
+- [x] Fields: title, excerpt, slug and path, parent, author, categories and tags, SEO, publish date
+- [x] Conflict message on a stale save; History sheet with restore
+
+## 5. Categories and tags
+- [x] Screens under Posts, create/rename/delete, sidebar sub-items
+
+## 6. Users and My account
+- [x] Users list, create, role, password, ban/unban, delete with reassign
+- [x] Last-admin rule under an advisory lock
+- [x] My account: own name and password
+
+## 7. Items from docs/next.md
+- [x] Real 404 status for screens a role can't use: kept decision #25, re-checked and explained
+- [x] Sign-in limiting per account
+
+## 8. Verify and report
+- [x] Install, biome ci, stylelint, typecheck, tests, build, both images read-only
+- [x] Gate in the browser as admin and as an author (through port 3000, production images)
+- [x] decisions.md, next.md, licences.md updated

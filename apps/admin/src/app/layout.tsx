@@ -1,6 +1,8 @@
 import "@nuvui/react/styles.css";
+import "@nuvui/table/styles.css";
 import "@/styles/globals.scss";
 
+import { Toaster } from "@nuvui/react";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { NonceProvider } from "@/components/nonce-provider/nonce-provider";
@@ -20,6 +22,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" data-theme="system" data-density="default">
       <body>
         <NonceProvider nonce={nonce}>{children}</NonceProvider>
+        {/* Once, for the whole app: toast() calls from any client component show here. */}
+        <Toaster />
       </body>
     </html>
   );

@@ -39,9 +39,11 @@ export function SignInForm() {
     if (result.error) {
       setPending(false);
       setError(
-        result.error.status === 429
-          ? "Too many attempts. Wait a minute, then try again."
-          : "That email address and password don't match an account.",
+        result.error.code === "ACCOUNT_LOCKED"
+          ? "Too many failed attempts for this account. Try again in 15 minutes."
+          : result.error.status === 429
+            ? "Too many attempts. Wait a minute, then try again."
+            : "That email address and password don't match an account.",
       );
       return;
     }

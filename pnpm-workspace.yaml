@@ -8,6 +8,7 @@ catalog:
   "@biomejs/biome": 2.5.15
   "@nuvui/icons": 0.1.0
   "@nuvui/react": 0.7.0
+  "@nuvui/table": 0.1.7
   "@opentelemetry/api": 1.9.1
   "@opentelemetry/api-logs": 0.223.0
   "@opentelemetry/instrumentation": 0.223.0
@@ -15,6 +16,7 @@ catalog:
   "@opentelemetry/sdk-logs": 0.223.0
   "@opentelemetry/sdk-metrics": 2.12.0
   "@opentelemetry/sdk-trace-base": 2.12.0
+  "@tanstack/react-table": 9.3.1
   "@types/node": 26.6.5
   "@types/react": 19.3.0
   "@types/react-dom": 19.3.0
@@ -58,4 +60,7 @@ audit:
 
 permissions:
   drizzle-kit:
+    skills: false
+  # Ships agent skills too. Not approved: dependencies don't add instructions for Claude.
+  "@tanstack/react-table":
     skills: false

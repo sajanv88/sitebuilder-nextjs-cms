@@ -1,0 +1,17 @@
+@use "abstracts" as a;
+
+.term-picker {
+  &__trigger {
+    inline-size: 100%;
+  }
+
+  // What's chosen, shown beside the trigger: the trigger is a button and can't hold them.
+  &__picked {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(1.5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}

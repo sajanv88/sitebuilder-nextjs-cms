@@ -1,17 +1,15 @@
 import "server-only";
+import { RoleSchema } from "@sitebuilder/schema";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import * as v from "valibot";
 import { auth } from "./auth";
 import { type Action, type Actor, can, canSome, type Resource } from "./can";
-import { ROLES } from "./permissions";
 
 export interface Viewer extends Actor {
   name: string;
   email: string;
 }
-
-const RoleSchema = v.picklist(ROLES);
 
 // The signed-in user, read from Postgres on every call. A session whose role isn't one of ours,
 // or whose user is banned, counts as signed out.

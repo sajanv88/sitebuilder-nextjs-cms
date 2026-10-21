@@ -1,0 +1,23 @@
+@use "abstracts" as a;
+
+.term-manager {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: a.space(4);
+
+  &__bar {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__form {
+    display: grid;
+    gap: a.space(4);
+  }
+
+  // A button that's only an icon: square, at the size of the button it is.
+  &__more {
+    aspect-ratio: 1;
+    padding: 0;
+  }
+}

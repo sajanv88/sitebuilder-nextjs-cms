@@ -1,0 +1,83 @@
+@use "abstracts" as a;
+
+// Fluid up to --app-content-max-width, then centred, like every admin screen. The header is
+// nuvui's page-header block; under it, the entry and its settings, side by side from lg.
+.entry-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: a.space(6);
+  align-content: start;
+  max-inline-size: var(--app-content-max-width);
+  margin-inline: auto;
+  padding: a.space(4);
+
+  @include a.breakpoint("md") {
+    padding: a.space(8);
+  }
+
+  &__head {
+    display: grid;
+    gap: a.space(4);
+  }
+
+  // The title on one side and the actions on the other, once there's room.
+  &__row {
+    display: grid;
+    gap: a.space(4);
+
+    @include a.breakpoint("md") {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+    }
+  }
+
+  &__heading {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2) a.space(3);
+    align-items: center;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    overflow-wrap: anywhere;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+  }
+
+  &__body {
+    display: grid;
+    gap: a.space(6);
+    align-items: start;
+
+    @include a.breakpoint("lg") {
+      grid-template-columns: minmax(0, 1fr) 20rem;
+    }
+  }
+
+  &__main,
+  &__side,
+  &__card {
+    display: grid;
+    gap: a.space(5);
+    min-inline-size: 0;
+  }
+
+  &__side {
+    gap: a.space(4);
+  }
+
+  &__note {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+}
