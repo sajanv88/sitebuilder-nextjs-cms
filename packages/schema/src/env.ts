@@ -32,6 +32,16 @@ const base = {
     String(25 * 1024 * 1024),
   ),
   CRON_SECRET: v.optional(v.pipe(v.string(), v.minLength(32, "Must be at least 32 characters"))),
+  // The request header that holds the client's address, for the per-IP sign-in limit. Only
+  // trustworthy when a proxy in front overwrites it: the ingress in Kubernetes (x-real-ip), a
+  // reverse proxy in front of Compose. Unset is Better Auth's default, x-forwarded-for.
+  CLIENT_IP_HEADER: v.optional(
+    v.pipe(
+      v.string(),
+      v.toLowerCase(),
+      v.regex(/^[a-z0-9-]{1,64}$/, "Must be a header name, such as x-real-ip"),
+    ),
+  ),
   // Where local storage keeps files. Read with S3 too: files uploaded before a switch to S3
   // stay on disk (decisions #48).
   MEDIA_LOCAL_DIR: v.optional(v.pipe(v.string(), v.minLength(1)), "/data/media"),

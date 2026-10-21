@@ -30,13 +30,16 @@ export interface AuthConfig {
   // The public domain: both zones serve it, and the admin zone answers /api/auth.
   siteUrl: string;
   secret: string;
+  // The header with the client's address (CLIENT_IP_HEADER). Undefined keeps Better Auth's
+  // default, x-forwarded-for, trusted only when it holds a single address.
+  clientIpHeader?: string | undefined;
 }
 
 // Better Auth (design §6, §8.1), the same for both zones: the admin signs people in, the site
 // reads the session for preview (decisions #66). Plugins and the rate-limit storage add
 // tables: change them in packages/db/auth.config.ts too, then
 // `pnpm --filter @sitebuilder/db db:auth-schema`.
-export function createAuth({ siteUrl: SITE_URL, secret: AUTH_SECRET }: AuthConfig) {
+export function createAuth({ siteUrl: SITE_URL, secret: AUTH_SECRET, clientIpHeader }: AuthConfig) {
   return betterAuth({
     appName: "Sitebuilder",
     // The public domain: both zones serve it, and the admin zone answers /api/auth.
@@ -46,6 +49,9 @@ export function createAuth({ siteUrl: SITE_URL, secret: AUTH_SECRET }: AuthConfi
     trustedOrigins: [SITE_URL],
     database: authDatabase,
     telemetry: { enabled: false },
+    // Next keeps a client's own X-Forwarded-For (decisions #74), so the per-IP limit holds only
+    // behind a proxy that overwrites the header named here.
+    ...(clientIpHeader ? { advanced: { ipAddress: { ipAddressHeaders: [clientIpHeader] } } } : {}),
     emailAndPassword: {
       enabled: true,
       // Users are created by /setup and by an admin; there is no public sign-up.

@@ -15,8 +15,12 @@ import { env } from "@/env";
 let instance: Auth | undefined;
 
 function auth(): Auth {
-  const { SITE_URL, AUTH_SECRET } = env();
-  instance ??= createAuth({ siteUrl: SITE_URL, secret: AUTH_SECRET });
+  const { SITE_URL, AUTH_SECRET, CLIENT_IP_HEADER } = env();
+  instance ??= createAuth({
+    siteUrl: SITE_URL,
+    secret: AUTH_SECRET,
+    clientIpHeader: CLIENT_IP_HEADER,
+  });
   return instance;
 }
 

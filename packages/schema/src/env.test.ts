@@ -63,6 +63,15 @@ describe("parseEnv", () => {
     expect(result.message).not.toContain("too-short-secret");
   });
 
+  test("CLIENT_IP_HEADER is optional, lowercased, and only a header name", () => {
+    const unset = parseEnv(local);
+    expect(unset.ok && unset.env.CLIENT_IP_HEADER).toBeUndefined();
+    const set = parseEnv({ ...local, CLIENT_IP_HEADER: "X-Real-IP" });
+    expect(set.ok && set.env.CLIENT_IP_HEADER).toBe("x-real-ip");
+    const bad = parseEnv({ ...local, CLIENT_IP_HEADER: "x-real-ip, x-forwarded-for" });
+    expect(bad.ok ? "" : bad.message).toContain("CLIENT_IP_HEADER: Must be a header name");
+  });
+
   test("an unknown MEDIA_STORAGE is refused", () => {
     const result = parseEnv({ ...local, MEDIA_STORAGE: "ftp" });
     expect(result.ok ? "" : result.message).toContain('MEDIA_STORAGE: Must be "local" or "s3"');
