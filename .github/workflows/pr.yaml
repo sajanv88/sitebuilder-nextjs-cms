@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The Helm chart (one, for now: phase 5 adds the admin zone to it).
-  APP: site
+  # The Helm chart: one, for both zones (decisions #77).
+  CHART: sitebuilder
   HELM_VERSION: v4.3.1
   KUBECONFORM_IMAGE: ghcr.io/yannh/kubeconform:v0.8.0
   KUBERNETES_VERSION: 1.34.0
@@ -45,6 +45,8 @@ jobs:
       - run: pnpm audit --audit-level high
       # Every source file carries the SPDX and copyright lines; every package.json is GPL-2.0-or-later.
       - run: pnpm check:licence
+      # Every dependency's licence is reviewed and THIRD_PARTY_LICENSES.md is current (design §9).
+      - run: pnpm licence-list --check
 
   build:
     if: ${{ !github.event.pull_request.draft }}
@@ -125,14 +127,14 @@ jobs:
           version: ${{ env.HELM_VERSION }}
       - name: helm lint
         run: |
-          helm lint --strict "charts/${APP}"
-          helm lint --strict "charts/${APP}" -f "charts/${APP}/values-production.yaml"
+          helm lint --strict "charts/${CHART}"
+          helm lint --strict "charts/${CHART}" -f "charts/${CHART}/values-production.yaml"
       - name: helm template | kubeconform
         run: |
           {
-            helm template "${APP}" "charts/${APP}"
+            helm template "${CHART}" "charts/${CHART}"
             echo "---"
-            helm template "${APP}" "charts/${APP}" -f "charts/${APP}/values-production.yaml"
+            helm template "${CHART}" "charts/${CHART}" -f "charts/${CHART}/values-production.yaml"
           } | docker run --rm -i "${KUBECONFORM_IMAGE}" \
                 -strict -summary -kubernetes-version "${KUBERNETES_VERSION}" -
 

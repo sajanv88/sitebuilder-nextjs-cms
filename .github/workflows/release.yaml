@@ -16,10 +16,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # The chart (one, for now: phase 5 adds the admin zone to it). The images: one per zone.
-  APP: site
-  IMAGES: ghcr.io/nuvraxis/site ghcr.io/nuvraxis/admin
-  CHART_REPOSITORY: oci://ghcr.io/nuvraxis/charts
+  # One chart for both zones (decisions #77); one image per zone. The registry paths are under
+  # the repository owner, lowercased in the first step (decisions #80).
+  CHART: sitebuilder
   HELM_VERSION: v4.3.1
 
 jobs:
@@ -34,6 +33,14 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Registry paths
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          {
+            echo "IMAGES=ghcr.io/${owner}/sitebuilder-site ghcr.io/${owner}/sitebuilder-admin"
+            echo "CHART_REPOSITORY=oci://ghcr.io/${owner}/charts"
+          } >> "${GITHUB_ENV}"
 
       - name: Check the tag is vX.Y.Z and on main
         run: |
@@ -85,11 +92,11 @@ jobs:
           REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: |
           version="${GITHUB_REF_NAME#v}"
-          helm lint --strict "charts/${APP}"
+          helm lint --strict "charts/${CHART}"
           # Sets version and appVersion in the packaged chart; Chart.yaml in git stays 0.0.0.
-          helm package "charts/${APP}" --version "${version}" --app-version "${GITHUB_REF_NAME}" --destination dist
+          helm package "charts/${CHART}" --version "${version}" --app-version "${GITHUB_REF_NAME}" --destination dist
           echo "${REGISTRY_PASSWORD}" | helm registry login ghcr.io --username "${GITHUB_ACTOR}" --password-stdin
-          helm push "dist/${APP}-${version}.tgz" "${CHART_REPOSITORY}"
+          helm push "dist/${CHART}-${version}.tgz" "${CHART_REPOSITORY}"
 
       - name: Create the GitHub Release
         env:

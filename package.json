@@ -19,7 +19,8 @@
     "db:migrate": "pnpm --filter @sitebuilder/db db:migrate",
     "db:seed": "pnpm --filter @sitebuilder/db db:seed",
     "db:studio": "pnpm --filter @sitebuilder/db db:studio",
-    "check:licence": "node scripts/check-licence.ts"
+    "check:licence": "node scripts/check-licence.ts",
+    "licence-list": "node scripts/licences.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
