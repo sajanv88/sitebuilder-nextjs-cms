@@ -1,0 +1,26 @@
+{
+  "name": "@sitebuilder/media",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@sitebuilder/schema": "workspace:*",
+    "aws4fetch": "catalog:",
+    "image-size": "catalog:",
+    "server-only": "catalog:"
+  },
+  "devDependencies": {
+    "@sitebuilder/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "license": "GPL-2.0-or-later"
+}

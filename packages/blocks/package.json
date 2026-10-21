@@ -1,0 +1,37 @@
+{
+  "name": "@sitebuilder/blocks",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@nuvui/icons": "catalog:",
+    "@nuvui/media": "catalog:",
+    "@nuvui/react": "catalog:",
+    "@nuvui/table": "catalog:",
+    "@sitebuilder/schema": "workspace:*",
+    "@tanstack/react-table": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "sanitize-html": "catalog:",
+    "server-only": "catalog:",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@sitebuilder/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@types/sanitize-html": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "license": "GPL-2.0-or-later"
+}
