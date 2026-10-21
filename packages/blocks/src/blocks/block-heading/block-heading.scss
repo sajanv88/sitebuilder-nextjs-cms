@@ -1,0 +1,38 @@
+// Sizes step down with the level and grow a little with the screen.
+.block-heading {
+  margin: 0;
+  color: var(--color-foreground);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+
+  &--level-1 {
+    font-size: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
+  }
+
+  &--level-2 {
+    font-size: clamp(1.75rem, 1.25rem + 2vw, 2.5rem);
+  }
+
+  &--level-3 {
+    font-size: clamp(1.375rem, 1.125rem + 1vw, 1.75rem);
+  }
+
+  &--level-4 {
+    font-size: var(--text-xl);
+  }
+
+  &--level-5 {
+    font-size: var(--text-lg);
+  }
+
+  &--level-6 {
+    font-size: var(--text-base);
+  }
+
+  &--center {
+    text-align: center;
+  }
+}

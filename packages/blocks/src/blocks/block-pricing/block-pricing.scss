@@ -1,0 +1,88 @@
+@use "@nuvui/react/scss/mixins" as nuv;
+
+// One plan to a row on a phone, side by side from the lg breakpoint.
+.block-pricing {
+  --block-pricing-count: 1;
+
+  display: grid;
+  gap: calc(var(--spacing) * 6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include nuv.breakpoint("lg") {
+    grid-template-columns: repeat(var(--block-pricing-count), minmax(0, 1fr));
+  }
+
+  &--count-2 {
+    --block-pricing-count: 2;
+  }
+
+  &--count-3 {
+    --block-pricing-count: 3;
+  }
+
+  &--count-4 {
+    --block-pricing-count: 4;
+  }
+
+  // The price and the list take the room there is, so the button sits at the foot of every
+  // card whatever the list's length.
+  &__card {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    block-size: 100%;
+  }
+
+  // The badge says which plan is recommended; the border is there for the eye.
+  &__card--highlighted {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-lg);
+  }
+
+  &__body {
+    display: grid;
+    gap: calc(var(--spacing) * 6);
+    align-content: start;
+  }
+
+  &__price {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  &__amount {
+    color: var(--color-surface-foreground);
+    font-size: 2.5rem;
+    font-weight: var(--font-weight-semibold);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__features {
+    display: grid;
+    gap: calc(var(--spacing) * 3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__feature {
+    display: flex;
+    gap: calc(var(--spacing) * 3);
+    align-items: start;
+  }
+
+  // Lined up with the first line of its feature.
+  &__check {
+    flex: none;
+    margin-block-start: 0.25em;
+    color: var(--color-muted-foreground);
+  }
+
+  &__action {
+    inline-size: 100%;
+  }
+}

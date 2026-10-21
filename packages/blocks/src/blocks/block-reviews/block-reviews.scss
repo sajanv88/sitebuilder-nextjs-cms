@@ -1,0 +1,39 @@
+// As many cards to a row as fit, never one narrower than 17rem.
+.block-reviews {
+  display: grid;
+  gap: calc(var(--spacing) * 4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &__card {
+    block-size: 100%;
+  }
+
+  &__body {
+    display: grid;
+    gap: calc(var(--spacing) * 3);
+    align-content: start;
+  }
+
+  &__figure {
+    display: grid;
+    gap: calc(var(--spacing) * 3);
+    margin: 0;
+  }
+
+  &__quote {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &__who {
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+}
+
+.block-reviews__quote :where(p) {
+  margin: 0;
+}

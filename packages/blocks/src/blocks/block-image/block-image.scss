@@ -1,0 +1,33 @@
+@use "@nuvui/react/scss/mixins" as nuv;
+
+.block-image {
+  --nuv-aspect-ratio-radius: var(--radius-lg);
+
+  display: grid;
+  gap: calc(var(--spacing) * 2);
+  margin: 0;
+
+  &--contain {
+    --nuv-aspect-ratio-fit: contain;
+  }
+
+  // Never wider than the column it's in; the height follows.
+  &__img {
+    display: block;
+    max-inline-size: 100%;
+    block-size: auto;
+    border-radius: var(--radius-lg);
+  }
+
+  &__link {
+    display: block;
+    border-radius: var(--radius-lg);
+
+    @include nuv.focus-ring;
+  }
+
+  &__caption {
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+}

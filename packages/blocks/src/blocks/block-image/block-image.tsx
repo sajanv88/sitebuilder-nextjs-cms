@@ -1,0 +1,122 @@
+import { ImageIcon } from "@nuvui/icons";
+import { AspectRatio } from "@nuvui/react";
+import { LinkTarget } from "@sitebuilder/schema";
+import type { ReactNode } from "react";
+import * as v from "valibot";
+import { BlockPlaceholder } from "../../placeholder/block-placeholder";
+import { cx, mediaId, optionalText } from "../../shared";
+import type { BlockDefinition, RenderMedia } from "../../types";
+import "./block-image.scss";
+
+const RATIOS = { "16:9": 16 / 9, "4:3": 4 / 3, "1:1": 1 } as const;
+
+const Props = v.strictObject({
+  mediaId,
+  // Omitted: the file's own alt text. Empty: decorative, read by nothing (design §5.5).
+  alt: v.optional(v.pipe(v.string(), v.trim(), v.maxLength(200))),
+  caption: optionalText(200),
+  link: v.optional(LinkTarget),
+  ratio: v.optional(v.picklist(["auto", "16:9", "4:3", "1:1"]), "auto"),
+  fit: v.optional(v.picklist(["cover", "contain"]), "cover"),
+});
+type Props = v.InferOutput<typeof Props>;
+
+// A plain <img> with its width and height, so the page doesn't jump when it loads. next/image
+// waits for phase 4: S3 addresses are runtime values and its remote patterns are fixed at build
+// (decisions #58). Every file is same-origin under /media/ anyway.
+export function MediaImage({
+  media,
+  alt,
+  className,
+}: {
+  media: RenderMedia;
+  alt: string;
+  className?: string;
+}) {
+  return (
+    // biome-ignore lint/performance/noImgElement: next/image is decided in phase 4 (decisions #58); the browser's lazy loading and the stored dimensions cover layout until then.
+    <img
+      className={className}
+      src={media.url}
+      alt={alt}
+      width={media.width ?? undefined}
+      height={media.height ?? undefined}
+      loading="lazy"
+      decoding="async"
+    />
+  );
+}
+
+export const image: BlockDefinition<Props> = {
+  type: "image",
+  label: "Image",
+  description: "A picture from the media library, with a caption and a link.",
+  category: "media",
+  icon: ImageIcon,
+  props: Props,
+  // No file yet: the editor asks for one, and a save refuses until it's chosen.
+  defaults: () => ({ mediaId: "", ratio: "auto", fit: "cover" }),
+  fields: [
+    { kind: "media", name: "mediaId", label: "Image", accept: "image" },
+    {
+      kind: "alt",
+      name: "alt",
+      label: "Alt text",
+      max: 200,
+      description: "What the picture shows, for people who can't see it.",
+    },
+    { kind: "text", name: "caption", label: "Caption", max: 200, optional: true },
+    { kind: "link", name: "link", label: "Links to", optional: true },
+    {
+      kind: "choice",
+      name: "ratio",
+      label: "Shape",
+      options: [
+        { value: "auto", label: "As uploaded" },
+        { value: "16:9", label: "Wide (16:9)" },
+        { value: "4:3", label: "Standard (4:3)" },
+        { value: "1:1", label: "Square" },
+      ],
+    },
+    {
+      kind: "choice",
+      name: "fit",
+      label: "Fit",
+      description: "Only for a set shape: crop to fill it, or show all of the picture.",
+      options: [
+        { value: "cover", label: "Fill and crop" },
+        { value: "contain", label: "Show all of it" },
+      ],
+    },
+  ],
+  summary: (props) => props.caption ?? props.alt ?? "Image",
+  Render: ({ props, context }) => {
+    const media = context.media(props.mediaId);
+    if (!media?.mimeType.startsWith("image/")) {
+      return context.editing ? (
+        <BlockPlaceholder icon={ImageIcon}>Choose an image</BlockPlaceholder>
+      ) : null;
+    }
+    const alt = props.alt ?? media.alt ?? "";
+    let picture: ReactNode = <MediaImage media={media} alt={alt} className="block-image__img" />;
+    if (props.ratio !== "auto") {
+      picture = <AspectRatio ratio={RATIOS[props.ratio]}>{picture}</AspectRatio>;
+    }
+    const href = props.link ? context.href(props.link) : undefined;
+    if (href) {
+      picture = (
+        <a className="block-image__link" href={href}>
+          {picture}
+        </a>
+      );
+    }
+    return (
+      <figure className={cx("block-image", props.fit === "contain" && "block-image--contain")}>
+        {picture}
+        {props.caption ? (
+          <figcaption className="block-image__caption">{props.caption}</figcaption>
+        ) : null}
+      </figure>
+    );
+  },
+};

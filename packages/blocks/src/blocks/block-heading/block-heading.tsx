@@ -1,0 +1,59 @@
+import { HeadingIcon } from "@nuvui/icons";
+import * as v from "valibot";
+import { cx, text } from "../../shared";
+import type { BlockDefinition } from "../../types";
+import "./block-heading.scss";
+
+const Props = v.strictObject({
+  text: text(200),
+  level: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(6)), 2),
+  align: v.optional(v.picklist(["start", "center"]), "start"),
+});
+type Props = v.InferOutput<typeof Props>;
+
+const TAGS = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
+
+export const heading: BlockDefinition<Props> = {
+  type: "heading",
+  label: "Heading",
+  description: "A title for a part of the page.",
+  category: "text",
+  icon: HeadingIcon,
+  props: Props,
+  defaults: () => ({ text: "Heading", level: 2, align: "start" }),
+  fields: [
+    { kind: "text", name: "text", label: "Text", max: 200 },
+    {
+      kind: "choice",
+      name: "level",
+      label: "Level",
+      description: "Level 1 is the page's title; use 2 for the parts under it, 3 inside those.",
+      options: TAGS.map((tag, index) => ({ value: String(index + 1), label: tag.toUpperCase() })),
+      numeric: true,
+    },
+    {
+      kind: "choice",
+      name: "align",
+      label: "Alignment",
+      options: [
+        { value: "start", label: "Start" },
+        { value: "center", label: "Center" },
+      ],
+    },
+  ],
+  summary: (props) => props.text,
+  Render: ({ props }) => {
+    const Tag = TAGS[props.level - 1] ?? "h2";
+    return (
+      <Tag
+        className={cx(
+          "block-heading",
+          `block-heading--level-${props.level}`,
+          props.align === "center" && "block-heading--center",
+        )}
+      >
+        {props.text}
+      </Tag>
+    );
+  },
+};

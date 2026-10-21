@@ -1,0 +1,10 @@
+// The type and size are part of the link's name, so a screen reader says them too.
+.block-file-download {
+  display: flex;
+
+  &__facts {
+    color: var(--color-muted-foreground);
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-normal);
+  }
+}

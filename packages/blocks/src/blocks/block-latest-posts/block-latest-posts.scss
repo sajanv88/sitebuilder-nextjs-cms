@@ -1,0 +1,49 @@
+@use "@nuvui/react/scss/mixins" as nuv;
+
+.block-latest-posts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &--list {
+    display: grid;
+    gap: calc(var(--spacing) * 5);
+  }
+
+  // As many cards to a row as fit, never one narrower than 17rem.
+  &--cards {
+    display: grid;
+    gap: calc(var(--spacing) * 4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  }
+
+  &__item {
+    display: grid;
+    gap: calc(var(--spacing) * 1);
+  }
+
+  &__card {
+    block-size: 100%;
+  }
+
+  // A link on a line of its own is underlined: color alone doesn't say it's a link.
+  &__link {
+    border-radius: var(--radius-xs);
+    color: var(--color-foreground);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+
+    @include nuv.focus-ring;
+  }
+
+  &__date {
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  &__excerpt {
+    margin: 0;
+    color: var(--color-muted-foreground);
+  }
+}

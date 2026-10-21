@@ -1,0 +1,48 @@
+@use "@nuvui/react/scss/mixins" as nuv;
+
+.block-feature-grid {
+  display: grid;
+  gap: calc(var(--spacing) * 8);
+
+  &__title {
+    max-inline-size: 22ch;
+    margin: 0;
+    font-size: clamp(1.75rem, 1.25rem + 2.2vw, 2.75rem);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  // As many cards to a row as fit, never one narrower than 17rem.
+  &__list {
+    display: grid;
+    gap: calc(var(--spacing) * 4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @include nuv.breakpoint("md") {
+      gap: calc(var(--spacing) * 6);
+    }
+  }
+
+  &__card {
+    block-size: 100%;
+  }
+
+  // The tint is mixed from the brand color, so a theme changes it. The icon is the text color,
+  // which is readable on either.
+  &__icon {
+    display: grid;
+    place-items: center;
+    inline-size: calc(var(--spacing) * 10);
+    block-size: calc(var(--spacing) * 10);
+    margin-block-end: calc(var(--spacing) * 3);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: color-mix(in oklab, var(--color-primary) 10%, transparent);
+    color: var(--color-surface-foreground);
+  }
+}
