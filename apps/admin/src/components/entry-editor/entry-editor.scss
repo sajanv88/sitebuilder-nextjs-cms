@@ -71,6 +71,11 @@
     min-inline-size: 0;
   }
 
+  // The time combobox fills the card, as the date picker does.
+  &__card {
+    --nuv-combobox-width: 100%;
+  }
+
   &__side {
     gap: a.space(4);
   }
