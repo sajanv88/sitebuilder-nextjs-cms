@@ -1,21 +1,43 @@
 # Sitebuilder
 
-An open-source, self-hosted, WordPress-style CMS. Editors build pages and posts under `/admin`, and the public site renders from Postgres. Working title; licensed GPL-2.0-or-later.
+An open-source, self-hosted, WordPress-style CMS. Editors build pages and posts from blocks under `/admin`; the public site renders from Postgres with caching, so publishing needs no rebuild or deploy. Working title; licensed GPL-2.0-or-later.
 
-> **Status: phase 1 (Foundation).** You can set up a site, sign in, and see the admin screens. Writing content comes in the next phase. See [docs/design.md](docs/design.md) for what's planned.
+What's in 0.1:
+- Pages and posts built from 21 blocks, with drafts, scheduling, revisions and autosave.
+- Categories and tags, two menus and a media library.
+- Themes made from presets plus your own colors, and users in three roles (admin, editor, author).
+- On the public site: SEO tags, a sitemap, an RSS feed, redirects when an address changes, and draft preview.
 
-## Quickstart
+## Quickstart (Docker Compose)
 
-You need Docker with Compose.
+You need Git and Docker with Compose v2.
 
 ```sh
+git clone https://github.com/sajanv88/sitebuilder-nextjs-cms.git sitebuilder
+cd sitebuilder
 cp .env.example .env
-# Set AUTH_SECRET in .env to at least 32 random characters, for example:
-#   openssl rand -base64 32
+```
+
+Open `.env` and set `AUTH_SECRET` to at least 32 random characters. To make one:
+
+```sh
+openssl rand -base64 32                                                        # macOS, Linux, Git Bash
+[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))   # PowerShell
+```
+
+Then start everything (the first build takes a few minutes):
+
+```sh
 docker compose up --build
 ```
 
-Then open <http://localhost:3000/setup> and create the first admin account. `/setup` works only while the site has no accounts; after that, sign in at <http://localhost:3000/admin>.
+Open <http://localhost:3000/setup> and create the first admin account. `/setup` works only while the site has no accounts; after that, sign in at <http://localhost:3000/admin>.
+
+From there:
+- **Settings:** name the site.
+- **Pages → New page:** build a page from blocks and publish it. It's live at its address straight away.
+- **Settings → Reading:** choose the home page.
+- **Menus:** build the header and footer menus.
 
 To create the first admin without a browser, for example from a provisioning script:
 
@@ -27,28 +49,161 @@ docker compose run --rm \
 
 It refuses if an account already exists. Pass `--force` after the script name to add another admin anyway.
 
+### On a server
+
+Compose publishes the site on port 3000 over plain HTTP. On a server, put a reverse proxy with TLS in front of it (Caddy, nginx, Traefik), and set:
+- `SITE_URL` to the public `https://` address. Sign-in only accepts requests from it.
+- `CLIENT_IP_HEADER` to the header your proxy overwrites with the visitor's address, usually `x-forwarded-for` for Caddy and Traefik. Sign-in attempts are then also limited per address; without it, they're limited per account only.
+
+The proxy must replace a header the visitor sent, not append to it. Next.js keeps whatever the visitor sends, so without such a proxy the header can't be trusted. With nginx, `$proxy_add_x_forwarded_for` appends, so set `proxy_set_header X-Real-IP $remote_addr;` and use `CLIENT_IP_HEADER=x-real-ip`.
+
 ## Configuration
 
-Everything is set with environment variables, read at startup. A missing or invalid value stops the server with a message that names it.
+Everything is set with environment variables, read at startup. A missing or invalid value stops the server with a message that names it; values are never printed.
 
 | Variable | Required | What it is |
 |---|---|---|
 | `DATABASE_URL` | yes | Postgres connection URL. Compose sets it for its own database. |
-| `AUTH_SECRET` | yes | At least 32 characters. Signs sessions; keep it secret and stable. |
-| `SITE_URL` | yes | The public address, such as `https://example.com`. Sign-in only accepts requests from it. |
-| `MEDIA_STORAGE` | yes | `local` (a Docker volume) or `s3` (any S3-compatible store, such as MinIO). |
-| `S3_ENDPOINT`, `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_PUBLIC_URL` | with `s3` | Where media is stored, and the public address files are served from. |
+| `AUTH_SECRET` | yes | At least 32 characters. Signs sessions and encrypts the S3 key saved in Settings; keep it secret and don't change it. |
+| `SITE_URL` | yes | The public address, such as `https://example.com`. |
+| `MEDIA_STORAGE` | yes | Where uploads go until an admin chooses in Settings → Media storage: `local` or `s3`. |
+| `MEDIA_LOCAL_DIR` | no | Local storage's folder. Default `/data/media`, the Compose volume. |
+| `S3_ENDPOINT`, `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | with `s3` | Any S3-compatible store: AWS S3, MinIO, Cloudflare R2. |
 | `MEDIA_MAX_BYTES` | no | Largest upload, in bytes. Default 25 MiB. |
-| `CRON_SECRET` | no | At least 32 characters. Protects the scheduled-publishing route (later phase). |
+| `CRON_SECRET` | no | At least 32 characters. Turns on `/api/cron/publish` for an outside cron service (see [Scheduled posts](#scheduled-posts)). |
+| `CLIENT_IP_HEADER` | no | The header with the visitor's address, for the per-address sign-in limit (see [On a server](#on-a-server)). |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_SERVICE_NAME`, … | no | OpenTelemetry traces and metrics, with the standard variables. |
 
-## How it's built
+## Media storage
 
-Two Next.js apps on one domain, as [Multi-Zones](https://nextjs.org/docs/app/guides/multi-zones):
+Uploads (images, video, PDF; up to `MEDIA_MAX_BYTES`) go either to a folder on disk or to an S3-compatible bucket. Every file is served from the site at `/media/<key>`, whichever storage holds it.
 
-- `apps/site`: the public site. It serves every path except the admin ones, which it forwards to the admin zone.
-- `apps/admin`: `/admin`, `/setup` and the sign-in API under `/api/auth`.
+- **Compose:** `local` storage is a Docker volume, `media`, written by the admin and read by the site.
+- **Kubernetes and Vercel:** use S3. Pods and functions don't keep files.
+- **Settings → Media storage:** an admin can switch to a bucket from the admin itself, with keys entered there. They're stored encrypted with `AUTH_SECRET`, and they win over the environment. Files already uploaded stay where they are and keep working.
 
-They share `packages/db` (Drizzle ORM, migrations and queries) and `packages/schema` (valibot schemas for content, settings and configuration). In Compose only `site` is published; `admin` is reachable from it as `http://admin:3000`. Choices that differ from the design are recorded in [docs/decisions.md](docs/decisions.md).
+## Scheduled posts
+
+Publish with a date in the future and the entry is **scheduled**. The admin checks once a minute, in every admin process, and publishes what's due; the site shows it on the next request. With Compose and Kubernetes there's nothing to set up.
+
+Where the admin doesn't keep running, call the cron route once a minute instead. That's Vercel, or any setup where you'd rather use system cron. Set `CRON_SECRET`, then:
+
+```sh
+curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://example.com/api/cron/publish
+```
+
+Without `CRON_SECRET` the route doesn't exist.
+
+## Upgrading
+
+Your content lives in Postgres and the media storage; the images hold no state.
+
+```sh
+git pull
+docker compose up --build -d
+```
+
+The `migrate` service applies new database migrations before the site and admin start. It's safe to run any number of times. In Kubernetes, the chart's migrate Job does the same on every sync.
+
+## Backups and restore
+
+Back up the database and the uploaded files together. The commands are for a POSIX shell (Linux, macOS). In Git Bash on Windows, run `export MSYS_NO_PATHCONV=1` first, or it rewrites `/backup` into a Windows path; PowerShell's `>` and `<` don't pass binary files through unchanged.
+
+```sh
+# Database (custom format, compressed)
+docker compose exec -T postgres pg_dump -U app -d sitebuilder -Fc > sitebuilder.dump
+
+# Uploads, with local storage: the media volume
+docker compose run --rm --no-deps -v "$PWD":/backup --entrypoint tar admin \
+  -czf /backup/media.tar.gz -C /data/media .
+```
+
+With S3 storage, back up the bucket with your provider's tools instead.
+
+To restore into a fresh install:
+1. Start only Postgres: `docker compose up -d postgres`.
+2. Restore the database.
+3. Unpack the media into the volume.
+4. Start the rest.
+
+```sh
+docker compose exec -T postgres pg_restore -U app -d sitebuilder --clean --if-exists < sitebuilder.dump
+docker compose run --rm --no-deps -u 0 -v "$PWD":/backup --entrypoint tar admin \
+  -xzf /backup/media.tar.gz -C /data/media
+docker compose up -d
+```
+
+`AUTH_SECRET` must be the same as when the backup was made, or everyone signs in again and an S3 key saved in Settings has to be entered again.
+
+## Kubernetes
+
+The Helm chart runs both zones (the site and the admin), a migrate Job, and an optional ingress:
+
+```sh
+helm install sitebuilder oci://ghcr.io/sajanv88/charts/sitebuilder --version 0.1.0 \
+  -n sitebuilder --create-namespace -f my-values.yaml
+```
+
+Before the first install, create two Secrets in the namespace. The chart only references them by name:
+- **`sitebuilder-db`:** `DATABASE_URL`.
+- **The `existingSecret`:** `AUTH_SECRET`, plus `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`, and optionally `CRON_SECRET`.
+
+```sh
+kubectl -n sitebuilder create secret generic sitebuilder-db --from-literal=DATABASE_URL='postgres://…'
+kubectl -n sitebuilder create secret generic sitebuilder-secrets \
+  --from-literal=AUTH_SECRET="$(openssl rand -base64 32)" \
+  --from-literal=S3_ACCESS_KEY_ID=… --from-literal=S3_SECRET_ACCESS_KEY=…
+```
+
+A minimal `my-values.yaml`:
+
+```yaml
+existingSecret: sitebuilder-secrets
+config:
+  SITE_URL: https://cms.example.com
+  MEDIA_STORAGE: s3
+  S3_ENDPOINT: https://s3.eu-west-1.amazonaws.com
+  S3_BUCKET: my-site-media
+  S3_REGION: eu-west-1
+ingress:
+  enabled: true
+  className: nginx
+  host: cms.example.com
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    - secretName: sitebuilder-tls
+      hosts: [cms.example.com]
+```
+
+Then open `https://cms.example.com/setup`.
+
+Every value is described in [`charts/sitebuilder/values.yaml`](charts/sitebuilder/values.yaml). A few to know before installing:
+
+- **One release per namespace.** The admin's Service is always named `admin`, because the site image forwards the admin paths to `http://admin:3000`.
+- **The ingress sends `/admin`, `/admin-static`, `/setup` and `/api/auth` to the admin** and everything else to the site. `CLIENT_IP_HEADER` defaults to `x-real-ip`, which ingress-nginx and Traefik set. Behind a cloud load balancer, make sure the ingress sees the client's address (for example `externalTrafficPolicy: Local` or the PROXY protocol).
+- **Migrations** run as an Argo CD PreSync Job, from the admin image. Plain `helm install` and `helm upgrade` run the Job alongside the new pods, so pages that read the database fail for the few seconds until it's done.
+- **Database connections:** each pod opens up to 12 (a pool of 10, plus 2 for the cache). Size Postgres or PgBouncer for (site replicas + admin replicas) × 12.
+- **Local storage** needs a ReadWriteMany claim (`media.local.existingClaim`): the admin writes, the site reads.
+- **Images are private on GHCR** until made public: add a pull Secret to `imagePullSecrets`.
+
+With Argo CD, point an Application at the OCI chart, or at `charts/sitebuilder` in this repository with `image.tag: sha-<short-sha>`.
+
+## Vercel
+
+> **Not tested for 0.1.** The steps below follow how the app is built; check them on a staging project first. In particular, the site's cache invalidation relies on the bundled cache handler (`packages/db/dist/cache-handler.mjs`) being loaded on Vercel's functions. If it isn't, a published change shows only once Vercel's own cache expires.
+
+1. **Storage and database:** media must use S3 (`MEDIA_STORAGE=s3`), and `DATABASE_URL` must go through a connection pooler, because every function instance opens its own connections.
+2. **The admin project:** create a project with root directory `apps/admin`. Set `DATABASE_URL`, `AUTH_SECRET`, `SITE_URL` (the site's public address) and the S3 variables.
+3. **The site project:** create a project with root directory `apps/site`. Set the same variables, plus `ADMIN_ZONE_URL` at **build** time: the admin project's address, such as `https://sitebuilder-admin.vercel.app`. The site forwards the admin paths there.
+4. **Domain:** point your domain at the site project only.
+5. **Scheduled posts:** set `CRON_SECRET` on the site project and add `apps/site/vercel.json`:
+
+   ```json
+   { "crons": [{ "path": "/api/cron/publish", "schedule": "* * * * *" }] }
+   ```
+
+   Vercel sends the secret as `Authorization: Bearer …` itself. Plans that allow only a daily cron publish scheduled posts once a day.
 
 ## Development
 
@@ -56,7 +211,7 @@ Requires Node 26 (see `.node-version`) and pnpm, which switches itself to the ve
 
 ```sh
 pnpm install
-cp .env.example .env            # and set AUTH_SECRET
+cp .env.example .env            # set AUTH_SECRET, and MEDIA_LOCAL_DIR to an absolute path such as this repo's .media/
 docker compose -f compose.yaml -f compose.dev.yaml up -d postgres
 pnpm db:migrate
 pnpm dev                        # site on http://localhost:3000, admin on :3001 behind it
@@ -67,13 +222,37 @@ Always browse through port 3000: the site zone forwards the admin paths, as it d
 | Command | Does |
 |---|---|
 | `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` | The checks CI runs |
+| `pnpm licence-list` | Rewrites `THIRD_PARTY_LICENSES.md`; `--check` fails on an unreviewed licence |
 | `pnpm db:generate` | A new migration from schema changes (read the SQL, commit it) |
 | `pnpm db:migrate` | Apply migrations to the database in `.env` |
-| `pnpm --filter @sitebuilder/db db:auth-schema` | Regenerate Better Auth's tables after changing its plugins |
+| `pnpm db:seed` | Idempotent local sample data |
+| `helm lint --strict charts/sitebuilder` | Check the chart |
 
-## Backups
+### How it's built
 
-Back up the Postgres database (`pg_dump`) and, with `MEDIA_STORAGE=local`, the `media` volume. A full guide comes with the 0.1 release.
+Two Next.js apps on one domain, as [Multi-Zones](https://nextjs.org/docs/app/guides/multi-zones):
+- `apps/site` is the public site. It serves every path except the admin ones, which it forwards.
+- `apps/admin` serves `/admin`, `/setup` and the sign-in API under `/api/auth`.
+
+They share these packages:
+
+| Package | What's in it |
+|---|---|
+| `packages/db` | Drizzle ORM, migrations, queries and the cache handler |
+| `packages/schema` | valibot schemas |
+| `packages/blocks` | The block registry and renderer |
+| `packages/media` | Media storage |
+| `packages/auth` | Better Auth and the permission checks |
+
+An admin change reaches every site process through a small table of cache tags in Postgres, so no rebuild is needed.
+
+### Releasing
+
+1. Merge to `main`. `main.yaml` builds both images (amd64 and arm64) and pushes them as `ghcr.io/<owner>/sitebuilder-site:sha-<short-sha>` and `…-admin:sha-<short-sha>`.
+2. Wait for it to go green.
+3. `git tag vX.Y.Z && git push origin vX.Y.Z`. `release.yaml` retags those images as `vX.Y.Z` and `latest` without rebuilding, pushes the chart to `oci://ghcr.io/<owner>/charts/sitebuilder` at `X.Y.Z`, and creates the GitHub Release.
+
+Never edit `version` or `appVersion` in `Chart.yaml`; the release sets them.
 
 ## Licence
 

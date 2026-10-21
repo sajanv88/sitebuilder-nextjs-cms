@@ -1,6 +1,6 @@
 # Sitebuilder
 
-A self-hosted, WordPress-style CMS: two Next.js 16 apps as Multi-Zones (`apps/site` public, `apps/admin` for `/admin`, `/setup`, `/api/auth`) in a pnpm + Turborepo monorepo, built on nuvui, shipped as Docker images. Product design: `docs/design.md`. Deviations from it or from a skill: `docs/decisions.md`. Work for later phases: `docs/next.md`. Conventions come from the `nuvraxis-frontend` and `nuvraxis-fullstack` plugins; their skills have the full rules.
+A self-hosted, WordPress-style CMS: two Next.js 16 apps as Multi-Zones (`apps/site` public, `apps/admin` for `/admin`, `/setup`, `/api/auth`) in a pnpm + Turborepo monorepo, built on nuvui, shipped as Docker images. Product design: `docs/design.md`. Deviations from it or from a skill: `docs/decisions.md`. Work for later phases: `docs/next.md`. `docs/` is local only (excluded from git): never link to it from committed files such as the README. Conventions come from the `nuvraxis-frontend` and `nuvraxis-fullstack` plugins; their skills have the full rules.
 
 - **Zones.** The site zone forwards the admin paths with `beforeFiles` rewrites to the build-time `ADMIN_ZONE_URL`. Links between zones are `<a>`, never `<Link>`. Browse through the site zone (port 3000) in development too.
 - **Permissions.** Every admin page, Server Action and route handler checks `can()` (`apps/admin/src/auth/`); the table is `permissions.ts`. Hiding a link is never the check.
@@ -47,7 +47,8 @@ pnpm lint:fix
 pnpm build          # turbo run build
 docker compose up --build                        # the whole stack, from the repo root
 docker build -f apps/admin/Dockerfile -t admin .   # one image
-helm lint --strict charts/site
+helm lint --strict charts/sitebuilder
+pnpm licence-list --check                        # dependency licences reviewed, THIRD_PARTY_LICENSES.md current
 ```
 
 Run `pnpm typecheck && pnpm lint && pnpm build` before calling a change done.
@@ -60,17 +61,18 @@ apps/admin/              admin zone: /admin, /setup, /api/auth, Better Auth, can
 packages/schema/         valibot schemas: blocks, menus, settings, accounts, env (valibot only)
 packages/db/             Drizzle schema, migrations, queries, bundled migrate/seed/create-admin
 packages/tsconfig/       shared tsconfig (base.json)
-charts/site/             Helm chart (still single-zone; reworked in phase 5)
+charts/sitebuilder/      Helm chart: both zones, the migrate Job (admin image), ingress routing
+scripts/licences.ts      the licence review and THIRD_PARTY_LICENSES.md
 compose.yaml             postgres, migrate, admin, site; compose.dev.yaml publishes Postgres for pnpm dev
 .github/workflows/       pr.yaml, main.yaml, release.yaml (images built per zone)
 ```
 
 ## Delivery
 
-PR → `pr.yaml` checks (Biome, stylelint, typecheck, build, Docker build + health check, helm lint + kubeconform). Nothing is published.
-Merge to `main` → `main.yaml` builds the image once (amd64 + arm64) and pushes `ghcr.io/nuvraxis/site:sha-<short-sha>` and `:main`.
-Tag `vX.Y.Z` → `release.yaml` retags that commit's image as `:vX.Y.Z` and `:latest` (no rebuild), pushes the chart to `oci://ghcr.io/nuvraxis/charts/site` at `X.Y.Z`, and creates the GitHub Release.
-Argo CD syncs the chart from the OCI registry (production) or from `charts/site` in git.
+PR → `pr.yaml` checks (Biome, stylelint, typecheck, tests, licences, build, Docker build + health check, helm lint + kubeconform). Nothing is published.
+Merge to `main` → `main.yaml` builds each zone's image once (amd64 + arm64) and pushes `ghcr.io/<owner>/sitebuilder-site` and `…-admin` as `:sha-<short-sha>` and `:main`, the owner being the repository's.
+Tag `vX.Y.Z` → `release.yaml` retags that commit's images as `:vX.Y.Z` and `:latest` (no rebuild), pushes the chart to `oci://ghcr.io/<owner>/charts/sitebuilder` at `X.Y.Z`, and creates the GitHub Release.
+Argo CD syncs the chart from the OCI registry (production) or from `charts/sitebuilder` in git.
 
 Release ritual: merge to main → wait for `main.yaml` to go green → `git tag vX.Y.Z && git push origin vX.Y.Z`. Never edit `version`/`appVersion` in `Chart.yaml`; the release sets them.
 

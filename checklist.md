@@ -294,3 +294,191 @@ Plan: [docs/phase-4-plan.md](docs/phase-4-plan.md), approved 2026-10-21. Cache i
 - [x] Dashboard: figures, recent changes, get-started steps; Settings and My account on article; Menus and Media on file-browser
 - [x] Biome, stylelint, typecheck, 234 tests, build; every screen checked in the browser
 - [ ] Phone width in the browser (the window still can't be resized here)
+
+# Phase 5 (Release) checklist
+
+Plan: [docs/phase-5-plan.md](docs/phase-5-plan.md), approved 2026-10-21. Images and chart under the repository owner; scheduled posts from a timer in the admin; the chart gate on `docker-desktop`; you push `main` and the tag. Phases 7 and 8 wait: the design has no Templates or AI sections yet.
+
+## 0. Spike: the client's address
+- [x] Next keeps a client's own `X-Forwarded-For` through the rewrite; `CLIENT_IP_HEADER` for the proxy in front, documented for Compose, `x-real-ip` in the chart
+
+## 1. Scheduled publishing
+- [x] `publishDueEntries` (tags in the same transaction, once per entry, `updatedAt` kept) with PGlite tests
+- [x] Admin timer once a minute; `/api/cron/publish` with `CRON_SECRET` for Vercel and system cron
+
+## 2. Images
+- [x] Migrator only in the admin image; `LICENSE` and `THIRD_PARTY_LICENSES.md` in both; titles `sitebuilder-site` and `sitebuilder-admin`
+
+## 3. Chart
+- [x] `charts/sitebuilder`: both zones, `admin` Service, ingress routing, migrate Job on the admin image, media claim or S3, connection sizing note
+
+## 4. Workflows
+- [x] Image and chart paths under the repository owner; the chart path; the licence check in `pr.yaml`; actionlint clean
+
+## 5. Licences
+- [x] `scripts/licences.ts` and `THIRD_PARTY_LICENSES.md`: every licence reviewed with a note; `--check` fails on an unreviewed licence or a stale file
+
+## 6. Documentation
+- [x] README for 0.1: Compose, server notes, configuration, media, scheduled posts, upgrading, backups and restore, Kubernetes, Vercel (untested), development, releasing
+- [x] CLAUDE.md: chart, images, licence check; `docs/` is local only
+
+## 7. Verify and report
+- [x] Biome, stylelint, typecheck, 240 tests, build; both images run read-only as uid 1001 (Compose and the cluster)
+- [x] Gate 1: a fresh copy, following only the README, to a published page; backup and restore commands run against it
+- [x] Gate 2: the chart on `docker-desktop` (migrate Job, 2 + 2 pods, `/setup`, sign-in, a published page, media read-write in the admin and read-only in the site), then deleted
+- [x] Gate 3: a scheduled post went live 38 s after its time, in the cached blog list too; the cron route answers 401 without or with a wrong secret
+- [x] Gate 4: the licence check passes, and fails on an unreviewed licence and on a stale file
+- [x] Gate 5: actionlint, `helm lint --strict`, kubeconform (22 resources valid) on both values files
+- [x] decisions.md (#74 to #82), next.md updated; push and tag commands handed over
+
+# Phase 7 (Templates) and Phase 8 (AI assistant) checklist
+
+Design: §12 (Templates), §14 (AI assistant), §5.2 (blocks), §6 (roles), §9 (environment). Out of scope: the marketplace service, signing, the revocation list, downloading templates from a marketplace, image generation, runtime template installation. `apps/web` in the brief is `apps/site` here.
+
+## 0. Prepare and plan
+- [ ] Read all of docs/design.md; leave for later what it marks as later
+- [ ] Check phases 1 to 4 exist (monorepo, db, Better Auth with `can()`, admin shell, blocks and editor, the public catch-all with the built-in look)
+- [ ] Check the built-in look is the bundled `default` template on the §12 contract; if not, refactoring it is the first step of Part 1
+- [ ] Write docs/phase-7-8-plan.md with what the repo check found; wait for approval before coding
+
+## Part 1: Templates (§12)
+
+### 1. packages/template-sdk
+- [ ] `TemplateManifestSchema`, `TemplateSettings`, layout prop types, `ResolvedLink`, `ResolvedImage`, `PublicEntry`, `PublicPost`, `defineBlock`
+- [ ] packages/schema: `BlockType` allows `<slug>:<name>`
+- [ ] A required `description` on every block definition, written for the existing blocks
+
+### 2. packages/template-checks
+- [ ] Every §12.8 rule: one function from a folder path to findings (file, line, rule id, message)
+- [ ] A real parser (TypeScript compiler API or the toolchain's own, postcss for CSS), no regular expressions on source; choice in decisions.md
+- [ ] Render group: every layout renders with sample data, light and dark, without throwing
+- [ ] Contrast, size budget and real-browser checks written in next.md as marketplace pipeline work, not faked
+
+### 3. template-checks tests
+- [ ] Fixtures in packages/template-checks/fixtures: one good template
+- [ ] One bad template per rule group: banned import, banned API, obfuscation, external CSS url, raw button where a nuvui component exists, symlink or disallowed file, bad manifest
+- [ ] Each bad fixture fails with the right rule id and no other
+
+### 4. The host
+- [ ] A build step reads templates/ and templates.lock.json and writes `templates.generated.ts` with static imports
+- [ ] Active template from the `template` settings row, falling back to `default` when missing or unknown
+- [ ] Site layout around the page, post, archive and not-found layouts; the host renders the entry's blocks and passes them as children
+- [ ] Template blocks registered as `<slug>:<name>`; an "unavailable block" placeholder in the editor and nothing on the public site when their template isn't active
+
+### 5. Styles
+- [ ] css, scss or Tailwind compiled to one content-hashed stylesheet, loaded only by the public root layout
+- [ ] The admin never loads it; the editor canvas loads it only inside its iframe
+- [ ] A test or build-output check that no template CSS reaches an /admin page
+- [ ] Tailwind scans only the template's own folder, with no plugins and no external config
+
+### 6. Activation
+- [ ] `settings.template` and the options validated against the manifest
+- [ ] Activate dialog with two checkboxes, both off: apply the theme defaults; import starter content as drafts with sourceRef `template:<slug>:<n>`
+- [ ] Activation never deletes or edits existing content
+- [ ] `template` resource in permissions.ts and `can()`: install, activate, remove for admins only
+
+### 7. Admin: Templates screen (nuvui; read each component's page through the MCP first)
+- [ ] Installed templates with screenshots, the active one marked, a "not reviewed" badge for source `local`
+- [ ] Options form and the Activate dialog
+- [ ] No Install button: the copyable CLI command instead
+
+### 8. CLI
+- [ ] `pnpm sitebuilder template add <local-path>`: copies to templates/<slug>/, runs the checks, writes templates.lock.json (slug, version, source `local`, a deterministic sha256 of sorted paths and contents)
+- [ ] `remove <slug>`, `verify` (checks again, compares hashes with the lockfile), `list`
+- [ ] Anything needing the marketplace fails with a message saying it arrives in a later phase
+- [ ] Production builds refuse source `local` unless `ALLOW_UNREVIEWED_TEMPLATES=true`
+
+### 9. Docker, compose, CI
+- [ ] The image build copies templates/ and the lockfile and runs the generate step (docker-nextjs)
+- [ ] CI runs `template verify` and the template-checks tests (github-actions)
+
+### 10. Example template
+- [ ] examples/templates/ledger-example: manifest, layouts, one extra block, scss styles, starter content, a screenshot; passes every check
+
+### 11. Verify and report
+- [ ] Install, biome ci, stylelint, typecheck, tests, build, docker build, the container read-only and /api/health
+- [ ] Gate from a clean clone: `template add` the example, rebuild, activate it in /admin with starter content, the public site changes
+- [ ] Blocks of the old template don't break pages
+- [ ] A template breaking any rule fails `verify` naming the file and rule
+- [ ] No template CSS on /admin pages
+- [ ] decisions.md (with a reason for each new package), next.md updated
+- [ ] Report: finished, how to run, deviations, design errors, open items. Then stop until told to continue
+
+## Part 2: AI assistant (§14)
+
+### 1. packages/schema
+- [ ] `AiSettings` and `SitePlan` exactly as the design
+- [ ] Plan reference check: every ref, parentRef, menu entry and homeRef points at a page in the plan
+- [ ] `SECRETS_KEY` (32 bytes, base64) and `AI_ALLOW_PRIVATE_URLS` optional in the env schema, commented in .env.example
+
+### 2. packages/db
+- [ ] `ai_runs` table and a generated migration (generate, never push)
+- [ ] Query functions and PGlite tests, including the daily token sum per user
+
+### 3. Outbound requests
+- [ ] A server-only helper every AI call uses: resolve the host, block private, loopback and link-local ranges unless `AI_ALLOW_PRIVATE_URLS=true`, check every redirect again, a timeout, a response size cap
+- [ ] Tests
+
+### 4. Key storage
+- [ ] AES-256-GCM with `SECRETS_KEY`, in the `ai` settings row with the last four characters
+- [ ] The cipher and key never reach the browser, logs or error messages
+- [ ] Without `SECRETS_KEY`, AI is off and the screen says why
+- [ ] Tests: round trip, tampering, nothing sent to the client contains the cipher
+
+### 5. packages/ai
+- [ ] The design's `AiProvider` interface; an Anthropic adapter and an OpenAI-compatible adapter
+- [ ] Each provider's current docs checked for structured output and tool calling; differences from the design noted
+- [ ] Answers validated again with valibot; Result types at the boundary
+
+### 6. Block catalog for the model
+- [ ] Type, description, props as JSON Schema generated from the valibot schemas, the active template's blocks included
+
+### 7. Describe-a-site flow
+- [ ] Brief → plan → generate → validate and repair once → write
+- [ ] Pages three at a time, at most 20; every BlockList through `validateBlockList`
+- [ ] One transaction writes draft entries and revisions with sourceRef `ai:<batchId>:<ref>`; menu, theme and home page only when ticked
+- [ ] "Discard batch" trashes the drafts and reverts menu and theme, warning about anything a person has since edited
+- [ ] Nothing published automatically
+
+### 8. Help in the editor
+- [ ] Write or redo a page from a prompt; rewrite selected text; suggest SEO title and description
+- [ ] Alt text only when the model is marked as accepting images
+- [ ] Results arrive as a proposed change to accept or discard; autosave never includes an unaccepted change
+
+### 9. Safety (§14.4)
+- [ ] Output is untrusted: `validateBlockList`, sanitised HTML, `Url`, existing mediaId and entryId, `MenuSchema`, token rules
+- [ ] The model only returns data; no tools that write
+- [ ] Prompts forbid invented testimonials, prices, awards, addresses, phone numbers and statistics, and require visible `[TODO: ...]` markers
+- [ ] The editor lists open markers; publishing a page that still has one asks for confirmation
+- [ ] Reviews and pricing blocks get placeholder content only
+- [ ] Limits: 20 requests an hour per user, `dailyTokenLimit` from ai_runs, bounded output tokens, a timeout on every call, a rough cost estimate before whole-site generation
+- [ ] Prompts and answers not stored; ai_runs keeps metadata only
+
+### 10. Permissions
+- [ ] `ai` resource in permissions.ts and `can()`: configure and generateSite for admin; assist for admin and editor on any entry; assistOwn for authors on their own posts
+- [ ] Every Server Action calls `can()` first
+
+### 11. Admin UI (nuvui)
+- [ ] Settings → AI (admin only): provider, model, key, base URL, daily limit, a masked key display
+- [ ] "Create with AI": a confirm-before-send dialog naming the provider and model, an editable plan, progress, a results page listing failed pages, the discard-batch action
+
+### 12. Prompts and tests
+- [ ] Prompts as versioned files in packages/ai/src/prompts/
+- [ ] A fake provider with recorded fixtures: at least ten sample briefs; a valid answer; an invalid one the repair fixes; one that still fails; a plan with a dangling ref; page text with instructions aimed at the model; an answer with `javascript:` links and unknown media ids
+- [ ] No live model calls in CI; scripts/ai-live-check.ts for a manual run with a real key before each release
+
+### 13. Verify and report
+- [ ] Install, biome ci, stylelint, typecheck, tests, build, docker build, the container read-only and /api/health
+- [ ] Gate with a real key: a two-sentence business, review the plan, generate; every draft opens in the editor with no validation errors, no invented contact details or reviews, nothing public until published
+- [ ] Discard the batch and the drafts are gone
+- [ ] A request without the right role is refused server-side
+- [ ] The key never appears in any response, log or page source
+- [ ] decisions.md (with a reason for each new package), next.md updated
+- [ ] Report: finished, how to run, deviations, design errors, open items
+
+## Guardrails (phases 7 and 8)
+- [ ] nuvui only for UI; own CSS in BEM with tokens, no hex colors; no Tailwind in the app itself
+- [ ] No ESLint or Prettier, no `any`, no `drizzle-kit push`, no secrets in the repo
+- [ ] Only the packages the work needs, each with its reason in decisions.md
+- [ ] Anything outside these two phases goes in next.md
+- [ ] Small commits with conventional messages, only when asked; each skill's verify commands as the work goes

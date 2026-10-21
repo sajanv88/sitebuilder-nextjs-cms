@@ -6,6 +6,9 @@
 // Re-theme by setting nuvui's own token names. New tokens nuvui doesn't have get an --app- prefix.
 :root {
   --app-content-max-width: 72rem;
+
+  // A thinner coloured edge on toasts with an intent (nuvui's default is 4px).
+  --nuv-toast-accent-width: 2px;
 }
 
 // Dark values for any semantic color changed above go here: a value set on :root alone
