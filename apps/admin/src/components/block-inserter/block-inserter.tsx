@@ -17,15 +17,17 @@ import {
   ItemTitle,
   PinnedList,
   PinnedListItem,
+  Separator,
 } from "@nuvui/react";
 import { type AnyBlockDefinition, BLOCKS, type BlockCategory } from "@sitebuilder/blocks";
-import { useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import "./block-inserter.scss";
 
 // The block types to add (design §8: a searchable inserter). A new block goes inside the
 // selected block when that's a container that takes it, otherwise after it. With the search
-// empty, every type is listed with a pin, the pinned ones at the top (nuvui's PinnedList);
-// typing searches them, the pinned first.
+// empty, every type is listed with a pin: the pinned ones at the top, then the rest by
+// category, a line between each (a nuvui PinnedList for each, since one has only two groups).
+// Typing searches them, the pinned first.
 
 export const GROUPS: { category: BlockCategory; heading: string }[] = [
   { category: "text", heading: "Text" },
@@ -78,6 +80,48 @@ export function BlockInserter({
 }) {
   const [search, setSearch] = useState("");
   const pinnedTypes = ADDABLE.filter((definition) => pinned.includes(definition.type));
+  const lists = useRef<HTMLDivElement>(null);
+  const moved = useRef<string | null>(null);
+
+  // A pin moves its block to another list, so its pin there takes the focus, as it would
+  // within one list. After every render, doing nothing unless a pin was just pressed.
+  useEffect(() => {
+    const type = moved.current;
+    if (!type) return;
+    moved.current = null;
+    lists.current
+      ?.querySelector<HTMLButtonElement>(`[data-block-type="${type}"] button[aria-pressed]`)
+      ?.focus();
+  });
+
+  const pin = (next: string[], change: { value: string }) => {
+    moved.current = change.value;
+    onPinnedChange(next);
+  };
+
+  const row = (type: string) => {
+    const definition = BY_TYPE.get(type);
+    if (!definition) return null;
+    const Icon = definition.icon;
+    return (
+      <PinnedListItem value={type} label={definition.label} data-block-type={type}>
+        {/* The whole row is the button that adds it; the pin is beside it. */}
+        <Item asChild size="sm">
+          <button type="button" onClick={() => onAdd(type)}>
+            <ItemMedia>
+              <Icon aria-hidden="true" size={16} />
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle>{definition.label}</ItemTitle>
+              <ItemDescription className="block-inserter__text">
+                {definition.description}
+              </ItemDescription>
+            </ItemContent>
+          </button>
+        </Item>
+      </PinnedListItem>
+    );
+  };
 
   return (
     <div className="block-inserter">
@@ -125,37 +169,38 @@ export function BlockInserter({
         ) : null}
       </Command>
       {search.trim() ? null : (
-        <PinnedList
-          items={ADDABLE.map((definition) => definition.type)}
-          pinned={pinned}
-          onPinnedChange={onPinnedChange}
-          restLabel="All blocks"
-          className="block-inserter__pins"
-        >
-          {(type) => {
-            const definition = BY_TYPE.get(type);
-            if (!definition) return null;
-            const Icon = definition.icon;
+        <div ref={lists} className="block-inserter__lists">
+          <PinnedList
+            items={pinnedTypes.map((definition) => definition.type)}
+            pinned={pinned}
+            onPinnedChange={pin}
+            className="block-inserter__pins"
+          >
+            {row}
+          </PinnedList>
+          {GROUPS.map((group, index) => {
+            const types = ADDABLE.filter(
+              (definition) =>
+                definition.category === group.category && !pinned.includes(definition.type),
+            ).map((definition) => definition.type);
+            // Each list stays drawn while empty: it says what was pinned from it.
+            const line = types.length > 0 && (index > 0 || pinnedTypes.length > 0);
             return (
-              <PinnedListItem value={type} label={definition.label}>
-                {/* The whole row is the button that adds it; the pin is beside it. */}
-                <Item asChild size="sm">
-                  <button type="button" onClick={() => onAdd(type)}>
-                    <ItemMedia>
-                      <Icon aria-hidden="true" size={16} />
-                    </ItemMedia>
-                    <ItemContent>
-                      <ItemTitle>{definition.label}</ItemTitle>
-                      <ItemDescription className="block-inserter__text">
-                        {definition.description}
-                      </ItemDescription>
-                    </ItemContent>
-                  </button>
-                </Item>
-              </PinnedListItem>
+              <Fragment key={group.category}>
+                {line ? <Separator /> : null}
+                <PinnedList
+                  items={types}
+                  pinned={pinned}
+                  onPinnedChange={pin}
+                  restLabel={group.heading}
+                  className="block-inserter__pins"
+                >
+                  {row}
+                </PinnedList>
+              </Fragment>
             );
-          }}
-        </PinnedList>
+          })}
+        </div>
       )}
     </div>
   );

@@ -20,6 +20,12 @@
     border-radius: var(--radius-lg);
   }
 
+  // The pinned blocks, then each category, a line between them.
+  &__lists {
+    display: grid;
+    gap: a.space(3);
+  }
+
   // The rows are flush with the list's edges: the Item is the row.
   &__pins {
     --nuv-pinned-list-padding-inline: 0;
