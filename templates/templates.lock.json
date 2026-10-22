@@ -5,7 +5,7 @@
       "slug": "default",
       "version": "1.0.0",
       "source": "bundled",
-      "sha256": "242dbd5807d7df6d67f7ccaf2c695d175aae244ce81fd62c001fec12d0415d1c"
+      "sha256": "307c14b2753728c4b532bc443f0236025eb8b60ba8bc531918c96e2fe117cf01"
     },
     {
       "slug": "journal",
@@ -17,7 +17,7 @@
       "slug": "studio",
       "version": "1.0.0",
       "source": "bundled",
-      "sha256": "3ead8027638a3e67254c8cd7c53ee120f45495dbc7530ea60fb14e7d2a637f13"
+      "sha256": "46d32493a3a3feeb6d7e2365758af6dd61c235dcb76671b1819123bbf26edf1b"
     }
   ]
 }

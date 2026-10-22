@@ -25,5 +25,15 @@
       "label": "The home page on a phone"
     }
   ],
+  "components": {
+    "site": "components/Site.tsx",
+    "page": "components/Page.tsx",
+    "post": "components/Post.tsx",
+    "archive": "components/Archive.tsx",
+    "notFound": "components/NotFound.tsx"
+  },
+  "styles": {
+    "entry": "styles/main.scss"
+  },
   "starter": "content/starter.json"
 }

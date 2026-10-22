@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+// The frame of every page: the header, the page, the footer at the bottom of the window even
+// when the page is short.
+.site {
+  --site-content-width: 72rem;
+
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-block-size: 100svh;
+
+  &__main {
+    display: grid;
+    align-content: start;
+    min-inline-size: 0;
+  }
+}

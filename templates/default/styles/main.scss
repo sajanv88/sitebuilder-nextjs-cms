@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+// The Company template's stylesheet. One block per partial.
+@use "site";
+@use "site-header";
+@use "site-footer";
+@use "entry";
+@use "post-list";
+@use "not-found";

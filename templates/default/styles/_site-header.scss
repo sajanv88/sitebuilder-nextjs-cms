@@ -1,0 +1,76 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+// nuvui's Navbar draws the bar; what changes with the width of the screen is said through its
+// variables, as in nuvui's nav-bar block.
+.site-header {
+  --nuv-navbar-gap: #{a.space(2)};
+
+  @include a.breakpoint("md") {
+    --nuv-navbar-gap: #{a.space(6)};
+    --nuv-navbar-padding: #{a.space(8)};
+  }
+
+  // Off screen until it has keyboard focus, then over the bar's corner.
+  &__skip {
+    position: absolute;
+    z-index: 30;
+    inset-block-start: a.space(2);
+    inset-inline-start: a.space(2);
+    padding: a.space(2) a.space(3);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    color: var(--color-surface-foreground);
+    transform: translateY(-200%);
+
+    @include a.focus-ring;
+
+    &:focus-visible {
+      transform: none;
+    }
+  }
+
+  &__brand {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--nuv-touch-size);
+    border-radius: var(--radius-sm);
+    color: inherit;
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    text-decoration: none;
+
+    @include a.focus-ring;
+  }
+
+  &__panel {
+    display: grid;
+    gap: a.space(1);
+    min-inline-size: 14rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__menu {
+    display: grid;
+    gap: a.space(1);
+  }
+
+  &__group {
+    display: grid;
+    gap: a.space(1);
+    margin-block-start: a.space(3);
+  }
+
+  &__group-label {
+    margin: 0;
+    padding-inline: a.space(3);
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+}

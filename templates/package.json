@@ -6,15 +6,30 @@
   "author": "Sajankumar Vijayan",
   "type": "module",
   "exports": {
-    "./admin": "./src/admin.ts"
+    "./admin": "./src/admin.ts",
+    "./blocks": "./src/blocks.ts",
+    "./site": "./src/site.ts"
   },
   "scripts": {
     "build": "node ../packages/cli/dist/sitebuilder.mjs generate"
   },
   "dependencies": {
-    "@sitebuilder/schema": "workspace:*"
+    "@nuvui/backgrounds": "catalog:",
+    "@nuvui/icons": "catalog:",
+    "@nuvui/media": "catalog:",
+    "@nuvui/react": "catalog:",
+    "@nuvui/table": "catalog:",
+    "@sitebuilder/blocks": "workspace:*",
+    "@sitebuilder/schema": "workspace:*",
+    "@sitebuilder/template-sdk": "workspace:*",
+    "next": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@sitebuilder/cli": "workspace:*"
+    "@sitebuilder/cli": "workspace:*",
+    "@types/react": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:"
   }
 }

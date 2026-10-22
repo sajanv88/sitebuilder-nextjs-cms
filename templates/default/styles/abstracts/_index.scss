@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+// No CSS output. The partials beside main.scss `@use "abstracts" as a;`.
+@forward "@nuvui/react/scss/mixins";
+@forward "functions";
+@forward "layout";
