@@ -6,6 +6,7 @@ import { type Action, type Actor, can, canSome, type Resource } from "@sitebuild
 import { RoleSchema } from "@sitebuilder/schema";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import { connection } from "next/server";
 import { cache } from "react";
 import * as v from "valibot";
 import { auth } from "./auth";
@@ -20,8 +21,10 @@ export interface Viewer extends Actor {
 // whose user is banned, counts as signed out. Server Actions are requests of their own, so each
 // still reads it fresh.
 export const getViewer = cache(async (): Promise<Viewer | null> => {
-  // Request data first: it marks the page dynamic before auth() reads the environment, which
-  // `next build` doesn't have.
+  // Request time first: auth() reads the environment, which `next build` doesn't have, and the
+  // session check compares its expiry with the current time. headers() alone isn't enough: in
+  // development the page is still being prerendered with them, where new Date() isn't allowed.
+  await connection();
   const requestHeaders = await headers();
   const session = await auth().api.getSession({ headers: requestHeaders });
   if (!session || session.user.banned) return null;
