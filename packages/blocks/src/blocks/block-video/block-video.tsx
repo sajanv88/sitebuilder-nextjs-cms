@@ -4,11 +4,14 @@
 import { VideoIcon } from "@nuvui/icons";
 import { VideoPlayer } from "@nuvui/media/video-player";
 import * as v from "valibot";
+import { pageItemClass, pageWidthField, pageWidthOf, pageWidthProps } from "../../page/page";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
-import { mediaId, text } from "../../shared";
+import { cx, mediaId, text } from "../../shared";
 import type { BlockDefinition } from "../../types";
+import "./block-video.scss";
 
 const Props = v.strictObject({
+  ...pageWidthProps,
   mediaId,
   // The player's accessible name (design §5.5), and what a phone's lock screen shows.
   title: text(120),
@@ -25,8 +28,9 @@ export const video: BlockDefinition<Props> = {
   category: "media",
   icon: VideoIcon,
   props: Props,
-  defaults: () => ({ mediaId: "", title: "Video" }),
+  defaults: () => ({ pageWidth: "contained", mediaId: "", title: "Video" }),
   fields: [
+    pageWidthField,
     { kind: "media", name: "mediaId", label: "Video", accept: "video" },
     {
       kind: "text",
@@ -52,8 +56,10 @@ export const video: BlockDefinition<Props> = {
       ) : null;
     }
     const poster = props.posterMediaId ? context.media(props.posterMediaId) : undefined;
+    const width = pageWidthOf(props.pageWidth, context);
     return (
       <VideoPlayer
+        className={cx("block-video", pageItemClass(width), width === "full" && "block-video--edge")}
         title={props.title}
         src={{ src: media.url, type: media.mimeType }}
         {...(poster?.mimeType.startsWith("image/") ? { poster: poster.url } : {})}

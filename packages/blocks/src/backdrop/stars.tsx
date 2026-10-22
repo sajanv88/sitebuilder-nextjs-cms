@@ -4,7 +4,7 @@
 "use client";
 
 import { StarsBackground } from "@nuvui/backgrounds/stars-background";
-import { pausable } from "./pausable";
+import { withMotion } from "./motion";
 
 // Its own module, so a page loads only the backdrop it shows.
-export const StarsBackdrop = pausable(StarsBackground);
+export const StarsBackdrop = withMotion(StarsBackground);

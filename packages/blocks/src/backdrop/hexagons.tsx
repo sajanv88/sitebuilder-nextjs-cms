@@ -4,7 +4,7 @@
 "use client";
 
 import { HexagonBackground } from "@nuvui/backgrounds/hexagon-background";
-import { pausable } from "./pausable";
+import { withMotion } from "./motion";
 
 // Its own module, so a page loads only the backdrop it shows.
-export const HexagonBackdrop = pausable(HexagonBackground);
+export const HexagonBackdrop = withMotion(HexagonBackground);

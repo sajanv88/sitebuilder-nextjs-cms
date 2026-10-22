@@ -5,12 +5,15 @@ import { SquareIcon } from "@nuvui/icons";
 import * as v from "valibot";
 import { alignClass, alignField } from "../../align/align";
 import { Backdrop, backdropFields, backdropProps } from "../../backdrop/backdrop";
+import { pageItemClass, pageWidthField, pageWidthOf, pageWidthProps } from "../../page/page";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
 import { cx } from "../../shared";
 import type { BlockDefinition } from "../../types";
 import "./block-section.scss";
 
 const Props = v.strictObject({
+  ...pageWidthProps,
+  // How wide the content inside the band is.
   width: v.optional(v.picklist(["narrow", "normal", "wide", "full"]), "normal"),
   background: v.optional(v.picklist(["none", "muted", "primary"]), "none"),
   paddingY: v.optional(v.picklist(["none", "sm", "md", "lg"]), "md"),
@@ -20,8 +23,8 @@ const Props = v.strictObject({
 });
 type Props = v.InferOutput<typeof Props>;
 
-// A band across the page that holds other blocks, with a width, a background color or a moving
-// backdrop (design §5.2: any leaf block, 0 to 50).
+// A band across the page that holds other blocks, with a width on the page, a width for its
+// content, a background color or a moving backdrop (design §5.2: any leaf block, 0 to 50).
 export const section: BlockDefinition<Props> = {
   type: "section",
   label: "Section",
@@ -30,15 +33,18 @@ export const section: BlockDefinition<Props> = {
   icon: SquareIcon,
   props: Props,
   defaults: () => ({
+    pageWidth: "contained",
     width: "normal",
     background: "none",
     paddingY: "md",
     align: "start",
     backdrop: "none",
     scrim: "strong",
+    motion: "still",
   }),
   container: { allow: "leaves", min: 0, max: 50 },
   fields: [
+    pageWidthField,
     {
       ...alignField(false),
       description: "For the blocks inside that aren't aligned themselves.",
@@ -46,7 +52,7 @@ export const section: BlockDefinition<Props> = {
     {
       kind: "choice",
       name: "width",
-      label: "Width",
+      label: "Content width",
       options: [
         { value: "narrow", label: "Narrow" },
         { value: "normal", label: "Normal" },
@@ -92,6 +98,7 @@ export const section: BlockDefinition<Props> = {
       <section
         className={cx(
           "block-section",
+          pageItemClass(pageWidthOf(props.pageWidth, context)),
           `block-section--width-${props.width}`,
           // A backdrop is drawn in place of the background color.
           !backdrop && `block-section--bg-${props.background}`,
@@ -100,7 +107,12 @@ export const section: BlockDefinition<Props> = {
         )}
       >
         {backdrop ? (
-          <Backdrop kind={backdrop} scrim={props.scrim} className="block-section__backdrop">
+          <Backdrop
+            kind={backdrop}
+            scrim={props.scrim}
+            motion={props.motion}
+            className="block-section__backdrop"
+          >
             {inner}
           </Backdrop>
         ) : (

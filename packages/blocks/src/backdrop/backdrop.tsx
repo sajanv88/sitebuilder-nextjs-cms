@@ -31,6 +31,8 @@ export const backdropProps = {
   backdrop: v.optional(v.picklist(BACKDROPS), "none"),
   // How much of the page's color is laid over it: strong keeps body text at 4.5:1.
   scrim: v.optional(v.picklist(["soft", "strong"]), "strong"),
+  // Still unless the admin chooses otherwise: there's no pause button (decisions #108).
+  motion: v.optional(v.picklist(["still", "moving"]), "still"),
 };
 
 export const backdropFields: readonly Field[] = [
@@ -38,8 +40,7 @@ export const backdropFields: readonly Field[] = [
     kind: "choice",
     name: "backdrop",
     label: "Moving backdrop",
-    description:
-      "Drawn in the theme's colors, in place of the background color. Visitors can pause one that moves, and it holds still for anyone who asked for less motion.",
+    description: "Drawn in the theme's colors, in place of the background color.",
     options: [
       { value: "none", label: "None" },
       { value: "gradient", label: "Drifting colors" },
@@ -49,6 +50,17 @@ export const backdropFields: readonly Field[] = [
       { value: "topography", label: "Contour lines" },
       { value: "hexagons", label: "Hexagons" },
       { value: "glyphs", label: "Characters" },
+    ],
+  },
+  {
+    kind: "choice",
+    name: "motion",
+    label: "Movement",
+    description:
+      "Moving has no pause button, so keep it for short pages. Visitors who asked their device for less motion always see it still.",
+    options: [
+      { value: "still", label: "Still" },
+      { value: "moving", label: "Moving" },
     ],
   },
   {
@@ -63,19 +75,22 @@ export const backdropFields: readonly Field[] = [
 ];
 
 // Draws the backdrop as the box `className` lays out, with `children` on it. A grid doesn't
-// move by itself, so it has no pause button.
+// move by itself; only the pointer lights it.
 export function Backdrop({
   kind,
   scrim,
+  motion,
   className,
   children,
 }: {
   kind: Exclude<BackdropKind, "none">;
   scrim: "soft" | "strong";
+  motion: "still" | "moving";
   className: string;
   children: ReactNode;
 }) {
-  const box = `block-backdrop block-backdrop--moving ${className}`;
+  const box = `block-backdrop ${className}`;
+  const moving = motion === "moving";
   switch (kind) {
     case "grid":
     case "dots":
@@ -90,31 +105,31 @@ export function Backdrop({
       );
     case "gradient":
       return (
-        <GradientBackdrop className={box} scrim={scrim}>
+        <GradientBackdrop className={box} scrim={scrim} moving={moving}>
           {children}
         </GradientBackdrop>
       );
     case "stars":
       return (
-        <StarsBackdrop className={box} scrim={scrim}>
+        <StarsBackdrop className={box} scrim={scrim} moving={moving}>
           {children}
         </StarsBackdrop>
       );
     case "topography":
       return (
-        <TopographyBackdrop className={box} scrim={scrim}>
+        <TopographyBackdrop className={box} scrim={scrim} moving={moving}>
           {children}
         </TopographyBackdrop>
       );
     case "hexagons":
       return (
-        <HexagonBackdrop className={box} scrim={scrim}>
+        <HexagonBackdrop className={box} scrim={scrim} moving={moving}>
           {children}
         </HexagonBackdrop>
       );
     case "glyphs":
       return (
-        <GlyphBackdrop className={box} scrim={scrim}>
+        <GlyphBackdrop className={box} scrim={scrim} moving={moving}>
           {children}
         </GlyphBackdrop>
       );

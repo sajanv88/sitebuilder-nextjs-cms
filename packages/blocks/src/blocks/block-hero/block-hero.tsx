@@ -6,12 +6,14 @@ import { Button } from "@nuvui/react";
 import * as v from "valibot";
 import { alignClass, alignField } from "../../align/align";
 import { Backdrop, backdropFields, backdropProps } from "../../backdrop/backdrop";
+import { pageItemClass, pageWidthField, pageWidthOf, pageWidthProps } from "../../page/page";
 import { Action, cx, mediaId, optionalText, text } from "../../shared";
 import type { BlockDefinition, RenderContext } from "../../types";
 import { MediaImage } from "../block-image/block-image";
 import "./block-hero.scss";
 
 const Props = v.strictObject({
+  ...pageWidthProps,
   eyebrow: optionalText(60),
   headline: text(120),
   body: optionalText(300),
@@ -56,11 +58,14 @@ export const hero: BlockDefinition<Props> = {
     headline: "Say what you do in one line",
     body: "One or two sentences on who it's for and why it helps.",
     primaryAction: { label: "Get started", href: { kind: "url", url: "/" } },
+    pageWidth: "contained",
     align: "center",
     backdrop: "none",
     scrim: "strong",
+    motion: "still",
   }),
   fields: [
+    pageWidthField,
     alignField(false),
     { kind: "text", name: "eyebrow", label: "Line over the headline", max: 60, optional: true },
     { kind: "text", name: "headline", label: "Headline", max: 120 },
@@ -83,6 +88,7 @@ export const hero: BlockDefinition<Props> = {
     // A hero that opens the page holds its h1; anywhere else it's a section's heading
     // (decisions #68).
     const lead = context.headingBlockId === id;
+    const placed = pageItemClass(pageWidthOf(props.pageWidth, context));
     const Heading = lead ? "h1" : "h2";
     const content = (
       <>
@@ -115,12 +121,18 @@ export const hero: BlockDefinition<Props> = {
         <section
           className={cx(
             "block-hero",
+            placed,
             "block-hero--backdrop",
             picture && "block-hero--with-picture",
             alignClass(props.align),
           )}
         >
-          <Backdrop kind={props.backdrop} scrim={props.scrim} className="block-hero__backdrop">
+          <Backdrop
+            kind={props.backdrop}
+            scrim={props.scrim}
+            motion={props.motion}
+            className="block-hero__backdrop"
+          >
             {content}
           </Backdrop>
         </section>
@@ -128,7 +140,12 @@ export const hero: BlockDefinition<Props> = {
     }
     return (
       <section
-        className={cx("block-hero", picture && "block-hero--with-picture", alignClass(props.align))}
+        className={cx(
+          "block-hero",
+          placed,
+          picture && "block-hero--with-picture",
+          alignClass(props.align),
+        )}
       >
         {content}
       </section>

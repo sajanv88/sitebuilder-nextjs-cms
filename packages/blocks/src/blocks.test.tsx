@@ -293,11 +293,68 @@ describe("the blocks added with nuvui 0.8", () => {
     expect(html).toContain("block-section--backdrop");
     expect(html).not.toContain("block-section--bg-muted");
     expect(html).toContain("Over the stars");
-    // A moving backdrop can be paused; a grid doesn't move, so it has no button.
-    expect(html.match(/Pause the background/g)).toHaveLength(1);
+    // Still unless an admin chose Moving, so there's no pause button (decisions #108).
+    expect(html).not.toContain("Pause the background");
     expect(html).toContain("block-hero__backdrop");
+    expect(validateContent([block("hero", { headline: "x", motion: "moving" })]).ok).toBe(true);
+    expect(validateContent([block("hero", { headline: "x", motion: "spinning" })]).ok).toBe(false);
     // Fireworks aren't offered.
     expect(validateContent([block("section", { backdrop: "fireworks" }, [])]).ok).toBe(false);
+  });
+
+  test("a block on the page runs contained, fluid or full width; inside another, it fills that", () => {
+    const html = draw([
+      block("image", { mediaId: IMAGE, pageWidth: "full" }),
+      block("hero", { headline: "Wide", pageWidth: "fluid" }),
+      block("section", { pageWidth: "full" }, [
+        block("image", { mediaId: IMAGE, pageWidth: "full" }),
+      ]),
+      block("columns", { pageWidth: "contained" }, [
+        block("column", {}, [block("heading", { text: "One", level: 2 })]),
+        block("column", {}, [block("heading", { text: "Two", level: 2 })]),
+      ]),
+    ]);
+    // The full-width image, the fluid hero and the full-width section; not the image inside the
+    // section, and nothing for contained columns.
+    expect(html.match(/block-page__item--full/g)).toHaveLength(2);
+    expect(html.match(/block-page__item--fluid/g)).toHaveLength(1);
+    expect(html.match(/block-image--edge/g)).toHaveLength(1);
+    // Stored blocks without the prop are contained.
+    expect(draw([block("image", { mediaId: IMAGE })])).not.toContain("block-page__item");
+    expect(
+      validateContent([block("video", { mediaId: VIDEO, title: "x", pageWidth: "wide" })]).ok,
+    ).toBe(false);
+  });
+
+  test("the editor's frame gets the width of a block on the page, and contained inside one", () => {
+    const seen: [string, string][] = [];
+    const Frame = ({
+      block: framed,
+      pageWidth,
+      children,
+    }: {
+      block: Block;
+      pageWidth: string;
+      children: React.ReactNode;
+    }) => {
+      seen.push([framed.type, pageWidth]);
+      return <div>{children}</div>;
+    };
+    renderToStaticMarkup(
+      <BlockList
+        blocks={[
+          block("section", { pageWidth: "fluid" }, [
+            block("image", { mediaId: IMAGE, pageWidth: "full" }),
+          ]),
+        ]}
+        context={{ ...withAfter, editing: true }}
+        frame={Frame as never}
+      />,
+    );
+    expect(seen).toEqual([
+      ["section", "fluid"],
+      ["image", "contained"],
+    ]);
   });
 
   test("compare draws both pictures and says what changed; its files count as used", () => {

@@ -4,7 +4,7 @@
 "use client";
 
 import { TopographyBackground } from "@nuvui/backgrounds/topography-background";
-import { pausable } from "./pausable";
+import { withMotion } from "./motion";
 
 // Its own module, so a page loads only the backdrop it shows.
-export const TopographyBackdrop = pausable(TopographyBackground);
+export const TopographyBackdrop = withMotion(TopographyBackground);

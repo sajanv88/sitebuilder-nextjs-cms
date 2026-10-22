@@ -4,7 +4,7 @@
 "use client";
 
 import { GradientBackground } from "@nuvui/backgrounds/gradient-background";
-import { pausable } from "./pausable";
+import { withMotion } from "./motion";
 
 // Its own module, so a page loads only the backdrop it shows.
-export const GradientBackdrop = pausable(GradientBackground);
+export const GradientBackdrop = withMotion(GradientBackground);

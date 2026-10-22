@@ -7,6 +7,7 @@ import { LinkTarget } from "@sitebuilder/schema";
 import type { ReactNode } from "react";
 import * as v from "valibot";
 import { alignClass, alignField, alignProp } from "../../align/align";
+import { pageItemClass, pageWidthField, pageWidthOf, pageWidthProps } from "../../page/page";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
 import { cx, mediaId, optionalText } from "../../shared";
 import type { BlockDefinition, ImageProps, RenderContext } from "../../types";
@@ -15,6 +16,7 @@ import "./block-image.scss";
 const RATIOS = { "16:9": 16 / 9, "4:3": 4 / 3, "1:1": 1 } as const;
 
 const Props = v.strictObject({
+  ...pageWidthProps,
   mediaId,
   // Omitted: the file's own alt text. Empty: decorative, read by nothing (design §5.5).
   alt: v.optional(v.pipe(v.string(), v.trim(), v.maxLength(200))),
@@ -54,8 +56,9 @@ export const image: BlockDefinition<Props> = {
   icon: ImageIcon,
   props: Props,
   // No file yet: the editor asks for one, and a save refuses until it's chosen.
-  defaults: () => ({ mediaId: "", ratio: "auto", fit: "cover" }),
+  defaults: () => ({ pageWidth: "contained", mediaId: "", ratio: "auto", fit: "cover" }),
   fields: [
+    pageWidthField,
     {
       ...alignField(true),
       description:
@@ -102,14 +105,16 @@ export const image: BlockDefinition<Props> = {
       ) : null;
     }
     const alt = props.alt ?? media.alt ?? "";
+    const width = pageWidthOf(props.pageWidth, context);
     let picture: ReactNode = (
       <MediaImage
         context={context}
         media={media}
         alt={alt}
         className="block-image__img"
-        // At most the widest section; a column draws it narrower, which costs a larger file.
-        sizes="(min-width: 80rem) 80rem, 100vw"
+        // Contained, at most the widest section; a column draws it narrower, which costs a
+        // larger file. Fluid or full width, the window's width.
+        sizes={width === "contained" ? "(min-width: 80rem) 80rem, 100vw" : "100vw"}
       />
     );
     if (props.ratio !== "auto") {
@@ -127,9 +132,13 @@ export const image: BlockDefinition<Props> = {
       <figure
         className={cx(
           "block-image",
+          pageItemClass(width),
           props.fit === "contain" && "block-image--contain",
+          // Fluid or full width, the picture fills it, whatever its own size.
+          width !== "contained" && "block-image--stretch",
+          width === "full" && "block-image--edge",
           // Only a picture at its own size can sit anywhere but across the whole column.
-          props.ratio === "auto" && "block-image--natural",
+          props.ratio === "auto" && width === "contained" && "block-image--natural",
           alignClass(props.align),
         )}
       >

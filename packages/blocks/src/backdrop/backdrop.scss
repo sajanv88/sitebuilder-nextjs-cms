@@ -1,19 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-// The backdrop is the box of the section or hero it's in; the pause button sits in its lower
-// corner, at the end of the line, over what it draws.
+// The backdrop is the box of the section or hero it's in.
 .block-backdrop {
   position: relative;
-
-  // The least room under the content for the pause button, read by the section's padding.
-  &--moving {
-    --block-backdrop-room: calc(var(--spacing) * 14);
-  }
-
-  &__pause {
-    position: absolute;
-    inset-block-end: calc(var(--spacing) * 3);
-    inset-inline-end: calc(var(--spacing) * 3);
-  }
 }

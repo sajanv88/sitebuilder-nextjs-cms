@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-// The band runs edge to edge; its content is held to the chosen width and centered. The
-// background colors set nuvui's own foreground tokens too, so components inside stay readable.
-// With a backdrop, the backdrop is the band: it takes the section's padding, and leaves room
-// under the content for its pause button.
+// The band is as wide as its place on the page (page/page.ts); its content is held to the chosen
+// width and centered. The background colors set nuvui's own foreground tokens too, so components
+// inside stay readable. With a backdrop, the backdrop is the band: it takes the section's padding.
 .block-section {
   --block-section-max: 48rem;
   --block-section-pad-block: calc(var(--spacing) * 12);
@@ -65,6 +64,5 @@
 
   &__backdrop {
     padding: var(--block-section-pad-block) var(--block-section-pad-inline);
-    padding-block-end: max(var(--block-section-pad-block), var(--block-backdrop-room, calc(var(--spacing) * 0)));
   }
 }
