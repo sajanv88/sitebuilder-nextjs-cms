@@ -2,12 +2,11 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import { can, canSome } from "@sitebuilder/auth";
-import { db, getSettings } from "@sitebuilder/db";
-import { DEFAULT_DATE_FORMAT, DEFAULT_TIME_ZONE } from "@sitebuilder/schema";
 import { requireViewer, type Viewer } from "@/auth/session";
 import type { NavKey } from "@/components/admin-nav/admin-nav";
 import { AdminShell } from "@/components/admin-shell/admin-shell";
 import { DateSettingsProvider } from "@/components/date-settings/date-settings";
+import { getSiteDates, getSiteSettings } from "@/server/site";
 
 // Which screens the sidebar lists. Each page checks its own permission again: the sidebar
 // only hides links, it's never the check.
@@ -26,15 +25,15 @@ function navFor(viewer: Viewer): NavKey[] {
   return (Object.keys(shows) as NavKey[]).filter((key) => shows[key]);
 }
 
+// The frame of every screen. It waits only for who's signed in and the site's settings, both
+// read in parallel; each screen's own data streams in behind its loading.tsx skeleton.
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
-  const viewer = await requireViewer();
   // Every date in the admin is written in the site's format and zone (decisions #69).
-  const site = await getSettings(db, "site");
-  const dates = {
-    dateFormat: site?.dateFormat ?? DEFAULT_DATE_FORMAT,
-    timeZone: site?.timeZone ?? DEFAULT_TIME_ZONE,
-    language: site?.language ?? "en",
-  };
+  const [viewer, site, dates] = await Promise.all([
+    requireViewer(),
+    getSiteSettings(),
+    getSiteDates(),
+  ]);
   return (
     <DateSettingsProvider value={dates}>
       <AdminShell viewer={viewer} nav={navFor(viewer)} siteTitle={site?.title ?? "Sitebuilder"}>

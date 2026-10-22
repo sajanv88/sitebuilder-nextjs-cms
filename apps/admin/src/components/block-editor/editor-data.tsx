@@ -19,6 +19,8 @@ export interface EditorData {
   posts: PostSummary[];
   terms: { id: string; name: string; taxonomy: "category" | "tag" }[];
   upload: { allowed: boolean; maxBytes: number };
+  // Who's editing: the browser keeps their pinned blocks under it.
+  userId: string;
 }
 
 interface EditorDataValue extends EditorData {

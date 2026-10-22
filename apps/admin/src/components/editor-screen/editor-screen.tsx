@@ -60,10 +60,13 @@ export async function EditorScreen({
   let ownerId = viewer.id;
   if (id) {
     if (!v.is(Uuid, id)) notFound();
-    const owner = await authorizeEntry(viewer, id, "update");
-    if (!owner || owner.type !== type) notFound();
-    const entry = await getEntryForEdit(db, id);
-    if (!entry) notFound();
+    // Who may edit it and the entry itself, read together: the entry is only used once the
+    // check has passed.
+    const [owner, entry] = await Promise.all([
+      authorizeEntry(viewer, id, "update"),
+      getEntryForEdit(db, id),
+    ]);
+    if (!owner || owner.type !== type || !entry) notFound();
     // A trashed entry is restored from the list before it can be edited.
     if (entry.deletedAt) redirect(`/admin/${type}s?view=trash` as Route);
     initial = { values: toEditorValues(entry), entry: toEditorEntry(entry) };
@@ -74,10 +77,19 @@ export async function EditorScreen({
     initial = { values: { ...EMPTY, authorId: viewer.id }, entry: null };
   }
 
+  // Everything else the editor needs depends only on the entry, so it's read in one round.
   const owned = { type, ownerId } as const;
-  const allTerms = await listTermOptions(db);
+  const mediaIds = collectMediaIds(content);
+  if (initial.values.featuredMediaId) mediaIds.push(initial.values.featuredMediaId);
+  const [allTerms, parents, authors, links, posts, media] = await Promise.all([
+    listTermOptions(db),
+    type === "page" ? listParentOptions(db, id) : null,
+    type === "post" && can(viewer, "post.update") ? listUserOptions(db) : null,
+    getEntryLinks(db, collectEntryIds(content)),
+    listLatestPosts(db),
+    renderMedia(mediaIds),
+  ]);
   const terms = type === "post" && can(viewer, "term.assign") ? allTerms : null;
-  const parents = type === "page" ? await listParentOptions(db, id) : null;
   // The current parent is listed even when it's in the trash, so saving keeps it.
   if (
     parents &&
@@ -94,18 +106,14 @@ export async function EditorScreen({
   }
   const options: EditorOptions = {
     parents,
-    authors: type === "post" && can(viewer, "post.update") ? await listUserOptions(db) : null,
+    authors,
     categories: terms ? terms.filter((t) => t.taxonomy === "category") : null,
     tags: terms ? terms.filter((t) => t.taxonomy === "tag") : null,
   };
 
   // What the blocks point at, so the canvas draws them as the site will.
-  const mediaIds = collectMediaIds(content);
-  if (initial.values.featuredMediaId) mediaIds.push(initial.values.featuredMediaId);
-  const links = await getEntryLinks(db, collectEntryIds(content));
-  const posts = await listLatestPosts(db);
   const data: EditorData = {
-    media: await renderMedia(mediaIds),
+    media,
     links: Object.fromEntries(
       [...links.values()].map((link) => [
         link.id,
@@ -122,6 +130,7 @@ export async function EditorScreen({
     })),
     terms: allTerms,
     upload: { allowed: can(viewer, "media.upload"), maxBytes: env().MEDIA_MAX_BYTES },
+    userId: viewer.id,
   };
 
   return (

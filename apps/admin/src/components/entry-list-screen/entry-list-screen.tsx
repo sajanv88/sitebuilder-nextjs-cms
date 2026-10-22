@@ -7,10 +7,12 @@ import { can, canSome } from "@sitebuilder/auth";
 import { type EntryKind, EntryListQuery } from "@sitebuilder/schema";
 import type { Route } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import * as v from "valibot";
-import { requireSomePermission } from "@/auth/session";
+import { requireSomePermission, type Viewer } from "@/auth/session";
 import { AdminPage } from "@/components/admin-page/admin-page";
 import { EntryTable } from "@/components/entry-table/entry-table";
+import { Loading, RowsSkeleton } from "@/components/screen-skeleton/screen-skeleton";
 import { listEntriesFor } from "@/server/entries";
 
 // The editor's route is /admin/<type>s/[id]; "new" is the id of an entry not created yet.
@@ -34,18 +36,43 @@ const SCREENS: Record<
   },
 };
 
-// The Posts and Pages screens. The list's state comes from the URL and is parsed with
-// EntryListQuery, which falls back to defaults for anything it doesn't accept.
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+// The rows, streamed in after the header. The list's state comes from the URL and is parsed
+// with EntryListQuery, which falls back to defaults for anything it doesn't accept.
+async function EntryRows({
+  viewer,
+  type,
+  searchParams,
+}: {
+  viewer: Viewer;
+  type: EntryKind;
+  searchParams: SearchParams;
+}) {
+  const query = v.parse(EntryListQuery, await searchParams);
+  const list = await listEntriesFor(viewer, type, query);
+  return (
+    <EntryTable
+      type={type}
+      list={list}
+      query={query}
+      allowed={{
+        trash: canSome(viewer, `${type}.trash`),
+        delete: canSome(viewer, `${type}.delete`),
+      }}
+    />
+  );
+}
+
+// The Posts and Pages screens: the header at once, the rows when they're read.
 export async function EntryListScreen({
   type,
   searchParams,
 }: {
   type: EntryKind;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: SearchParams;
 }) {
   const viewer = await requireSomePermission(`${type}.read`);
-  const query = v.parse(EntryListQuery, await searchParams);
-  const list = await listEntriesFor(viewer, type, query);
   const screen = SCREENS[type];
 
   return (
@@ -65,15 +92,15 @@ export async function EntryListScreen({
         </>
       }
     >
-      <EntryTable
-        type={type}
-        list={list}
-        query={query}
-        allowed={{
-          trash: canSome(viewer, `${type}.trash`),
-          delete: canSome(viewer, `${type}.delete`),
-        }}
-      />
+      <Suspense
+        fallback={
+          <Loading label={`Loading ${screen.title.toLowerCase()}`}>
+            <RowsSkeleton />
+          </Loading>
+        }
+      >
+        <EntryRows viewer={viewer} type={type} searchParams={searchParams} />
+      </Suspense>
     </AdminPage>
   );
 }

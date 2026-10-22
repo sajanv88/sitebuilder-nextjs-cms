@@ -3,7 +3,8 @@
 
 @use "abstracts" as a;
 
-// Recent changes beside the steps from lg; one above the other before that.
+// Recent changes beside the steps from lg; one above the other before that. The steps stream
+// in, and draw nothing once they're all done: recent changes then take the whole row.
 .dashboard-screen {
   &__columns {
     display: grid;
@@ -11,7 +12,9 @@
     align-items: start;
 
     @include a.breakpoint("lg") {
-      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      &:has(> :nth-child(2)) {
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      }
     }
   }
 }

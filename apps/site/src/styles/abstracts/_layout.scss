@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "@nuvui/react/scss/mixins" as nuv;
+@use "functions" as f;
+
+/// The page's content column: the full width it's given, up to --app-content-max-width of
+/// content, with a gutter each side that grows from md. Its padding is inside its width
+/// (border-box), so it never runs past a narrow window. Sets --page-gutter for the padding.
+@mixin content-column {
+  --page-gutter: #{f.space(4)};
+
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: calc(var(--app-content-max-width) + 2 * var(--page-gutter));
+  margin-inline: auto;
+
+  @include nuv.breakpoint("md") {
+    --page-gutter: #{f.space(8)};
+  }
+}

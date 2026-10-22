@@ -33,10 +33,14 @@ export default async function SettingsPage() {
   await requirePermission("settings.update");
   const config = env();
   const defaults = defaultSettings(config.SITE_URL);
-  const site = (await getSettings(db, "site")) ?? defaults.site;
-  const reading = (await getSettings(db, "reading")) ?? DEFAULT_READING;
-  const pages = await listPublishedPages(db);
-  const saved = await getSettings(db, "media");
+  const [savedSite, savedReading, pages, saved] = await Promise.all([
+    getSettings(db, "site"),
+    getSettings(db, "reading"),
+    listPublishedPages(db),
+    getSettings(db, "media"),
+  ]);
+  const site = savedSite ?? defaults.site;
+  const reading = savedReading ?? DEFAULT_READING;
 
   const described = describeEnvironment(config);
   const environment: EnvironmentSummary =

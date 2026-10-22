@@ -1,0 +1,56 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+// The width and padding of the post list and the entry (post-list.scss, entry-view.scss).
+.page-skeleton {
+  display: grid;
+  gap: a.space(8);
+  align-content: start;
+  padding: a.space(8) var(--page-gutter) a.space(12);
+
+  @include a.content-column;
+
+  @include a.breakpoint("md") {
+    padding-block: a.space(12) a.space(16);
+  }
+
+  &__title {
+    --nuv-skeleton-height: #{a.space(12)};
+    --nuv-skeleton-width: min(100%, 24rem);
+  }
+
+  &__cards {
+    display: grid;
+    gap: a.space(6);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__card {
+    display: grid;
+    gap: a.space(3);
+    align-content: start;
+  }
+
+  &__picture {
+    aspect-ratio: 16 / 9;
+    block-size: auto;
+  }
+
+  &__text {
+    display: grid;
+    max-inline-size: 48rem;
+  }
+
+  &__line {
+    inline-size: 100%;
+  }
+
+  &__line--short {
+    inline-size: 40%;
+  }
+}

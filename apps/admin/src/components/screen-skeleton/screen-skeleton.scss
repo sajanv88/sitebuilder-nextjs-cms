@@ -1,0 +1,162 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+// Each box is the size of what it stands for: a control is a control's height, a row is a
+// list row's, so the content lands where the boxes were.
+.screen-skeleton {
+  display: grid;
+  gap: a.space(6);
+  align-content: start;
+
+  &__stack {
+    display: grid;
+    gap: a.space(4);
+  }
+
+  &__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+    justify-content: space-between;
+  }
+
+  &__control {
+    --nuv-skeleton-height: var(--nuv-control-height-md);
+    --nuv-skeleton-width: 8rem;
+  }
+
+  &__control--wide {
+    --nuv-skeleton-width: min(100%, 20rem);
+  }
+
+  &__rows {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    list-style: none;
+  }
+
+  &__row {
+    display: grid;
+    gap: a.space(1);
+    align-content: center;
+    min-block-size: a.space(14);
+    padding: a.space(2) a.space(4);
+
+    &:not(:first-child) {
+      border-block-start: var(--nuv-border-width) solid var(--color-border);
+    }
+  }
+
+  &__bone {
+    inline-size: 45%;
+  }
+
+  &__bone--short {
+    inline-size: 25%;
+  }
+
+  &__figures {
+    display: grid;
+    gap: a.space(4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  }
+
+  &__figure,
+  &__card {
+    display: grid;
+    gap: a.space(3);
+    align-content: start;
+    padding: a.space(5);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+  }
+
+  &__number {
+    --nuv-skeleton-height: #{a.space(8)};
+    --nuv-skeleton-width: 5rem;
+  }
+
+  &__field {
+    display: grid;
+    gap: a.space(2);
+  }
+
+  &__panes {
+    display: grid;
+    gap: a.space(6);
+    align-items: start;
+
+    @include a.breakpoint("lg") {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+  }
+
+  &__tiles {
+    display: grid;
+    gap: a.space(3);
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  }
+
+  &__tile {
+    aspect-ratio: 1;
+    block-size: auto;
+  }
+
+  // The editor's own padding and panes (entry-editor.scss).
+  &--editor {
+    gap: a.space(4);
+    padding: a.space(4);
+
+    @include a.breakpoint("md") {
+      padding: a.space(6);
+    }
+  }
+
+  &__head {
+    display: grid;
+    gap: a.space(4);
+  }
+
+  &__title {
+    --nuv-skeleton-height: #{a.space(8)};
+    --nuv-skeleton-width: min(100%, 16rem);
+  }
+
+  &__editor {
+    display: grid;
+    gap: a.space(6);
+    align-items: start;
+
+    @include a.breakpoint("lg") {
+      grid-template-columns: 17rem minmax(0, 1fr) 21rem;
+    }
+  }
+
+  &__side {
+    display: none;
+
+    @include a.breakpoint("lg") {
+      display: grid;
+    }
+  }
+
+  &__canvas {
+    display: grid;
+    gap: a.space(4);
+    min-block-size: 20rem;
+    padding: a.space(8);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  &__hero {
+    --nuv-skeleton-height: 12rem;
+  }
+}

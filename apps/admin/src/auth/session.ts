@@ -6,6 +6,7 @@ import { type Action, type Actor, can, canSome, type Resource } from "@sitebuild
 import { RoleSchema } from "@sitebuilder/schema";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import { cache } from "react";
 import * as v from "valibot";
 import { auth } from "./auth";
 
@@ -14,9 +15,11 @@ export interface Viewer extends Actor {
   email: string;
 }
 
-// The signed-in user, read from Postgres on every call. A session whose role isn't one of ours,
-// or whose user is banned, counts as signed out.
-export async function getViewer(): Promise<Viewer | null> {
+// The signed-in user, read from Postgres once per request: the layout, the page and the
+// components streamed into it share the answer. A session whose role isn't one of ours, or
+// whose user is banned, counts as signed out. Server Actions are requests of their own, so each
+// still reads it fresh.
+export const getViewer = cache(async (): Promise<Viewer | null> => {
   // Request data first: it marks the page dynamic before auth() reads the environment, which
   // `next build` doesn't have.
   const requestHeaders = await headers();
@@ -30,7 +33,7 @@ export async function getViewer(): Promise<Viewer | null> {
     name: session.user.name,
     email: session.user.email,
   };
-}
+});
 
 // For admin pages: signed out → sign-in; signed in but not allowed → 404, so a screen the role
 // can't use doesn't reveal that it exists (an author never sees Pages, §6.2).

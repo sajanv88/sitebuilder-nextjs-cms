@@ -35,7 +35,10 @@ function entryIds(menu: Menu): string[] {
 // The two menus (design §4.4, §5.3). menu.update covers this screen (§6.1).
 export default async function MenusPage() {
   await requirePermission("menu.update");
-  const menus = await Promise.all(MENUS.map(({ location }) => getMenu(db, location)));
+  const [menus, terms] = await Promise.all([
+    Promise.all(MENUS.map(({ location }) => getMenu(db, location))),
+    listTermOptions(db),
+  ]);
   const links = await getEntryLinks(db, menus.flatMap(entryIds));
   const entries: Record<string, MenuTarget> = Object.fromEntries(
     [...links.values()].map((link) => [
@@ -43,7 +46,6 @@ export default async function MenusPage() {
       { id: link.id, title: link.title, path: link.path, type: link.type, public: link.public },
     ]),
   );
-  const terms = await listTermOptions(db);
 
   return (
     <AdminPage
