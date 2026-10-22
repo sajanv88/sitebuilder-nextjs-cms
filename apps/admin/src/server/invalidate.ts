@@ -11,7 +11,11 @@ import { ACTION_EFFECTS, type ActionName } from "./action-effects";
 // the write succeeds; a refused write changes nothing.
 export function invalidate(
   action: ActionName,
-  scope: { entryIds?: readonly string[]; menu?: MenuLocation } = {},
+  scope: {
+    entryIds?: readonly string[];
+    menu?: MenuLocation;
+    menus?: readonly MenuLocation[];
+  } = {},
 ): void {
   const tags = new Set<string>();
   for (const effect of ACTION_EFFECTS[action]) {
@@ -21,12 +25,15 @@ export function invalidate(
         for (const id of scope.entryIds ?? []) tags.add(CacheTags.entry(id));
         break;
       case "menu":
-        if (scope.menu) tags.add(CacheTags.menu(scope.menu));
+        for (const location of [...(scope.menu ? [scope.menu] : []), ...(scope.menus ?? [])]) {
+          tags.add(CacheTags.menu(location));
+        }
         break;
       case "redirects":
       case "terms":
       case "settings":
       case "media":
+      case "template":
         tags.add(CacheTags[effect]);
         break;
     }

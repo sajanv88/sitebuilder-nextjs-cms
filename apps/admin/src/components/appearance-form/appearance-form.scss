@@ -29,6 +29,15 @@
     font-weight: var(--font-weight-semibold);
   }
 
+  // "Use the theme's" beside the picker, wrapping under it on a phone.
+  &__brand-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+    align-items: center;
+    justify-content: flex-end;
+  }
+
   &__note {
     margin: 0;
     color: var(--color-muted-foreground);

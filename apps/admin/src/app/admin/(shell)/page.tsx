@@ -9,6 +9,8 @@ import {
   db,
   getMenu,
   getSettings,
+  getTemplateSettings,
+  listImportedEntries,
   listPublishedPages,
   recentEntries,
 } from "@sitebuilder/db";
@@ -91,14 +93,26 @@ async function Recent({ viewer }: { viewer: Viewer }) {
 
 // For an admin, the steps left to a site ready for visitors; nothing once they're all done.
 async function Steps() {
-  const [site, reading, theme, primary, pages] = await Promise.all([
+  const [site, reading, theme, primary, pages, template] = await Promise.all([
     getSiteSettings(),
     getSettings(db, "reading"),
     getSettings(db, "theme"),
     getMenu(db, "primary"),
     listPublishedPages(db),
+    getTemplateSettings(db),
   ]);
+  const imported = await listImportedEntries(db, template.slug);
   const steps: SetupStep[] = [
+    {
+      id: "template",
+      title: "Start from a template",
+      text: "A ready-made look with starter pages to edit, or keep building your own.",
+      // Done once a template other than the default is chosen, or one has brought pages, or
+      // the site has pages of its own.
+      done: template.slug !== "default" || imported.length > 0 || pages.length > 0,
+      href: "/admin/templates",
+      action: "See templates",
+    },
     {
       id: "name",
       title: "Name your site",

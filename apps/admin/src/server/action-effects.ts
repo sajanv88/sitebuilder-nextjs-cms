@@ -15,8 +15,10 @@ export type Effect =
   | "settings"
   // Alt text and the facts pages draw files with.
   | "media"
-  // One menu, named by the call.
-  | "menu";
+  // One menu, or several, named by the call.
+  | "menu"
+  // Which template the site uses.
+  | "template";
 
 export const ACTION_EFFECTS = {
   // account.ts: an author's name is printed on their posts.
@@ -51,6 +53,9 @@ export const ACTION_EFFECTS = {
   saveDateSettings: ["settings"],
   // appearance.ts
   saveTheme: ["settings"],
+  // templates.ts: a template can bring its theme, pages, menus and home page.
+  previewTemplateActivation: [],
+  activateTemplate: ["template", "settings", "entries", "menu"],
   // terms.ts: archives, and the categories and tags printed on posts.
   saveTerm: ["terms", "entries"],
   removeTerm: ["terms", "entries"],

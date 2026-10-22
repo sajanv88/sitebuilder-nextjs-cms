@@ -1,0 +1,68 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+.template-activate {
+  &__wait {
+    display: flex;
+    gap: a.space(2);
+    align-items: center;
+    margin: 0;
+    color: var(--color-muted-foreground);
+  }
+
+  &__body {
+    display: grid;
+    gap: a.space(6);
+  }
+
+  // Two cards to a row once there's room for them (nuvui's choice cards: one column on a phone).
+  &__choices {
+    display: grid;
+    gap: a.space(2);
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  &__legend {
+    margin: 0 0 a.space(2);
+    padding: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &__entries {
+    display: grid;
+  }
+
+  &__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__entry {
+    display: flex;
+    gap: a.space(3);
+    align-items: center;
+    justify-content: space-between;
+    padding-block: a.space(2);
+    border-block-end: var(--nuv-border-width) solid var(--color-border);
+  }
+
+  &__title {
+    display: grid;
+    min-inline-size: 0;
+    font-weight: var(--font-weight-medium);
+  }
+
+  &__path {
+    overflow-wrap: anywhere;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-normal);
+  }
+}

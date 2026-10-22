@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+.template-gallery {
+  display: grid;
+  gap: a.space(6);
+
+  // As many cards to a row as fit, one on a phone.
+  &__list {
+    display: grid;
+    gap: a.space(6);
+    grid-template-columns: repeat(auto-fill, minmax(min(20rem, 100%), 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__item {
+    display: grid;
+  }
+
+  // The picture runs to the card's edges (nuvui's card: content outside the parts).
+  &__card {
+    padding-block-start: 0;
+    overflow: hidden;
+  }
+
+  &__shots {
+    position: relative;
+    border-block-end: var(--nuv-border-width) solid var(--color-border);
+    background-color: var(--color-muted);
+  }
+
+  // The phone's view over the corner of the computer's, as a phone held in front of it.
+  &__phone {
+    position: absolute;
+    inset-block-end: a.space(3);
+    inset-inline-end: a.space(3);
+    inline-size: 22%;
+    block-size: auto;
+    border: var(--nuv-border-width) solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+  }
+
+  &__facts {
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+}

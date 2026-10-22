@@ -18,6 +18,7 @@ function navFor(viewer: Viewer): NavKey[] {
     media: canSome(viewer, "media.read"),
     menus: can(viewer, "menu.update"),
     appearance: can(viewer, "theme.update"),
+    templates: can(viewer, "template.activate"),
     users: can(viewer, "user.read"),
     settings: can(viewer, "settings.update"),
     terms: can(viewer, "term.update"),

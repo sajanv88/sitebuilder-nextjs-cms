@@ -372,17 +372,30 @@ Approved 2026-10-22. nuvui installed before its versions were a day old, with ex
 Design: §12 (Templates), §14 (AI assistant), §5.2 (blocks), §6 (roles), §9 (environment). Out of scope: the marketplace service, signing, the revocation list, downloading templates from a marketplace, image generation, runtime template installation. `apps/web` in the brief is `apps/site` here.
 
 ## 0. Prepare and plan
-- [ ] Read all of docs/design.md; leave for later what it marks as later
-- [ ] Check phases 1 to 4 exist (monorepo, db, Better Auth with `can()`, admin shell, blocks and editor, the public catch-all with the built-in look)
+- [x] Read all of docs/design.md; leave for later what it marks as later
+- [x] Check phases 1 to 4 exist (monorepo, db, Better Auth with `can()`, admin shell, blocks and editor, the public catch-all with the built-in look)
 - [ ] Check the built-in look is the bundled `default` template on the §12 contract; if not, refactoring it is the first step of Part 1
 - [ ] Write docs/phase-7-8-plan.md with what the repo check found; wait for approval before coding
 
 ## Part 1: Templates (§12)
 
+### 7A: templates that are data only (built 2026-10-22)
+- [x] Schemas in packages/schema: `TemplateManifestSchema`, `StarterContentSchema`, `resolveRefs`, the `template` settings row and cache tag, with tests
+- [x] `templates/` as a workspace package, its lockfile inside it, and three bundled templates (Company as `default`, Studio, Journal) with screenshots
+- [x] packages/template-checks with the data rules (manifest, files, theme tokens, starter content, lockfile), a good fixture and a failing case per rule
+- [x] packages/cli: `generate`, `template verify`, `template list`, `template lock`; `add` and `remove` say they arrive in 7B
+- [x] `template.activate` for admins only; activation in one transaction, idempotent by source ref, with a dry run first
+- [x] Templates screen and Activate dialog (theme, starter pages, menus, home page, publish now)
+- [x] "Start from a template" in the dashboard's setup steps
+- [x] Appearance: brand colour and corners over the token rows
+- [x] Lint, typecheck, tests, build, licence check, the admin image built and run read-only with /api/health
+- [x] Gate 7A: each template applied on a fresh database in a production build; applying again creates only what's missing
+
+
 ### 1. packages/template-sdk
 - [ ] `TemplateManifestSchema`, `TemplateSettings`, layout prop types, `ResolvedLink`, `ResolvedImage`, `PublicEntry`, `PublicPost`, `defineBlock`
 - [ ] packages/schema: `BlockType` allows `<slug>:<name>`
-- [ ] A required `description` on every block definition, written for the existing blocks
+- [x] A required `description` on every block definition, written for the existing blocks
 
 ### 2. packages/template-checks
 - [ ] Every §12.8 rule: one function from a folder path to findings (file, line, rule id, message)
@@ -397,7 +410,7 @@ Design: §12 (Templates), §14 (AI assistant), §5.2 (blocks), §6 (roles), §9 
 
 ### 4. The host
 - [ ] A build step reads templates/ and templates.lock.json and writes `templates.generated.ts` with static imports
-- [ ] Active template from the `template` settings row, falling back to `default` when missing or unknown
+- [x] Active template from the `template` settings row, falling back to `default` when missing or unknown
 - [ ] Site layout around the page, post, archive and not-found layouts; the host renders the entry's blocks and passes them as children
 - [ ] Template blocks registered as `<slug>:<name>`; an "unavailable block" placeholder in the editor and nothing on the public site when their template isn't active
 
@@ -410,7 +423,7 @@ Design: §12 (Templates), §14 (AI assistant), §5.2 (blocks), §6 (roles), §9 
 ### 6. Activation
 - [ ] `settings.template` and the options validated against the manifest
 - [ ] Activate dialog with two checkboxes, both off: apply the theme defaults; import starter content as drafts with sourceRef `template:<slug>:<n>`
-- [ ] Activation never deletes or edits existing content
+- [x] Activation never deletes or edits existing content
 - [ ] `template` resource in permissions.ts and `can()`: install, activate, remove for admins only
 
 ### 7. Admin: Templates screen (nuvui; read each component's page through the MCP first)
@@ -422,10 +435,10 @@ Design: §12 (Templates), §14 (AI assistant), §5.2 (blocks), §6 (roles), §9 
 - [ ] `pnpm sitebuilder template add <local-path>`: copies to templates/<slug>/, runs the checks, writes templates.lock.json (slug, version, source `local`, a deterministic sha256 of sorted paths and contents)
 - [ ] `remove <slug>`, `verify` (checks again, compares hashes with the lockfile), `list`
 - [ ] Anything needing the marketplace fails with a message saying it arrives in a later phase
-- [ ] Production builds refuse source `local` unless `ALLOW_UNREVIEWED_TEMPLATES=true`
+- [x] Production builds refuse source `local` unless `ALLOW_UNREVIEWED_TEMPLATES=true`
 
 ### 9. Docker, compose, CI
-- [ ] The image build copies templates/ and the lockfile and runs the generate step (docker-nextjs)
+- [x] The image build copies templates/ and the lockfile and runs the generate step (docker-nextjs)
 - [ ] CI runs `template verify` and the template-checks tests (github-actions)
 
 ### 10. Example template

@@ -10,6 +10,14 @@ import {
   Badge,
   Button,
   ChoiceCardTitle,
+  ColorPicker,
+  ColorPickerArea,
+  ColorPickerContent,
+  ColorPickerHue,
+  ColorPickerInput,
+  ColorPickerSwatch,
+  ColorPickerSwatches,
+  ColorPickerTrigger,
   Combobox,
   ComboboxContent,
   ComboboxEmpty,
@@ -20,6 +28,12 @@ import {
   FieldControl,
   FieldLabel,
   Input,
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemTitle,
   RadioCard,
   RadioGroup,
   Switch,
@@ -34,10 +48,21 @@ import {
   TokenName,
   TokenValue,
 } from "@sitebuilder/schema";
-import { type CSSProperties, useState, useTransition } from "react";
+import { type CSSProperties, useEffect, useRef, useState, useTransition } from "react";
 import * as v from "valibot";
 import { saveTheme } from "@/actions/appearance";
 import "./appearance-form.scss";
+import {
+  BRAND_TOKENS,
+  brandOf,
+  brandTokens,
+  type Corners,
+  cornersOf,
+  cornerTokens,
+  RADIUS_TOKENS,
+  readsOnLight,
+  type TokenValues,
+} from "./brand";
 
 // Appearance (design §5.4): a nuvui preset, light, dark or the visitor's own setting, how
 // tall controls are, and token overrides with a value for light and one for dark. A preview
@@ -51,6 +76,38 @@ interface TokenRow {
   name: string;
   light: string;
   dark: string;
+}
+
+// Brand colours most sites start from, after nuvui's appearance block.
+const BRAND_PRESETS = [
+  { value: "#dc2626", name: "Red" },
+  { value: "#c2410c", name: "Orange" },
+  { value: "#15803d", name: "Green" },
+  { value: "#0f766e", name: "Teal" },
+  { value: "#2563eb", name: "Blue" },
+  { value: "#7c3aed", name: "Violet" },
+  { value: "#1e293b", name: "Slate" },
+];
+
+const CORNER_NAMES: Record<Corners, string> = {
+  theme: "The theme's",
+  square: "Square",
+  round: "Round",
+  rounder: "Rounder",
+};
+
+// A colour as the preview draws it, as #rrggbb: a pixel painted in it and read back, which
+// works for the oklch() values nuvui's presets use.
+function drawnAsHex(color: string): string | null {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+  const context = canvas.getContext("2d");
+  if (!context || !color) return null;
+  context.fillStyle = color;
+  context.fillRect(0, 0, 1, 1);
+  const [r = 0, g = 0, b = 0] = context.getImageData(0, 0, 1, 1).data;
+  return `#${[r, g, b].map((n) => n.toString(16).padStart(2, "0")).join("")}`;
 }
 
 // The swatches show what each looks like, read from the preset's own tokens.
@@ -107,6 +164,40 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
   function update(key: number, patch: Partial<TokenRow>) {
     setRows((now) => now.map((row) => (row.key === key ? { ...row, ...patch } : row)));
   }
+
+  // Writes token values into the rows: changes the ones there, adds the rest.
+  function applyTokens(values: TokenValues) {
+    setRows((now) => {
+      const next = now.map((row) => {
+        const value = values[row.name];
+        return value ? { ...row, light: value.light, dark: value.dark } : row;
+      });
+      let key = Math.max(-1, ...now.map((row) => row.key));
+      for (const [name, value] of Object.entries(values)) {
+        if (!next.some((row) => row.name === name)) next.push({ key: ++key, name, ...value });
+      }
+      return next;
+    });
+  }
+
+  function removeTokens(names: readonly string[]) {
+    setRows((now) => now.filter((row) => !names.includes(row.name)));
+  }
+
+  const lightValues = new Map(rows.map((row) => [row.name, row.light]));
+  const brand = brandOf(lightValues.get("--color-primary"));
+  const corners = cornersOf(lightValues);
+
+  // With no brand colour of its own, the picker starts from the theme's, as the preview draws it.
+  const preview = useRef<HTMLDivElement>(null);
+  const [themePrimary, setThemePrimary] = useState("#2563eb");
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the preset and the mode change what the preview draws.
+  useEffect(() => {
+    if (brand || !preview.current) return;
+    const value = getComputedStyle(preview.current).getPropertyValue("--color-primary").trim();
+    const drawn = drawnAsHex(value);
+    if (drawn) setThemePrimary(drawn);
+  }, [brand, preset, shownMode]);
 
   function save() {
     if ([...problems.values()].some(Boolean)) {
@@ -169,6 +260,84 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
           </RadioGroup>
         </section>
 
+        <section className="appearance-form__section" aria-labelledby="appearance-brand">
+          <h2 id="appearance-brand" className="appearance-form__heading">
+            Brand colour and corners
+          </h2>
+          <ItemGroup variant="outline">
+            <Item>
+              <ItemContent>
+                <ItemTitle id="appearance-brand-title">Brand colour</ItemTitle>
+                <ItemDescription id="appearance-brand-about">
+                  Buttons, links and focus rings. The text on it is chosen to be readable, and dark
+                  pages get a lighter shade of it.
+                </ItemDescription>
+              </ItemContent>
+              <ItemActions className="appearance-form__brand-actions">
+                {brand ? (
+                  <Button intent="ghost" size="sm" onClick={() => removeTokens(BRAND_TOKENS)}>
+                    Use the theme's
+                  </Button>
+                ) : null}
+                <ColorPicker
+                  value={brand ?? themePrimary}
+                  onValueChange={(color) => applyTokens(brandTokens(color))}
+                >
+                  <ColorPickerTrigger
+                    aria-labelledby="appearance-brand-title"
+                    aria-describedby="appearance-brand-about"
+                  >
+                    {brand ? undefined : "The theme's"}
+                  </ColorPickerTrigger>
+                  <ColorPickerContent align="end">
+                    <ColorPickerArea />
+                    <ColorPickerHue />
+                    <ColorPickerInput />
+                    <ColorPickerSwatches aria-label="Brand colours">
+                      {BRAND_PRESETS.map((option) => (
+                        <ColorPickerSwatch
+                          key={option.value}
+                          value={option.value}
+                          aria-label={option.name}
+                        />
+                      ))}
+                    </ColorPickerSwatches>
+                  </ColorPickerContent>
+                </ColorPicker>
+              </ItemActions>
+            </Item>
+            <Item>
+              <ItemContent>
+                <ItemTitle id="appearance-corners-title">Corners</ItemTitle>
+                <ItemDescription>How round buttons, fields and cards are.</ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <ToggleGroup
+                  type="single"
+                  value={corners ?? ""}
+                  onValueChange={(value) => {
+                    if (value === "theme") removeTokens(RADIUS_TOKENS);
+                    else if (value) applyTokens(cornerTokens(value as Exclude<Corners, "theme">));
+                  }}
+                  aria-labelledby="appearance-corners-title"
+                >
+                  {(Object.keys(CORNER_NAMES) as Corners[]).map((value) => (
+                    <ToggleGroupItem key={value} value={value}>
+                      {CORNER_NAMES[value]}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </ItemActions>
+            </Item>
+          </ItemGroup>
+          {/* In the page from the start, so a screen reader hears it when it appears. */}
+          <p role="status" className="appearance-form__note">
+            {brand && !readsOnLight(brand)
+              ? "Links in this colour are hard to read on a light page. A darker shade reads better."
+              : ""}
+          </p>
+        </section>
+
         <div className="appearance-form__pair">
           <section className="appearance-form__section" aria-labelledby="appearance-mode">
             <h2 id="appearance-mode" className="appearance-form__heading">
@@ -204,11 +373,12 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
 
         <section className="appearance-form__section" aria-labelledby="appearance-tokens">
           <h2 id="appearance-tokens" className="appearance-form__heading">
-            Your own colors and corners
+            Advanced: each value
           </h2>
           <p className="appearance-form__note">
-            Each row replaces one of the theme's values. A light value holds in dark too unless dark
-            has its own. Colors pair up: check that text still reads on what you change.
+            The brand colour and corners above are written here too. Each row replaces one of the
+            theme's values. A light value holds in dark too unless dark has its own. Colors pair up:
+            check that text still reads on what you change.
           </p>
           {rows.length > 0 ? (
             <ul className="appearance-form__tokens">
@@ -319,6 +489,7 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
           ) : null}
         </div>
         <div
+          ref={preview}
           className="appearance-form__preview"
           data-theme={shownMode}
           data-density={density}

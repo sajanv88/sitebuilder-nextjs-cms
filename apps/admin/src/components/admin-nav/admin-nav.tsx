@@ -8,6 +8,7 @@ import {
   ChevronRightIcon,
   FileTextIcon,
   ImageIcon,
+  LayersIcon,
   LayoutDashboardIcon,
   ListIcon,
   PaletteIcon,
@@ -46,6 +47,7 @@ export const NAV_KEYS = [
   "media",
   "menus",
   "appearance",
+  "templates",
   "users",
   "settings",
   // Not a row of its own: Categories and Tags, under Posts.
@@ -97,6 +99,7 @@ const GROUPS: { label: string | null; items: Item[] }[] = [
     items: [
       { key: "menus", label: "Menus", href: "/admin/menus", Icon: ListIcon },
       { key: "appearance", label: "Appearance", href: "/admin/appearance", Icon: PaletteIcon },
+      { key: "templates", label: "Templates", href: "/admin/templates", Icon: LayersIcon },
     ],
   },
   {
