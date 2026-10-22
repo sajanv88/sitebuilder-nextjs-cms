@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+// The admin's one Toaster. A toast with an intent has a border of that colour all round
+// instead of a thick edge on one side.
+.admin-toaster {
+  --nuv-toast-accent-width: var(--nuv-border-width);
+}
+
+// nuvui keeps each intent's colour inside its modifier rule, with no variable to read it from,
+// so these select the modifier classes its Toast page lists (docs/decisions.md #106). Remove
+// them once nuvui exposes the colour as a variable.
+/* stylelint-disable selector-disallowed-list */
+.admin-toaster .nuv-toast--info {
+  --nuv-toast-border: var(--color-primary);
+}
+
+.admin-toaster .nuv-toast--success {
+  --nuv-toast-border: var(--color-success);
+}
+
+.admin-toaster .nuv-toast--warning {
+  --nuv-toast-border: var(--color-warning);
+}
+
+.admin-toaster .nuv-toast--danger {
+  --nuv-toast-border: var(--color-danger);
+}
+/* stylelint-enable selector-disallowed-list */

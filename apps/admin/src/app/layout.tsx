@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <NonceProvider nonce={nonce}>{children}</NonceProvider>
         {/* Once, for the whole app: toast() calls from any client component show here. */}
-        <Toaster />
+        <Toaster className="admin-toaster" />
       </body>
     </html>
   );
