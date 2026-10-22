@@ -65,7 +65,7 @@ export function EntryView({
         </div>
       ) : null}
 
-      <div className="entry__content">
+      <div className="entry__content block-page">
         <BlockList blocks={entry.content} context={context} />
       </div>
 

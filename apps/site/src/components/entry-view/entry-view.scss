@@ -3,16 +3,21 @@
 
 @use "abstracts" as a;
 
-// The page's frame around its blocks: the same width and spacing as the editor's canvas, so
-// what the editor shows is what ships. Sections draw their own bands inside it.
+// The page around its blocks, as wide as the window. The title, the featured picture and the
+// footer keep to the content column; the blocks lay out in the page's grid (block-page, from
+// @sitebuilder/blocks), where each sits in the content column unless it's set to run fluid or
+// full width. The editor's canvas draws the same grid, so what it shows is what ships.
 .entry {
+  --page-gutter: #{a.space(4)};
+  --entry-column: min(var(--app-content-max-width), 100% - 2 * var(--page-gutter));
+
   display: grid;
   gap: a.space(8);
-  padding: a.space(8) var(--page-gutter) a.space(12);
-
-  @include a.content-column;
+  padding-block: a.space(8) a.space(12);
 
   @include a.breakpoint("md") {
+    --page-gutter: #{a.space(8)};
+
     padding-block: a.space(12) a.space(16);
   }
 
@@ -29,6 +34,8 @@
   &__header {
     display: grid;
     gap: a.space(2);
+    inline-size: var(--entry-column);
+    margin-inline: auto;
   }
 
   &__title {
@@ -50,6 +57,8 @@
   }
 
   &__featured {
+    inline-size: var(--entry-column);
+    margin-inline: auto;
     overflow: hidden;
     border-radius: var(--radius-lg);
   }
@@ -63,14 +72,18 @@
   // The blocks lay out by this box's width (container queries named `blocks`), as they do in
   // the editor's canvas at each device width.
   &__content {
-    display: grid;
-    gap: a.space(6);
+    --block-page-gutter: var(--page-gutter);
+    --block-page-max: var(--app-content-max-width);
+
+    row-gap: a.space(6);
     container: blocks / inline-size;
   }
 
   &__footer {
     display: grid;
     gap: a.space(4);
+    inline-size: var(--entry-column);
+    margin-inline: auto;
     padding-block-start: a.space(6);
     border-block-start: var(--nuv-border-width) solid var(--color-border);
   }
