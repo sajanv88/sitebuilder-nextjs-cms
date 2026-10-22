@@ -3,3 +3,5 @@
 *.jpg binary
 *.ico binary
 *.woff2 binary
+# Templates are hashed byte for byte (templates.lock.json): no line-ending conversion.
+templates/** -text

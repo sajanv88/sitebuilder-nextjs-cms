@@ -1,0 +1,240 @@
+{
+  "pages": [
+    {
+      "ref": "home",
+      "title": "Home",
+      "slug": "home",
+      "seoDescription": "[TODO: what you write about, in one sentence.]",
+      "content": [
+        {
+          "type": "hero",
+          "props": {
+            "eyebrow": "[Your name]",
+            "headline": "Notes on [what you write about]",
+            "body": "A sentence on what readers find here and how often something new appears. Replace it with your own.",
+            "primaryAction": {
+              "label": "Read the latest",
+              "href": {
+                "kind": "url",
+                "url": "/blog"
+              }
+            },
+            "secondaryAction": {
+              "label": "Get new posts by email",
+              "href": {
+                "kind": "entry",
+                "entryId": "ref:newsletter"
+              }
+            },
+            "align": "start",
+            "backdrop": "grid",
+            "scrim": "soft"
+          }
+        },
+        {
+          "type": "section",
+          "props": {
+            "width": "wide",
+            "paddingY": "lg"
+          },
+          "children": [
+            {
+              "type": "heading",
+              "props": {
+                "text": "Latest writing",
+                "level": 2
+              }
+            },
+            {
+              "type": "latest-posts",
+              "props": {
+                "count": 6,
+                "layout": "cards",
+                "showExcerpt": true
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "props": {
+            "background": "muted",
+            "align": "center",
+            "paddingY": "lg"
+          },
+          "children": [
+            {
+              "type": "heading",
+              "props": {
+                "text": "Never miss a post",
+                "level": 2
+              }
+            },
+            {
+              "type": "rich-text",
+              "props": {
+                "html": "<p>New writing in your inbox, or in your feed reader through the RSS feed.</p>"
+              }
+            },
+            {
+              "type": "button",
+              "props": {
+                "label": "Sign up",
+                "href": {
+                  "kind": "entry",
+                  "entryId": "ref:newsletter"
+                },
+                "intent": "secondary"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "about",
+      "title": "About",
+      "slug": "about",
+      "seoDescription": "[TODO: who writes here, in one sentence.]",
+      "content": [
+        {
+          "type": "section",
+          "props": {
+            "width": "narrow"
+          },
+          "children": [
+            {
+              "type": "rich-text",
+              "props": {
+                "html": "<p>[Who you are and what you write about. A few sentences are enough.]</p><p>[How often you post, and how readers can follow along: the RSS feed or the newsletter.]</p>"
+              }
+            },
+            {
+              "type": "quote",
+              "props": {
+                "text": "[A line you'd like readers to remember you by.]"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "newsletter",
+      "title": "Newsletter",
+      "slug": "newsletter",
+      "seoDescription": "[TODO: what the newsletter is and how often it comes.]",
+      "content": [
+        {
+          "type": "section",
+          "props": {
+            "width": "narrow"
+          },
+          "children": [
+            {
+              "type": "rich-text",
+              "props": {
+                "html": "<p>[Say what's in the newsletter and how often it arrives.]</p><p>Sitebuilder doesn't send email itself. Link the button below to the sign-up page of the newsletter service you use.</p>"
+              }
+            },
+            {
+              "type": "button",
+              "props": {
+                "label": "Sign up",
+                "href": {
+                  "kind": "url",
+                  "url": "https://example.com/newsletter"
+                },
+                "openInNewTab": true
+              }
+            },
+            {
+              "type": "callout",
+              "props": {
+                "variant": "info",
+                "body": "Prefer a feed reader? Every post is also in the RSS feed at /feed.xml."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "posts": [
+    {
+      "ref": "welcome",
+      "title": "Welcome to the journal",
+      "slug": "welcome",
+      "excerpt": "A first post, to show how posts look. Edit it or replace it with your own.",
+      "content": [
+        {
+          "type": "rich-text",
+          "props": {
+            "html": "<p>This is a first post, here to show how posts look on this site. Edit it, or delete it once you've written your own.</p><p>Posts are listed newest first on the home page and in the blog, and each one has its own page, like this one.</p>"
+          }
+        },
+        {
+          "type": "quote",
+          "props": {
+            "text": "Write the kind of thing you'd like to read."
+          }
+        },
+        {
+          "type": "rich-text",
+          "props": {
+            "html": "<h2>What to write next</h2><ul><li>[An idea for a post]</li><li>[Another idea]</li><li>[A third]</li></ul>"
+          }
+        }
+      ]
+    },
+    {
+      "ref": "how-it-works",
+      "title": "How this site works",
+      "slug": "how-this-site-works",
+      "excerpt": "Pages, posts, menus and the look: where each one is changed.",
+      "content": [
+        {
+          "type": "rich-text",
+          "props": {
+            "html": "<p>Everything here is edited under <strong>/admin</strong>. Posts are for writing that has a date; pages are for things that stay, like the About page.</p><p>The menus at the top and bottom are changed under Menus, and the colours under Appearance.</p>"
+          }
+        },
+        {
+          "type": "callout",
+          "props": {
+            "variant": "success",
+            "title": "Delete me",
+            "body": "This post is part of the template's starter content. Remove it when you no longer need it."
+          }
+        }
+      ]
+    }
+  ],
+  "menus": {
+    "primary": [
+      {
+        "label": "Writing",
+        "url": "/blog"
+      },
+      {
+        "label": "About",
+        "ref": "about"
+      },
+      {
+        "label": "Newsletter",
+        "ref": "newsletter"
+      }
+    ],
+    "footer": [
+      {
+        "label": "About",
+        "ref": "about"
+      },
+      {
+        "label": "RSS",
+        "url": "/feed.xml"
+      }
+    ]
+  },
+  "homeRef": "home"
+}

@@ -1,6 +1,7 @@
 packages:
   - apps/*
   - packages/*
+  - templates
 
 # One version of each shared dependency for the whole repo. Packages depend on "catalog:".
 # turbo is pinned in the root package.json instead: the Dockerfile reads it from there.

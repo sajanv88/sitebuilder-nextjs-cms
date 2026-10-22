@@ -2,6 +2,8 @@ node_modules/
 .next/
 .turbo/
 dist/
+# Written by `pnpm sitebuilder generate` on every build.
+templates/generated/
 coverage/
 out/
 next-env.d.ts

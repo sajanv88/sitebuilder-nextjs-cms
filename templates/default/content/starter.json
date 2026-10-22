@@ -1,0 +1,420 @@
+{
+  "pages": [
+    {
+      "ref": "home",
+      "title": "Home",
+      "slug": "home",
+      "seoDescription": "[TODO: one sentence on what you do and who it's for, under 160 characters.]",
+      "content": [
+        {
+          "type": "hero",
+          "props": {
+            "eyebrow": "[Your company]",
+            "headline": "Clear, dependable help for growing businesses",
+            "body": "Say in a sentence or two who you help and how. Replace these words with your own: they're here to show the shape of the page.",
+            "primaryAction": {
+              "label": "Get in touch",
+              "href": {
+                "kind": "entry",
+                "entryId": "ref:contact"
+              }
+            },
+            "secondaryAction": {
+              "label": "What we do",
+              "href": {
+                "kind": "entry",
+                "entryId": "ref:services"
+              }
+            },
+            "align": "center",
+            "backdrop": "gradient",
+            "scrim": "soft"
+          }
+        },
+        {
+          "type": "feature-grid",
+          "props": {
+            "heading": "What we do",
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "target",
+                "title": "Plan",
+                "text": "We start with what you want to achieve, and agree how we'll know it worked."
+              },
+              {
+                "icon": "layers",
+                "title": "Build",
+                "text": "We do the work in small steps you can see, so nothing comes as a surprise."
+              },
+              {
+                "icon": "shield",
+                "title": "Support",
+                "text": "We stay on after launch, for questions, fixes and what comes next."
+              }
+            ]
+          }
+        },
+        {
+          "type": "section",
+          "props": {
+            "background": "muted",
+            "paddingY": "lg"
+          },
+          "children": [
+            {
+              "type": "heading",
+              "props": {
+                "text": "What people say",
+                "level": 2,
+                "align": "center"
+              }
+            },
+            {
+              "type": "reviews",
+              "props": {
+                "layout": "carousel",
+                "items": [
+                  {
+                    "quote": "[What a customer said about working with you, in their words.]",
+                    "author": "[Customer name]",
+                    "role": "[Their role, company]"
+                  },
+                  {
+                    "quote": "[A second customer's words. Ask them before you use their name.]",
+                    "author": "[Customer name]",
+                    "role": "[Their role, company]"
+                  },
+                  {
+                    "quote": "[A third review. Real ones only: placeholders like this one are for the layout.]",
+                    "author": "[Customer name]",
+                    "role": "[Their role, company]"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "props": {
+            "width": "narrow",
+            "paddingY": "lg"
+          },
+          "children": [
+            {
+              "type": "heading",
+              "props": {
+                "text": "Questions people ask",
+                "level": 2
+              }
+            },
+            {
+              "type": "faq",
+              "props": {
+                "items": [
+                  {
+                    "question": "How do we get started?",
+                    "answer": "Send us a message through the contact page. We'll reply to set up a short call about what you need."
+                  },
+                  {
+                    "question": "Who will I work with?",
+                    "answer": "[Say who your customers deal with day to day, and how to reach them.]"
+                  },
+                  {
+                    "question": "How long does it take?",
+                    "answer": "[Give a typical timeline, or say what it depends on.]"
+                  },
+                  {
+                    "question": "What does it cost?",
+                    "answer": "See the prices on our services page, or ask us for a quote."
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "props": {
+            "background": "primary",
+            "align": "center",
+            "paddingY": "lg"
+          },
+          "children": [
+            {
+              "type": "heading",
+              "props": {
+                "text": "Ready to talk?",
+                "level": 2
+              }
+            },
+            {
+              "type": "rich-text",
+              "props": {
+                "html": "<p>Tell us what you're working on. We usually reply within [one working day].</p>"
+              }
+            },
+            {
+              "type": "button",
+              "props": {
+                "label": "Contact us",
+                "href": {
+                  "kind": "entry",
+                  "entryId": "ref:contact"
+                },
+                "intent": "secondary",
+                "size": "lg"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "services",
+      "title": "Services",
+      "slug": "services",
+      "seoDescription": "[TODO: what you offer, in one sentence.]",
+      "content": [
+        {
+          "type": "feature-grid",
+          "props": {
+            "heading": "How we can help",
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "lightbulb",
+                "title": "Advice",
+                "text": "[What you advise on, and the outcome a customer gets.]"
+              },
+              {
+                "icon": "rocket",
+                "title": "Projects",
+                "text": "[A kind of project you take on from start to finish.]"
+              },
+              {
+                "icon": "settings",
+                "title": "Ongoing work",
+                "text": "[Work you do every month for a customer.]"
+              },
+              {
+                "icon": "users",
+                "title": "Training",
+                "text": "[What you teach, and to whom.]"
+              },
+              {
+                "icon": "message",
+                "title": "Support",
+                "text": "[How customers reach you, and how quickly you answer.]"
+              },
+              {
+                "icon": "check",
+                "title": "Reviews",
+                "text": "[A check-up or audit you offer.]"
+              }
+            ]
+          }
+        },
+        {
+          "type": "section",
+          "props": {
+            "width": "wide",
+            "paddingY": "lg"
+          },
+          "children": [
+            {
+              "type": "heading",
+              "props": {
+                "text": "Prices",
+                "level": 2,
+                "align": "center"
+              }
+            },
+            {
+              "type": "pricing",
+              "props": {
+                "plans": [
+                  {
+                    "name": "Starter",
+                    "price": "[Price]",
+                    "period": "per month",
+                    "features": ["[What's included]", "[What's included]", "[What's included]"],
+                    "cta": {
+                      "label": "Ask about Starter",
+                      "href": {
+                        "kind": "entry",
+                        "entryId": "ref:contact"
+                      }
+                    }
+                  },
+                  {
+                    "name": "Growth",
+                    "price": "[Price]",
+                    "period": "per month",
+                    "features": ["Everything in Starter", "[What's added]", "[What's added]"],
+                    "cta": {
+                      "label": "Ask about Growth",
+                      "href": {
+                        "kind": "entry",
+                        "entryId": "ref:contact"
+                      }
+                    },
+                    "highlighted": true
+                  },
+                  {
+                    "name": "Custom",
+                    "price": "Let's talk",
+                    "features": ["[For larger or unusual needs]", "[What's different]"],
+                    "cta": {
+                      "label": "Contact us",
+                      "href": {
+                        "kind": "entry",
+                        "entryId": "ref:contact"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "about",
+      "title": "About us",
+      "slug": "about",
+      "seoDescription": "[TODO: who you are, in one sentence.]",
+      "content": [
+        {
+          "type": "section",
+          "props": {
+            "width": "narrow"
+          },
+          "children": [
+            {
+              "type": "rich-text",
+              "props": {
+                "html": "<p>[Who you are, in a few sentences: when you started, why, and what you care about.]</p><p>[Who your customers are, and what they come to you for.]</p>"
+              }
+            },
+            {
+              "type": "quote",
+              "props": {
+                "text": "[A sentence that sums up how you work. Yours, or a customer's with their permission.]",
+                "cite": "[Who said it]"
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "props": {
+            "width": "narrow",
+            "paddingY": "lg"
+          },
+          "children": [
+            {
+              "type": "timeline",
+              "props": {
+                "heading": "Our story so far",
+                "items": [
+                  {
+                    "date": "[Year]",
+                    "title": "[How it started]",
+                    "text": "[A sentence about it.]"
+                  },
+                  {
+                    "date": "[Year]",
+                    "title": "[A milestone]",
+                    "text": "[A sentence about it.]"
+                  },
+                  {
+                    "date": "Today",
+                    "title": "[Where you are now]"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "contact",
+      "title": "Contact",
+      "slug": "contact",
+      "seoDescription": "[TODO: how to reach you.]",
+      "content": [
+        {
+          "type": "section",
+          "props": {
+            "width": "narrow"
+          },
+          "children": [
+            {
+              "type": "callout",
+              "props": {
+                "variant": "info",
+                "title": "Before you publish",
+                "body": "Replace the address, phone number and email on this page with your own. Anything in [square brackets] is a placeholder."
+              }
+            },
+            {
+              "type": "rich-text",
+              "props": {
+                "html": "<p>The quickest way to reach us is by email. We read every message.</p><p><strong>Email:</strong> [hello@example.com]<br><strong>Phone:</strong> [+00 00 000 0000]<br><strong>Address:</strong> [Street, town, postcode]</p>"
+              }
+            },
+            {
+              "type": "button",
+              "props": {
+                "label": "Email us",
+                "href": {
+                  "kind": "url",
+                  "url": "mailto:hello@example.com"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "menus": {
+    "primary": [
+      {
+        "label": "Services",
+        "ref": "services"
+      },
+      {
+        "label": "About",
+        "ref": "about"
+      },
+      {
+        "label": "Blog",
+        "url": "/blog"
+      },
+      {
+        "label": "Contact",
+        "ref": "contact"
+      }
+    ],
+    "footer": [
+      {
+        "label": "About",
+        "ref": "about"
+      },
+      {
+        "label": "Contact",
+        "ref": "contact"
+      },
+      {
+        "label": "Blog",
+        "url": "/blog"
+      }
+    ]
+  },
+  "homeRef": "home"
+}

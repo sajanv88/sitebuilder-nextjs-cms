@@ -1,0 +1,18 @@
+{
+  "pages": [
+    {
+      "ref": "home",
+      "title": "Home",
+      "slug": "home",
+      "content": [
+        {
+          "type": "heading",
+          "props": { "text": "Welcome", "href": { "kind": "entry", "entryId": "ref:about" } }
+        }
+      ]
+    },
+    { "ref": "about", "title": "About", "slug": "about", "content": [] }
+  ],
+  "menus": { "primary": [{ "label": "About", "ref": "about" }], "footer": [] },
+  "homeRef": "home"
+}

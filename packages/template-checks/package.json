@@ -1,0 +1,25 @@
+{
+  "name": "@sitebuilder/template-checks",
+  "version": "0.0.0",
+  "private": true,
+  "license": "GPL-2.0-or-later",
+  "author": "Sajankumar Vijayan",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@sitebuilder/schema": "workspace:*",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@sitebuilder/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

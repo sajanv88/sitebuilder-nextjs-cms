@@ -20,7 +20,8 @@
     "db:seed": "pnpm --filter @sitebuilder/db db:seed",
     "db:studio": "pnpm --filter @sitebuilder/db db:studio",
     "check:licence": "node scripts/check-licence.ts",
-    "licence-list": "node scripts/licences.ts"
+    "licence-list": "node scripts/licences.ts",
+    "sitebuilder": "pnpm --silent --filter @sitebuilder/cli build && node packages/cli/dist/sitebuilder.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

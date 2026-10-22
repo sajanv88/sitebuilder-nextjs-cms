@@ -1,0 +1,16 @@
+{
+  "slug": "good",
+  "name": "Good",
+  "version": "1.0.0",
+  "description": "A template that passes every rule.",
+  "licence": "GPL-2.0-or-later",
+  "requires": { "sitebuilder": "^0.1.0", "nuvui": "^0.8.0" },
+  "theme": {
+    "preset": "ember",
+    "mode": "system",
+    "density": "default",
+    "tokens": { "--radius-md": { "light": "0.5rem" } }
+  },
+  "screenshots": [{ "file": "screenshots/home.png", "label": "The home page" }],
+  "starter": "content/starter.json"
+}

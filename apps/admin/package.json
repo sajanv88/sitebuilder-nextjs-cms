@@ -30,6 +30,7 @@
     "@sitebuilder/db": "workspace:*",
     "@sitebuilder/media": "workspace:*",
     "@sitebuilder/schema": "workspace:*",
+    "@sitebuilder/templates": "workspace:*",
     "@tanstack/react-table": "catalog:",
     "@vercel/otel": "catalog:",
     "better-auth": "catalog:",

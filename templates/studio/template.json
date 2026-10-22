@@ -1,0 +1,36 @@
+{
+  "slug": "studio",
+  "name": "Studio",
+  "version": "1.0.0",
+  "description": "A portfolio for a design or creative studio: a bold home page, Work, Services with packages, About and Contact. Warm colours from the ember preset.",
+  "author": "Sitebuilder",
+  "licence": "GPL-2.0-or-later",
+  "requires": {
+    "sitebuilder": "^0.1.0",
+    "nuvui": "^0.8.0"
+  },
+  "theme": {
+    "preset": "ember",
+    "mode": "light",
+    "density": "default",
+    "tokens": {
+      "--radius-lg": {
+        "light": "1rem"
+      },
+      "--radius-xl": {
+        "light": "1.5rem"
+      }
+    }
+  },
+  "screenshots": [
+    {
+      "file": "screenshots/home-desktop.png",
+      "label": "The home page on a computer"
+    },
+    {
+      "file": "screenshots/home-phone.png",
+      "label": "The home page on a phone"
+    }
+  ],
+  "starter": "content/starter.json"
+}

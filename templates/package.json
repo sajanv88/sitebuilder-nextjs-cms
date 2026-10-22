@@ -1,0 +1,20 @@
+{
+  "name": "@sitebuilder/templates",
+  "version": "0.0.0",
+  "private": true,
+  "license": "GPL-2.0-or-later",
+  "author": "Sajankumar Vijayan",
+  "type": "module",
+  "exports": {
+    "./admin": "./src/admin.ts"
+  },
+  "scripts": {
+    "build": "node ../packages/cli/dist/sitebuilder.mjs generate"
+  },
+  "dependencies": {
+    "@sitebuilder/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "@sitebuilder/cli": "workspace:*"
+  }
+}

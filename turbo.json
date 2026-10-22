@@ -3,12 +3,14 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "generated/**"],
       "env": [
         "NEXT_PUBLIC_*",
         "NEXT_DEPLOYMENT_ID",
         "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY",
-        "ADMIN_ZONE_URL"
+        "ADMIN_ZONE_URL",
+        "NODE_ENV",
+        "ALLOW_UNREVIEWED_TEMPLATES"
       ],
       "passThroughEnv": ["NEXT_TELEMETRY_DISABLED"]
     },

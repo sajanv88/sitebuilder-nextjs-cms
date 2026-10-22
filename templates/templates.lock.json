@@ -1,0 +1,23 @@
+{
+  "lockfileVersion": 1,
+  "templates": [
+    {
+      "slug": "default",
+      "version": "1.0.0",
+      "source": "bundled",
+      "sha256": "242dbd5807d7df6d67f7ccaf2c695d175aae244ce81fd62c001fec12d0415d1c"
+    },
+    {
+      "slug": "journal",
+      "version": "1.0.0",
+      "source": "bundled",
+      "sha256": "7ccfd6d7f7877e9e509a78dc1858607d56c585575acbb4fe2fc0e1add13e1c47"
+    },
+    {
+      "slug": "studio",
+      "version": "1.0.0",
+      "source": "bundled",
+      "sha256": "3ead8027638a3e67254c8cd7c53ee120f45495dbc7530ea60fb14e7d2a637f13"
+    }
+  ]
+}

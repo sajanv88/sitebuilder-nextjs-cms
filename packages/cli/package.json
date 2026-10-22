@@ -1,0 +1,29 @@
+{
+  "name": "@sitebuilder/cli",
+  "version": "0.0.0",
+  "private": true,
+  "license": "GPL-2.0-or-later",
+  "author": "Sajankumar Vijayan",
+  "type": "module",
+  "bin": {
+    "sitebuilder": "./dist/sitebuilder.mjs"
+  },
+  "scripts": {
+    "build": "esbuild src/main.ts --log-level=warning --bundle --platform=node --format=esm --target=node26 --outfile=dist/sitebuilder.mjs --loader:.scss=empty --loader:.css=empty --alias:server-only=./src/server-only.ts --log-override:module-level-directive=silent --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@sitebuilder/blocks": "workspace:*",
+    "@sitebuilder/schema": "workspace:*",
+    "@sitebuilder/template-checks": "workspace:*",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@sitebuilder/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "esbuild": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "slug": "default",
+  "name": "Company",
+  "version": "1.0.0",
+  "description": "A site for a small business or consultancy: a home page with what you do, reviews and questions, plus Services with prices, About and Contact.",
+  "author": "Sitebuilder",
+  "licence": "GPL-2.0-or-later",
+  "requires": {
+    "sitebuilder": "^0.1.0",
+    "nuvui": "^0.8.0"
+  },
+  "theme": {
+    "preset": "default",
+    "mode": "system",
+    "density": "default",
+    "tokens": {}
+  },
+  "screenshots": [
+    {
+      "file": "screenshots/home-desktop.png",
+      "label": "The home page on a computer"
+    },
+    {
+      "file": "screenshots/home-phone.png",
+      "label": "The home page on a phone"
+    }
+  ],
+  "starter": "content/starter.json"
+}

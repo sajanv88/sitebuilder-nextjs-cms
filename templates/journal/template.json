@@ -1,0 +1,29 @@
+{
+  "slug": "journal",
+  "name": "Journal",
+  "version": "1.0.0",
+  "description": "A blog first: a home page that opens on the latest posts, an About page and a newsletter page. Quiet, readable type from the ink preset.",
+  "author": "Sitebuilder",
+  "licence": "GPL-2.0-or-later",
+  "requires": {
+    "sitebuilder": "^0.1.0",
+    "nuvui": "^0.8.0"
+  },
+  "theme": {
+    "preset": "ink",
+    "mode": "system",
+    "density": "comfortable",
+    "tokens": {}
+  },
+  "screenshots": [
+    {
+      "file": "screenshots/home-desktop.png",
+      "label": "The home page on a computer"
+    },
+    {
+      "file": "screenshots/home-phone.png",
+      "label": "The home page on a phone"
+    }
+  ],
+  "starter": "content/starter.json"
+}

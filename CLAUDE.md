@@ -49,6 +49,8 @@ docker compose up --build                        # the whole stack, from the rep
 docker build -f apps/admin/Dockerfile -t admin .   # one image
 helm lint --strict charts/sitebuilder
 pnpm licence-list --check                        # dependency licences reviewed, THIRD_PARTY_LICENSES.md current
+pnpm sitebuilder template verify                 # every installed template passes the checks and matches its lock
+pnpm sitebuilder template lock <slug>            # after changing a bundled template on purpose
 ```
 
 Run `pnpm typecheck && pnpm lint && pnpm build` before calling a change done.
@@ -60,6 +62,10 @@ apps/site/               main zone: the public site; Dockerfile beside it
 apps/admin/              admin zone: /admin, /setup, /api/auth, Better Auth, can(); Dockerfile beside it
 packages/schema/         valibot schemas: blocks, menus, settings, accounts, env (valibot only)
 packages/db/             Drizzle schema, migrations, queries, bundled migrate/seed/create-admin
+packages/blocks/         the block registry and renderer, drawn by both zones
+packages/template-checks/  the rules a template must pass (data only until phase 7B)
+packages/cli/            the `sitebuilder` binary: generate, template verify/list/lock
+templates/               bundled templates and templates.lock.json; its build runs `sitebuilder generate`
 packages/tsconfig/       shared tsconfig (base.json)
 charts/sitebuilder/      Helm chart: both zones, the migrate Job (admin image), ingress routing
 scripts/licences.ts      the licence review and THIRD_PARTY_LICENSES.md
