@@ -5,6 +5,7 @@ import { AlertTriangleIcon } from "@nuvui/icons";
 import type { Block } from "@sitebuilder/schema";
 import type { ComponentType, ReactNode } from "react";
 import * as v from "valibot";
+import { PAGE_WIDTHS, type PageWidth } from "./page/page";
 import { BlockPlaceholder } from "./placeholder/block-placeholder";
 import { getBlockDefinition } from "./registry";
 import type { AnyBlockDefinition, RenderContext } from "./types";
@@ -15,6 +16,9 @@ import type { AnyBlockDefinition, RenderContext } from "./types";
 export interface BlockFrameProps {
   block: Block;
   definition: AnyBlockDefinition;
+  // How wide the block runs on the page, for a frame around a block on the page itself; the
+  // frame is what sits in the page's grid (page/page.ts).
+  pageWidth: PageWidth;
   children: ReactNode;
 }
 
@@ -48,13 +52,14 @@ function OneBlock({
   else if (context.editing) props = { ...definition.defaults(), ...block.props };
   else return null;
 
+  const inside = context.nested ? context : { ...context, nested: true };
   const children =
     definition.container && block.children && block.children.length > 0
       ? block.children.map((child) => (
           <OneBlock
             key={child.id}
             block={child}
-            context={context}
+            context={inside}
             {...(Frame ? { frame: Frame } : {})}
           />
         ))
@@ -65,8 +70,13 @@ function OneBlock({
       {children}
     </Render>
   );
+  const width = props.pageWidth;
+  const pageWidth: PageWidth =
+    !context.nested && PAGE_WIDTHS.includes(width as PageWidth)
+      ? (width as PageWidth)
+      : "contained";
   return Frame ? (
-    <Frame block={block} definition={definition}>
+    <Frame block={block} definition={definition} pageWidth={pageWidth}>
       {drawn}
     </Frame>
   ) : (

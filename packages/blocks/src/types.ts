@@ -44,6 +44,9 @@ export interface RenderContext {
   posts: readonly PostSummary[];
   // True in the editor's canvas: blocks with nothing to show yet draw a placeholder.
   editing: boolean;
+  // True for a block inside another block (a section, a column): it fills its parent, whatever
+  // width on the page it's set to. The renderer sets it.
+  nested?: boolean | undefined;
   // How dates are written, and the site's language for month names.
   dates: DateSettings & { language: string };
   // The block whose heading is the page's h1: a hero that opens the page (decisions #68).
