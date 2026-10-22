@@ -5,18 +5,66 @@
 
 // The page's own spacing between blocks, with a frame around each that shows on hover and when
 // it's selected. The frame is an outline, so it takes no room and the layout matches the site.
+// The canvas is the blocks' container, as the site's content area is (entry-view.scss). It's as
+// wide as the device it shows, with the site's padding at that size: desktop is the site's
+// content width, which the site lays out with the same padding (block-canvas.tsx scales it).
+// A canvas drawn smaller keeps its full width for layout; the viewport clips that width so the
+// pane doesn't scroll sideways.
+.block-canvas-viewport {
+  position: relative;
+  min-inline-size: 0;
+  overflow-x: clip;
+
+  // Over the canvas's top corner, at the end of the line.
+  &__scale {
+    position: absolute;
+    z-index: 1;
+    inset-block-start: a.space(2);
+    inset-inline-end: a.space(2);
+    margin: 0;
+    padding: a.space(0.5) a.space(2);
+    border-radius: var(--radius-full);
+    background-color: var(--color-muted);
+    color: var(--color-muted-foreground);
+    font-size: var(--text-xs);
+  }
+}
+
 .block-canvas {
   display: grid;
   gap: a.space(6);
   align-content: start;
+
+  // The site's --app-content-max-width, which its pages lay blocks out in.
+  inline-size: 72rem;
   min-block-size: 20rem;
+  margin-inline: auto;
+  transform-origin: 0 0;
   padding: a.space(4);
   border: var(--nuv-border-width) solid var(--color-border);
   border-radius: var(--radius-lg);
   background-color: var(--color-background);
+  container: blocks / inline-size;
 
   @include a.breakpoint("md") {
     padding: a.space(8);
+  }
+
+  // The pane's own width. Content-box, as on the site, so the padding is taken off it.
+  &--fit {
+    inline-size: auto;
+  }
+
+  &--tablet {
+    inline-size: 48rem;
+  }
+
+  &--phone {
+    inline-size: 24rem;
+
+    @include a.breakpoint("md") {
+      padding: a.space(4);
+    }
   }
 
   &__block {
@@ -25,6 +73,7 @@
     outline: var(--nuv-border-width) dashed transparent;
     outline-offset: a.space(1);
     cursor: default;
+    scroll-margin-block: a.space(20);
 
     @include a.hover {
       outline-color: var(--color-border-strong);

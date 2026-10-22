@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+.editor-shortcuts {
+  display: grid;
+  gap: a.space(3);
+  inline-size: min(24rem, calc(100vw - #{a.space(8)}));
+
+  &__title {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &__note {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-xs);
+  }
+
+  &__list {
+    display: grid;
+    gap: a.space(2);
+    margin: 0;
+  }
+
+  // The keys on one side, what they do on the other.
+  &__row {
+    display: grid;
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    gap: a.space(3);
+    align-items: baseline;
+    font-size: var(--text-sm);
+  }
+
+  &__keys {
+    white-space: nowrap;
+  }
+
+  &__does {
+    margin: 0;
+  }
+}

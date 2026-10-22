@@ -5,7 +5,16 @@
 
 import { DatePicker } from "@nuvui/date-picker";
 import { enGB } from "@nuvui/date-picker/locale";
-import { EyeIcon, TrashIcon } from "@nuvui/icons";
+import {
+  ExpandIcon,
+  EyeIcon,
+  MonitorIcon,
+  RedoIcon,
+  SmartphoneIcon,
+  TabletIcon,
+  TrashIcon,
+  UndoIcon,
+} from "@nuvui/icons";
 import {
   Alert,
   AlertDescription,
@@ -29,15 +38,20 @@ import {
   FieldError,
   FieldLabel,
   Input,
+  Kbd,
+  ScrollProgress,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
   ToggleGroup,
   ToggleGroupItem,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   toast,
 } from "@nuvui/react";
-import { createBlock } from "@sitebuilder/blocks";
+import { createBlock, getBlockDefinition } from "@sitebuilder/blocks";
 import {
   type BlockList,
   ENTRY_LIMITS,
@@ -64,7 +78,7 @@ import {
 } from "react";
 import { saveEntry } from "@/actions/entry-editor";
 import { trashEntries } from "@/actions/entry-list";
-import { BlockCanvas } from "@/components/block-canvas/block-canvas";
+import { BlockCanvas, type Device } from "@/components/block-canvas/block-canvas";
 import { type EditorData, EditorDataProvider } from "@/components/block-editor/editor-data";
 import {
   applyMove,
@@ -77,11 +91,16 @@ import {
   updateProps,
 } from "@/components/block-editor/editor-model";
 import { snapshotOf, useAutosave } from "@/components/block-editor/use-autosave";
+import { useHistory } from "@/components/block-editor/use-history";
+import { usePinnedBlocks } from "@/components/block-editor/use-pinned-blocks";
 import { BlockInserter } from "@/components/block-inserter/block-inserter";
 import { BlockInspector } from "@/components/block-inspector/block-inspector";
 import { BlockOutline } from "@/components/block-outline/block-outline";
 import { useDateSettings, useFormatDateTime } from "@/components/date-settings/date-settings";
+import { EditorShortcuts } from "@/components/editor-shortcuts/editor-shortcuts";
 import { type EditorOptions, EntrySettings } from "@/components/entry-settings/entry-settings";
+import { PageSummary } from "@/components/page-summary/page-summary";
+import { QuickAdd } from "@/components/quick-add/quick-add";
 import { RevisionHistory } from "@/components/revision-history/revision-history";
 import type { BlockIssue, EditorEntry, EditorState } from "./editor-state";
 import "./entry-editor.scss";
@@ -156,6 +175,25 @@ function statusLine(entry: EditorEntry | null, formatDateTime: (date: Date) => s
 
 type View = "blocks" | "page" | "settings";
 
+// Text fields keep their own keys: Ctrl+Z there undoes typing, and Delete deletes a letter.
+// Dialogs, menus, lists and the outline's tree have keys of their own too.
+function ownsKeys(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.isContentEditable ||
+    target.closest(
+      "input, textarea, select, [role='textbox'], [role='dialog'], [role='alertdialog'], [role='menu'], [role='tree'], [role='listbox']",
+    ) !== null
+  );
+}
+
+const DEVICES: { value: Device; label: string; icon: typeof MonitorIcon }[] = [
+  { value: "fit", label: "Fit", icon: ExpandIcon },
+  { value: "desktop", label: "Desktop", icon: MonitorIcon },
+  { value: "tablet", label: "Tablet", icon: TabletIcon },
+  { value: "phone", label: "Phone", icon: SmartphoneIcon },
+];
+
 const newest = (a: EditorEntry | null, b: EditorEntry | null): EditorEntry | null =>
   !a ? b : !b ? a : Date.parse(a.updatedAt) >= Date.parse(b.updatedAt) ? a : b;
 
@@ -188,7 +226,11 @@ export function EntryEditor({
 
   // ── The entry, the blocks and saving ─────────────────────────────────────────────────────
   const [title, setTitle] = useState(initial.values.title);
-  const [blocks, setBlocks] = useState<BlockList>(content);
+  // The blocks, with undo and redo (use-history.ts). Each change is a step; typing in one field
+  // is one step.
+  const history = useHistory<BlockList>(content);
+  const blocks = history.value;
+  const setBlocks = history.set;
   const [featuredMediaId, setFeaturedMediaId] = useState(initial.values.featuredMediaId);
   // The id and the conflict token, which an autosave can change between saves.
   const [entryId, setEntryId] = useState(initial.entry?.id ?? "");
@@ -199,6 +241,9 @@ export function EntryEditor({
   );
   const [issues, setIssues] = useState<BlockIssue[]>([]);
   const submitted = useRef("");
+  const form = useRef<HTMLFormElement>(null);
+  const saveButton = useRef<HTMLButtonElement>(null);
+  const publishButton = useRef<HTMLButtonElement>(null);
 
   // The newest of: the last save's answer, the server's copy (which changes after a create or a
   // restored revision), and what autosave has stored since.
@@ -222,7 +267,7 @@ export function EntryEditor({
     setToken(server.updatedAt);
     setPath(server.path);
     setTitle(initial.values.title);
-    setBlocks(content);
+    history.reset(content);
     setSavedSnapshot(snapshotOf(initial.values.title, content));
     setIssues([]);
   }, [initial.entry?.id, initial.entry?.updatedAt]);
@@ -252,6 +297,44 @@ export function EntryEditor({
     setBlocks(next);
     select(block.id);
   }
+
+  // What can be done to the selected block, from the inspector, the keys and quick add.
+  const canMoveUp = (where?.index ?? 0) > 0;
+  const canMoveDown = where !== undefined && where.index < siblings - 1;
+  function moveSelected(step: -1 | 1) {
+    if (!selectedId || (step < 0 ? !canMoveUp : !canMoveDown)) return;
+    setBlocks((now) => moveBy(now, selectedId, step));
+  }
+  function duplicateSelected() {
+    if (!selectedId) return;
+    const copied = duplicateBlock(blocks, selectedId);
+    if (!copied) {
+      toast("There's no room for another one here.", { intent: "warning" });
+      return;
+    }
+    setBlocks(copied.blocks);
+    select(copied.copyId);
+  }
+  function removeSelected() {
+    if (!selectedId) return;
+    setBlocks((now) => removeBlock(now, selectedId));
+    setSelectedId(null);
+  }
+
+  // From the outline in the Page tab: select the block and bring it into view. The Page tab
+  // stays open, so the next heading is a click away.
+  function jump(blockId: string) {
+    setSelectedId(blockId);
+    setView("page");
+    const frame = document.querySelector(`[data-block-id="${CSS.escape(blockId)}"]`);
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    frame?.scrollIntoView({ block: "center", behavior: still ? "auto" : "smooth" });
+  }
+
+  // ── Pins, the device shown, quick add ────────────────────────────────────────────────────
+  const [pinned, setPinned] = usePinnedBlocks(data.userId);
+  const [device, setDevice] = useState<Device>("fit");
+  const [quickAdd, setQuickAdd] = useState(false);
 
   // ── Publishing date and time ─────────────────────────────────────────────────────────────
   const [pickedDay, setPickedDay] = useState<Date | null>();
@@ -308,10 +391,16 @@ export function EntryEditor({
       setEntryId(state.entry.id);
       setPath(state.entry.path);
       setIssues([]);
+      // The router answers a Server Action at the address it knows, which for a draft that
+      // autosave created is still …/new. Put the entry's own address back, as autosave does.
+      const own = `${noun.list}/${state.entry.id}`;
+      if (window.location.pathname !== own) {
+        window.history.replaceState(window.history.state, "", own);
+      }
       // The stored blocks have their rich text cleaned. Take them up, unless more was typed
       // while the save was on its way.
       if (state.content && snapshotOf(title, blocks) === submitted.current) {
-        setBlocks(state.content);
+        history.replace(state.content);
         setSavedSnapshot(snapshotOf(state.values.title, state.content));
       } else {
         setSavedSnapshot(submitted.current);
@@ -369,6 +458,56 @@ export function EntryEditor({
       router.push(noun.list);
     });
   }
+
+  // ── Keyboard shortcuts (editor-shortcuts.tsx lists them) ─────────────────────────────────
+  // One listener, reading this render's actions through a ref.
+  const keys = useRef({
+    save: () => {},
+    undo: history.undo,
+    redo: history.redo,
+    move: moveSelected,
+    remove: removeSelected,
+  });
+  keys.current = {
+    // Save draft where the bar has it, otherwise Update: the button the bar shows.
+    save: () => {
+      const button = saveButton.current ?? publishButton.current;
+      if (button && !button.disabled) form.current?.requestSubmit(button);
+    },
+    undo: history.undo,
+    redo: history.redo,
+    move: moveSelected,
+    remove: removeSelected,
+  };
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.isComposing) return;
+      const mod = event.ctrlKey || event.metaKey;
+      const key = event.key.toLowerCase();
+      if (mod && !event.altKey && !event.shiftKey && key === "s") {
+        event.preventDefault();
+        keys.current.save();
+        return;
+      }
+      if (ownsKeys(event.target)) return;
+      if (mod && !event.altKey && key === "z") {
+        event.preventDefault();
+        if (event.shiftKey) keys.current.redo();
+        else keys.current.undo();
+      } else if (mod && !event.altKey && !event.shiftKey && key === "y") {
+        event.preventDefault();
+        keys.current.redo();
+      } else if (!mod && event.altKey && (key === "arrowup" || key === "arrowdown")) {
+        event.preventDefault();
+        keys.current.move(key === "arrowup" ? -1 : 1);
+      } else if (!mod && !event.altKey && key === "delete") {
+        event.preventDefault();
+        keys.current.remove();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const live = entry?.status === "published" || entry?.status === "scheduled";
   const publishLabel = future ? "Schedule" : entry?.status === "published" ? "Update" : "Publish";
@@ -442,7 +581,9 @@ export function EntryEditor({
 
   return (
     <EditorDataProvider initial={data}>
-      <form action={action} onSubmit={onSubmit} className="entry-editor" noValidate>
+      {/* How far down the page, which is the canvas, along the top of the window. */}
+      <ScrollProgress className="entry-editor__progress" />
+      <form ref={form} action={action} onSubmit={onSubmit} className="entry-editor" noValidate>
         <input type="hidden" name="id" value={entryId} />
         <input type="hidden" name="type" value={type} />
         <input type="hidden" name="updatedAt" value={token} />
@@ -477,6 +618,37 @@ export function EntryEditor({
               </span>
             </div>
             <div className="entry-editor__actions">
+              <div className="entry-editor__history">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      intent="ghost"
+                      aria-label="Undo"
+                      aria-keyshortcuts="Control+Z"
+                      disabled={!history.canUndo}
+                      onClick={history.undo}
+                    >
+                      <UndoIcon aria-hidden="true" size={16} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      intent="ghost"
+                      aria-label="Redo"
+                      aria-keyshortcuts="Control+Shift+Z"
+                      disabled={!history.canRedo}
+                      onClick={history.redo}
+                    >
+                      <RedoIcon aria-hidden="true" size={16} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Redo (Ctrl+Shift+Z)</TooltipContent>
+                </Tooltip>
+                <EditorShortcuts />
+              </div>
               {entry ? <RevisionHistory entryId={entry.id} updatedAt={token} /> : null}
               {entry ? (
                 // The site zone's preview (design §7): the last saved version, in a new tab.
@@ -506,6 +678,7 @@ export function EntryEditor({
                 </Button>
               ) : (
                 <Button
+                  ref={saveButton}
                   type="submit"
                   name="intent"
                   value="save"
@@ -517,6 +690,7 @@ export function EntryEditor({
               )}
               {allowed.publish ? (
                 <Button
+                  ref={publishButton}
                   type="submit"
                   name="intent"
                   value="publish"
@@ -561,7 +735,7 @@ export function EntryEditor({
                 <TabsTrigger value="outline">Outline</TabsTrigger>
               </TabsList>
               <TabsContent value="add" className="entry-editor__tab">
-                <BlockInserter onAdd={add} />
+                <BlockInserter onAdd={add} pinned={pinned} onPinnedChange={setPinned} />
               </TabsContent>
               <TabsContent value="outline" className="entry-editor__tab">
                 <BlockOutline
@@ -589,11 +763,38 @@ export function EntryEditor({
               </FieldControl>
               <FieldError>{errors.title}</FieldError>
             </Field>
+            <div className="entry-editor__canvas-bar">
+              <ToggleGroup
+                type="single"
+                size="sm"
+                value={device}
+                onValueChange={(next) => next && setDevice(next as Device)}
+                aria-label="Show the page at the width of"
+              >
+                {DEVICES.map(({ value, label, icon: Icon }) => (
+                  <ToggleGroupItem key={value} value={value}>
+                    <Icon aria-hidden="true" size={16} />
+                    {label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+              <Button
+                intent="ghost"
+                size="sm"
+                aria-keyshortcuts="Control+K"
+                onClick={() => setQuickAdd(true)}
+              >
+                Quick add
+                <Kbd>Ctrl</Kbd>
+                <Kbd>K</Kbd>
+              </Button>
+            </div>
             <BlockCanvas
               blocks={blocks}
               selectedId={selectedId}
               issueIds={issueIds}
               onSelect={select}
+              device={device}
             />
           </section>
 
@@ -613,27 +814,18 @@ export function EntryEditor({
                 <BlockInspector
                   block={selected}
                   issues={issues}
-                  canMoveUp={(where?.index ?? 0) > 0}
-                  canMoveDown={where !== undefined && where.index < siblings - 1}
+                  canMoveUp={canMoveUp}
+                  canMoveDown={canMoveDown}
                   onChange={(props) =>
-                    selectedId && setBlocks((now) => updateProps(now, selectedId, props))
+                    selectedId &&
+                    // Typing in one block's fields is one undo step (use-history.ts).
+                    setBlocks((now) => updateProps(now, selectedId, props), {
+                      merge: `props:${selectedId}`,
+                    })
                   }
-                  onMove={(step) => selectedId && setBlocks((now) => moveBy(now, selectedId, step))}
-                  onDuplicate={() => {
-                    if (!selectedId) return;
-                    const copied = duplicateBlock(blocks, selectedId);
-                    if (!copied) {
-                      toast("There's no room for another one here.", { intent: "warning" });
-                      return;
-                    }
-                    setBlocks(copied.blocks);
-                    select(copied.copyId);
-                  }}
-                  onRemove={() => {
-                    if (!selectedId) return;
-                    setBlocks((now) => removeBlock(now, selectedId));
-                    setSelectedId(null);
-                  }}
+                  onMove={moveSelected}
+                  onDuplicate={duplicateSelected}
+                  onRemove={removeSelected}
                 />
               </TabsContent>
               {/* Mounted while hidden: its fields go with every save. */}
@@ -643,6 +835,7 @@ export function EntryEditor({
                 hidden={settingsTab !== "entry"}
                 className="entry-editor__tab"
               >
+                <PageSummary title={title} blocks={blocks} selectedId={selectedId} onJump={jump} />
                 <EntrySettings
                   type={type}
                   values={state.values}
@@ -659,6 +852,24 @@ export function EntryEditor({
           </section>
         </div>
       </form>
+      <QuickAdd
+        open={quickAdd}
+        onOpenChange={setQuickAdd}
+        pinned={pinned}
+        onAdd={add}
+        selected={
+          selected
+            ? {
+                label: getBlockDefinition(selected.type)?.label ?? selected.type,
+                canMoveUp,
+                canMoveDown,
+                onMove: moveSelected,
+                onDuplicate: duplicateSelected,
+                onRemove: removeSelected,
+              }
+            : null
+        }
+      />
     </EditorDataProvider>
   );
 }

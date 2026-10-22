@@ -60,6 +60,33 @@
     gap: a.space(2);
   }
 
+  // Undo, redo and the shortcuts, set apart from the save buttons by a line.
+  &__history {
+    display: flex;
+    gap: a.space(1);
+    padding-inline-end: a.space(2);
+    border-inline-end: var(--nuv-border-width) solid var(--color-border);
+  }
+
+  // Thin, along the top of the window, over the bar that stays there.
+  &__progress {
+    --nuv-scroll-progress-size: 2px;
+
+    position: fixed;
+    z-index: 20;
+    inset-block-start: 0;
+    inset-inline: 0;
+  }
+
+  // The device widths, and quick add, above the canvas.
+  &__canvas-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+    align-items: center;
+    justify-content: space-between;
+  }
+
   &__views {
     justify-self: start;
 

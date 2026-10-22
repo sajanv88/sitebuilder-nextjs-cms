@@ -20,6 +20,12 @@
     border-radius: var(--radius-lg);
   }
 
+  // The rows are flush with the list's edges: the Item is the row.
+  &__pins {
+    --nuv-pinned-list-padding-inline: 0;
+    --nuv-pinned-list-padding-block: 0;
+  }
+
   &__item {
     display: grid;
     min-inline-size: 0;
