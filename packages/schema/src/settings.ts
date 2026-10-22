@@ -24,6 +24,8 @@ export const ReadingSettings = v.object({
   homepageEntryId: v.nullable(Uuid),
   postsPerPage: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(50)),
   postsPath: v.pipe(v.string(), v.regex(/^\/[a-z0-9-]+$/)), // "/blog"
+  // A bar along the top of a post that fills as it's read. On for rows saved before it existed.
+  showReadingProgress: v.optional(v.boolean(), true),
 });
 export type ReadingSettings = v.InferOutput<typeof ReadingSettings>;
 
@@ -132,6 +134,13 @@ export const ReadingSettingsInput = v.object({
     v.maxValue(50, "Show at most 50"),
   ),
   postsPath: PostsPath,
+  // A checkbox: sent as "on" when it's ticked, and not at all when it isn't. The default
+  // makes a missing one count as off; without it the key would be skipped, and saving would
+  // fall back to the stored default, on.
+  showReadingProgress: v.pipe(
+    v.optional(v.picklist(["on", "off"]), "off"),
+    v.transform((value) => value === "on"),
+  ),
 });
 export type ReadingSettingsInput = v.InferOutput<typeof ReadingSettingsInput>;
 
@@ -250,7 +259,12 @@ export function defaultSettings(siteUrl: string): {
       dateFormat: DEFAULT_DATE_FORMAT,
       timeZone: DEFAULT_TIME_ZONE,
     },
-    reading: { homepageEntryId: null, postsPerPage: 10, postsPath: "/blog" },
+    reading: {
+      homepageEntryId: null,
+      postsPerPage: 10,
+      postsPath: "/blog",
+      showReadingProgress: true,
+    },
     theme: { preset: "default", mode: "system", density: "default", tokens: {} },
   };
 }

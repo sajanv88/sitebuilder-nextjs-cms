@@ -6,13 +6,12 @@
 .post-list {
   display: grid;
   gap: a.space(8);
-  inline-size: 100%;
-  max-inline-size: var(--app-content-max-width);
-  margin-inline: auto;
-  padding: a.space(8) a.space(4) a.space(12);
+  padding: a.space(8) var(--page-gutter) a.space(12);
+
+  @include a.content-column;
 
   @include a.breakpoint("md") {
-    padding: a.space(12) a.space(8) a.space(16);
+    padding-block: a.space(12) a.space(16);
   }
 
   &__header {

@@ -4,7 +4,13 @@
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 import { MenuSchema } from "./menu";
-import { defaultSettings, SettingsSchemas, ThemeSettings } from "./settings";
+import {
+  defaultSettings,
+  ReadingSettings,
+  ReadingSettingsInput,
+  SettingsSchemas,
+  ThemeSettings,
+} from "./settings";
 import { LinkTarget, Url } from "./shared";
 
 const uuid = "4f1c2a9e-8b7d-4c3e-9a1f-2b3c4d5e6f70";
@@ -78,5 +84,16 @@ describe("settings", () => {
     expect(v.is(ThemeSettings, theme({ "--anything": { light: "red" } }))).toBe(false);
     expect(v.is(ThemeSettings, theme({ "--color-bg": { light: "url(x)" } }))).toBe(false);
     expect(v.is(ThemeSettings, theme({ "--color-bg": { light: "red;}body{x" } }))).toBe(false);
+  });
+
+  test("reading progress is on for older rows, and follows the checkbox in the form", () => {
+    const older = { homepageEntryId: null, postsPerPage: 10, postsPath: "/blog" };
+    expect(v.parse(ReadingSettings, older).showReadingProgress).toBe(true);
+    const form = { homepageEntryId: "", postsPerPage: "10", postsPath: "/blog" };
+    expect(v.parse(ReadingSettingsInput, { ...form, showReadingProgress: "on" })).toMatchObject({
+      showReadingProgress: true,
+    });
+    expect(v.parse(ReadingSettingsInput, form).showReadingProgress).toBe(false);
+    expect(v.is(ReadingSettingsInput, { ...form, showReadingProgress: "yes" })).toBe(false);
   });
 });

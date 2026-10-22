@@ -4,14 +4,9 @@
 @use "abstracts" as a;
 
 .preview-bar {
-  inline-size: 100%;
-  max-inline-size: var(--app-content-max-width);
-  margin-inline: auto;
-  padding: a.space(4) a.space(4) 0;
+  padding: a.space(4) var(--page-gutter) 0;
 
-  @include a.breakpoint("md") {
-    padding-inline: a.space(8);
-  }
+  @include a.content-column;
 
   &__alert {
     margin: 0;

@@ -24,6 +24,7 @@ export const DEFAULT_READING: ReadingSettings = {
   homepageEntryId: null,
   postsPerPage: 10,
   postsPath: "/blog",
+  showReadingProgress: true,
 };
 
 export async function getReading(db: Executor): Promise<ReadingSettings> {

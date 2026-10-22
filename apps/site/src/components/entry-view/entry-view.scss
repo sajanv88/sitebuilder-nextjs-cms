@@ -8,13 +8,22 @@
 .entry {
   display: grid;
   gap: a.space(8);
-  inline-size: 100%;
-  max-inline-size: var(--app-content-max-width);
-  margin-inline: auto;
-  padding: a.space(8) a.space(4) a.space(12);
+  padding: a.space(8) var(--page-gutter) a.space(12);
+
+  @include a.content-column;
 
   @include a.breakpoint("md") {
-    padding: a.space(12) a.space(8) a.space(16);
+    padding-block: a.space(12) a.space(16);
+  }
+
+  // Thin, along the top of the window, over the header.
+  &__progress {
+    --nuv-scroll-progress-size: 3px;
+
+    position: fixed;
+    z-index: 20;
+    inset-block-start: 0;
+    inset-inline: 0;
   }
 
   &__header {

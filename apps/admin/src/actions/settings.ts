@@ -32,7 +32,13 @@ export interface SettingsFormState<V extends Record<string, string>> {
 }
 
 export type SiteFormValues = { title: string; tagline: string; language: string; siteUrl: string };
-export type ReadingFormValues = { homepage: string; postsPerPage: string; postsPath: string };
+export type ReadingFormValues = {
+  homepage: string;
+  postsPerPage: string;
+  postsPath: string;
+  // "on" or "", as the switch sends it.
+  showReadingProgress: string;
+};
 export type DateFormValues = { dateFormat: string; timeZone: string };
 
 const SESSION_ENDED = "Your session has ended. Sign in again.";
@@ -102,6 +108,7 @@ export async function saveReading(
     homepage: text(form, "homepage"),
     postsPerPage: text(form, "postsPerPage"),
     postsPath: text(form, "postsPath"),
+    showReadingProgress: text(form, "showReadingProgress"),
   };
   const refused = await allowed();
   if (refused) return { result: "failed", message: refused, values };
@@ -109,6 +116,7 @@ export async function saveReading(
     homepageEntryId: values.homepage === LATEST_POSTS ? "" : values.homepage,
     postsPerPage: values.postsPerPage,
     postsPath: values.postsPath,
+    ...(values.showReadingProgress ? { showReadingProgress: values.showReadingProgress } : {}),
   });
   if (!input.success) {
     return {

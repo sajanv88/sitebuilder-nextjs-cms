@@ -41,6 +41,12 @@ export default async function EntryPage({ params }: PageProps<"/_site/entry/[id]
   if (!found) notFound();
   const [site, reading] = await Promise.all([getSite(), getReadingSettings()]);
   return (
-    <EntryView entry={found.entry} data={found.data} site={site} postsPath={reading.postsPath} />
+    <EntryView
+      entry={found.entry}
+      data={found.data}
+      site={site}
+      postsPath={reading.postsPath}
+      readingProgress={reading.showReadingProgress}
+    />
   );
 }

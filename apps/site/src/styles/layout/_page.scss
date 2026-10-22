@@ -6,13 +6,12 @@
 .page {
   display: grid;
   gap: a.space(4);
-  margin-inline: auto;
-  inline-size: 100%;
-  padding: a.space(12) a.space(4);
-  max-inline-size: var(--app-content-max-width);
+  padding: a.space(12) var(--page-gutter);
+
+  @include a.content-column;
 
   @include a.breakpoint("md") {
-    padding: a.space(8);
+    padding-block: a.space(8);
   }
 
   &__title {

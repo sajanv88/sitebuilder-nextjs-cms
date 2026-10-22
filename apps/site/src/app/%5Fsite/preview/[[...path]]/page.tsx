@@ -38,7 +38,13 @@ export default async function PreviewPage({ params }: PageProps<"/_site/preview/
   return (
     <>
       <PreviewBar status={entry.status} path={path} />
-      <EntryView entry={entry} data={data} site={site} postsPath={reading.postsPath} />
+      <EntryView
+        entry={entry}
+        data={data}
+        site={site}
+        postsPath={reading.postsPath}
+        readingProgress={reading.showReadingProgress}
+      />
     </>
   );
 }

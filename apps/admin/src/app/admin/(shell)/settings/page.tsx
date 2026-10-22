@@ -105,6 +105,7 @@ export default async function SettingsPage() {
               homepage: reading.homepageEntryId ?? LATEST_POSTS,
               postsPerPage: String(reading.postsPerPage),
               postsPath: reading.postsPath,
+              showReadingProgress: reading.showReadingProgress ? "on" : "",
             }}
             pages={pages}
           />

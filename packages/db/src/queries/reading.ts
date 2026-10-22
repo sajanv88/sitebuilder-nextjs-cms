@@ -3,6 +3,7 @@
 
 import type { ReadingSettings } from "@sitebuilder/schema";
 import { and, count, eq, isNull, like, or, sql } from "drizzle-orm";
+import type * as v from "valibot";
 import type { Executor } from "../executor";
 import { entries } from "../schema/entries";
 import { isPublic, type Move, writeRedirects } from "./entries";
@@ -26,10 +27,11 @@ export async function countPosts(db: Executor): Promise<number> {
 }
 
 // Saves the reading settings. A new posts path moves every post under it in the same
-// transaction, with a 301 from each public post's old path, as a rename does (§4.1).
+// transaction, with a 301 from each public post's old path, as a rename does (§4.1). Fields
+// left out take their defaults, as for a row saved before they existed.
 export async function saveReadingSettings(
   db: Executor,
-  input: ReadingSettings,
+  input: v.InferInput<typeof ReadingSettings>,
 ): Promise<SaveReadingResult> {
   return db.transaction(async (tx) => {
     // The home page must be a published page (§4.1).

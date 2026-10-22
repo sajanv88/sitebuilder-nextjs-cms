@@ -331,6 +331,42 @@ Plan: [docs/phase-5-plan.md](docs/phase-5-plan.md), approved 2026-10-21. Images 
 - [x] Gate 5: actionlint, `helm lint --strict`, kubeconform (22 resources valid) on both values files
 - [x] decisions.md (#74 to #82), next.md updated; push and tag commands handed over
 
+# nuvui 0.8: speed, new blocks and a friendlier editor
+
+Approved 2026-10-22. nuvui installed before its versions were a day old, with exact exclusions; blocks lay out by their own width; editor pins kept in the browser.
+
+## 0. Packages
+- [x] `@nuvui/react` 0.8.0, `@nuvui/backgrounds` 0.1.0 (new), date-picker 0.1.8, editor 0.1.4, media 0.1.1, table 0.1.8; six exact `minimumReleaseAgeExclude` entries
+- [x] Backgrounds stylesheet in both root layouts; THIRD_PARTY_LICENSES.md regenerated (MIT)
+- [ ] Remove the six exclusions after 2026-10-22 16:36 UTC
+
+## 1. Speed
+- [x] Timings before and after, production builds, database 20 ms away
+- [x] One session read per request; `loading.tsx` skeletons for every admin screen; dashboard, lists and editor stream; independent queries in parallel
+- [x] Site `loading.tsx` for the blog, archives, entries and preview
+
+## 2. New blocks
+- [x] Moving backdrops on Section and Hero, with a pause button; no fireworks or tunnel
+- [x] Before and after (`compare`), Figures, Timeline; media usage counts both compare images
+- [x] Carousel layout for Reviews and Feature grid
+- [x] Container queries in place of the block breakpoints
+
+## 3. Editor
+- [x] Pinned blocks (PinnedList, per person in the browser)
+- [x] Undo and redo, Ctrl+S, Ctrl+K quick add, Delete, Alt+↑/↓, a shortcuts popover
+- [x] Fit, Desktop, Tablet and Phone widths, scaled to fit; a scroll progress bar
+- [x] Word count, reading time and an outline in the Page tab
+- [x] Horizontal alignment on the blocks where it moves something; unset follows the section
+
+## 4. Site
+- [x] Settings → Reading: show reading progress on posts (on by default)
+
+## 5. Verify
+- [x] Biome, stylelint, typecheck, 256 tests, build, `check:licence`, `licence-list --check`
+- [x] In the browser: skeletons with a slow database, new blocks in the canvas and on the site, device widths, pins across pages, undo and redo, Ctrl+S, the outline, reading progress on and off
+- [x] Fixed on the way: pages wider than a phone's window; the editor's address after saving a new draft
+- [ ] Reduced motion in a browser; Menus and Appearance at phone width
+
 # Phase 7 (Templates) and Phase 8 (AI assistant) checklist
 
 Design: §12 (Templates), §14 (AI assistant), §5.2 (blocks), §6 (roles), §9 (environment). Out of scope: the marketplace service, signing, the revocation list, downloading templates from a marketplace, image generation, runtime template installation. `apps/web` in the brief is `apps/site` here.

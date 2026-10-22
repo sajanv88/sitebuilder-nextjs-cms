@@ -14,6 +14,7 @@ import {
   AlertDialogFooter,
   AlertDialogTitle,
   Button,
+  Checkbox,
   ChoiceCardDescription,
   ChoiceCardTitle,
   Combobox,
@@ -211,6 +212,21 @@ export function ReadingForm({
           <FieldError>{errors.postsPath}</FieldError>
         </Field>
       </div>
+      <Field orientation="horizontal">
+        <FieldControl>
+          {/* Keyed on the saved value: after a save the form is reset, and the checkbox resets
+              to the default it was mounted with, which would undo what was just saved. */}
+          <Checkbox
+            key={values.showReadingProgress}
+            name="showReadingProgress"
+            defaultChecked={values.showReadingProgress === "on"}
+          />
+        </FieldControl>
+        <FieldLabel>Show reading progress on posts</FieldLabel>
+        <FieldDescription>
+          A thin bar along the top of a post that fills as it's read.
+        </FieldDescription>
+      </Field>
       <Button
         ref={submit}
         type="submit"

@@ -54,7 +54,15 @@ export default async function HomePage() {
       entry.content,
       entry.featuredMediaId ? [entry.featuredMediaId] : [],
     );
-    return <EntryView entry={entry} data={data} site={site} postsPath={reading.postsPath} />;
+    return (
+      <EntryView
+        entry={entry}
+        data={data}
+        site={site}
+        postsPath={reading.postsPath}
+        readingProgress={reading.showReadingProgress}
+      />
+    );
   }
 
   const { rows, total } = await getPostsPage(1, null);

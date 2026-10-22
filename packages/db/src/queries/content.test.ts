@@ -105,10 +105,12 @@ describe("content tables and queries", () => {
       postsPath: "/news",
     });
     expect(good).toEqual({ ok: true });
+    // A field left out takes its default.
     expect(await getSettings(db, "reading")).toEqual({
       homepageEntryId: null,
       postsPerPage: 5,
       postsPath: "/news",
+      showReadingProgress: true,
     });
   });
 
