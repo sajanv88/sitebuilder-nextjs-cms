@@ -52,6 +52,25 @@ export const ThemeSettings = v.object({
 });
 export type ThemeSettings = v.InferOutput<typeof ThemeSettings>;
 
+// Folder names under templates/ that aren't templates.
+const RESERVED_TEMPLATE_SLUGS = ["generated", "node_modules"];
+
+export const TemplateSlug = v.pipe(
+  v.string(),
+  v.regex(/^[a-z][a-z0-9-]{1,39}$/, "Use 2 to 40 lowercase letters, digits and hyphens"),
+  v.check((s) => !RESERVED_TEMPLATE_SLUGS.includes(s), "That name is reserved"),
+);
+
+// The `template` settings row: which installed template is active, and its options (7B).
+export const TemplateSettings = v.object({
+  slug: TemplateSlug,
+  options: v.optional(v.record(v.string(), v.union([v.boolean(), v.string()])), {}),
+});
+export type TemplateSettings = v.InferOutput<typeof TemplateSettings>;
+
+// The bundled template, active until another is chosen, and for sites set up before templates.
+export const DEFAULT_TEMPLATE: TemplateSettings = { slug: "default", options: {} };
+
 // The tokens Appearance offers to override: nuvui's semantic colors, the radius scale and the
 // font stacks (its theming page). Any name the TokenName rule allows is still accepted.
 export const THEME_TOKENS = [
@@ -239,6 +258,7 @@ export const SettingsSchemas = {
   reading: ReadingSettings,
   theme: ThemeSettings,
   media: MediaStorageSettings,
+  template: TemplateSettings,
 } as const;
 export type SettingsKey = keyof typeof SettingsSchemas;
 export type SettingsValue<K extends SettingsKey> = v.InferOutput<(typeof SettingsSchemas)[K]>;
@@ -266,5 +286,6 @@ export function defaultSettings(siteUrl: string): {
       showReadingProgress: true,
     },
     theme: { preset: "default", mode: "system", density: "default", tokens: {} },
+    template: DEFAULT_TEMPLATE,
   };
 }

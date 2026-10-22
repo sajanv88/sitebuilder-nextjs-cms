@@ -120,6 +120,17 @@ export {
   SIGN_IN_LIMIT,
 } from "./queries/sign-in-limits";
 export {
+  activateTemplate,
+  type CreatedEntry,
+  findTakenPaths,
+  getTemplateSettings,
+  type ImportedEntry,
+  listImportedEntries,
+  type TemplateActivation,
+  type TemplateActivationResult,
+  type TemplateEntryWrite,
+} from "./queries/templates";
+export {
   createTerm,
   deleteTerm,
   listTermOptions,

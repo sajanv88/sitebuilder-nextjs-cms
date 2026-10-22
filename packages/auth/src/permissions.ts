@@ -27,6 +27,8 @@ export const statements = {
   media: ["upload", "read", "readOwn", "update", "updateOwn", "delete", "deleteOwn"],
   menu: ["update"],
   theme: ["update"],
+  // Which template the site uses, and importing its starter content (design §14). Admins only.
+  template: ["activate"],
   settings: ["update"],
   user: ["create", "read", "update", "delete", "setRole"],
 } as const;
@@ -45,7 +47,12 @@ const content = {
 } as const;
 
 export const permissions = {
-  admin: { ...content, settings: statements.settings, user: statements.user },
+  admin: {
+    ...content,
+    template: statements.template,
+    settings: statements.settings,
+    user: statements.user,
+  },
   editor: content,
   author: {
     post: ["create", "readOwn", "updateOwn", "publishOwn", "trashOwn"],

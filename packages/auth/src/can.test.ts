@@ -35,6 +35,7 @@ const matrix: Row[] = [
   ["media: delete any", "media.delete", "media", true, true, false],
   ["menu: update", "menu.update", null, true, true, false],
   ["theme: update", "theme.update", null, true, true, false],
+  ["template: activate", "template.activate", null, true, false, false],
   ["settings: update", "settings.update", null, true, false, false],
   ["user: create", "user.create", null, true, false, false],
   ["user: read", "user.read", null, true, false, false],

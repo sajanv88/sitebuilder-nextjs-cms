@@ -109,6 +109,7 @@ export {
 } from "./menu";
 export {
   DateSettingsInput,
+  DEFAULT_TEMPLATE,
   type DefaultSettingsKey,
   defaultSettings,
   MediaStorageInput,
@@ -127,6 +128,8 @@ export {
   type SettingsValue,
   SiteSettings,
   SiteSettingsInput,
+  TemplateSettings,
+  TemplateSlug,
   THEME_PRESETS,
   THEME_TOKENS,
   ThemeSettings,
@@ -134,6 +137,24 @@ export {
   TokenValue,
 } from "./settings";
 export { LinkTarget, NodeId, Url, Uuid } from "./shared";
+export {
+  resolveRefs,
+  SITEBUILDER_VERSION,
+  type StarterBlock,
+  type StarterContent,
+  StarterContentSchema,
+  StarterMenuItem,
+  StarterPage,
+  StarterPost,
+  StarterRef,
+  satisfiesRange,
+  starterIssues,
+  starterMenu,
+  TEMPLATE_LICENCES,
+  type TemplateManifest,
+  TemplateManifestSchema,
+  withBlockIds,
+} from "./templates";
 export {
   type BlockListResult,
   type ValidateOptions,

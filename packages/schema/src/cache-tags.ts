@@ -17,4 +17,6 @@ export const CacheTags = {
   // Alt text and the facts a page draws an image with.
   media: "media",
   redirects: "redirects",
+  // The active template and its options.
+  template: "template",
 } as const;

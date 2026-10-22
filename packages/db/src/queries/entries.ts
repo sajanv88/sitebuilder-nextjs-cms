@@ -578,6 +578,10 @@ export async function createEntry(
     authorId: string;
     actorId: string;
     writeRevision?: boolean;
+    // Chosen beforehand, so other imported content can link to it before it exists.
+    id?: string;
+    // Where it came from, such as "template:studio:about". Unique: a second import is refused.
+    sourceRef?: string;
   },
 ): Promise<EntryWriteResult> {
   return mapPathTaken(() =>
@@ -602,6 +606,8 @@ export async function createEntry(
       const [created] = await tx
         .insert(entries)
         .values({
+          ...(input.id ? { id: input.id } : {}),
+          ...(input.sourceRef ? { sourceRef: input.sourceRef } : {}),
           type: input.type,
           title: input.title,
           slug: placed.slug,
