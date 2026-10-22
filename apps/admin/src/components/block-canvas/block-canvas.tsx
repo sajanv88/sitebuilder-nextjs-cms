@@ -5,7 +5,12 @@
 
 import { ColumnsIcon } from "@nuvui/icons";
 import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@nuvui/react";
-import { type BlockFrameProps, BlockList, headingBlockId } from "@sitebuilder/blocks";
+import {
+  type BlockFrameProps,
+  BlockList,
+  headingBlockId,
+  pageItemClass,
+} from "@sitebuilder/blocks";
 import type { Block } from "@sitebuilder/schema";
 import { type CSSProperties, createContext, useContext, useEffect, useRef, useState } from "react";
 import { useEditorData } from "@/components/block-editor/editor-data";
@@ -51,9 +56,12 @@ const Selection = createContext<{ selectedId: string | null; issueIds: ReadonlyS
   issueIds: new Set(),
 });
 
-function Frame({ block, definition, children }: BlockFrameProps) {
+// The frame is what sits in the page's grid, so it takes the block's width on the page.
+function Frame({ block, definition, pageWidth, children }: BlockFrameProps) {
   const { selectedId, issueIds } = useContext(Selection);
   const classes = ["block-canvas__block"];
+  const placed = pageItemClass(pageWidth);
+  if (placed) classes.push(placed);
   if (block.id === selectedId) classes.push("block-canvas__block--selected");
   if (issueIds.has(block.id)) classes.push("block-canvas__block--problem");
   return (
@@ -114,7 +122,7 @@ export function BlockCanvas({
       ) : null}
       <div
         ref={canvas}
-        className={`block-canvas block-canvas--${device}`}
+        className={`block-canvas block-canvas--${device} block-page`}
         style={scaled ? ({ transform: `scale(${fit.scale})` } as CSSProperties) : undefined}
       >
         {blocks.length === 0 ? (

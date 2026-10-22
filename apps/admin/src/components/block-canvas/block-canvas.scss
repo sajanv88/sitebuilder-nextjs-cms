@@ -5,9 +5,10 @@
 
 // The page's own spacing between blocks, with a frame around each that shows on hover and when
 // it's selected. The frame is an outline, so it takes no room and the layout matches the site.
-// The canvas is the blocks' container, as the site's content area is (entry-view.scss). It's as
-// wide as the device it shows, with the site's padding at that size: desktop is the site's
-// content width, which the site lays out with the same padding (block-canvas.tsx scales it).
+// The canvas is the blocks' container and the page's grid (block-page), as the site's content
+// area is (entry-view.scss). It's as wide as the device it shows, the site's margin at that size
+// included: desktop is the site's content width and its margins (block-canvas.tsx scales it).
+// A block set to fluid or full width runs into the margins, as it does on the site.
 // A canvas drawn smaller keeps its full width for layout; the viewport clips that width so the
 // pane doesn't scroll sideways.
 .block-canvas-viewport {
@@ -31,39 +32,47 @@
 }
 
 .block-canvas {
-  display: grid;
-  gap: a.space(6);
-  align-content: start;
+  --block-page-gutter: #{a.space(4)};
 
   // The site's --app-content-max-width, which its pages lay blocks out in.
-  inline-size: 72rem;
+  --block-page-max: 72rem;
+
+  row-gap: a.space(6);
+  align-content: start;
+  box-sizing: border-box;
+  inline-size: calc(var(--block-page-max) + 2 * var(--block-page-gutter));
   min-block-size: 20rem;
   margin-inline: auto;
   transform-origin: 0 0;
-  padding: a.space(4);
+  padding-block: a.space(4);
   border: var(--nuv-border-width) solid var(--color-border);
   border-radius: var(--radius-lg);
   background-color: var(--color-background);
   container: blocks / inline-size;
 
   @include a.breakpoint("md") {
-    padding: a.space(8);
+    --block-page-gutter: #{a.space(8)};
+
+    padding-block: a.space(8);
   }
 
-  // The pane's own width. Content-box, as on the site, so the padding is taken off it.
+  // The pane's own width.
   &--fit {
     inline-size: auto;
   }
 
   &--tablet {
-    inline-size: 48rem;
+    inline-size: calc(48rem + 2 * var(--block-page-gutter));
   }
 
+  // A phone's margin is the site's below md, whatever the admin's window.
   &--phone {
-    inline-size: 24rem;
+    --block-page-gutter: #{a.space(4)};
+
+    inline-size: calc(24rem + 2 * var(--block-page-gutter));
 
     @include a.breakpoint("md") {
-      padding: a.space(4);
+      padding-block: a.space(4);
     }
   }
 
