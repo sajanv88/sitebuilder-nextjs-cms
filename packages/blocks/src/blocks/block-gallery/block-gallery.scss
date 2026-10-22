@@ -1,23 +1,25 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-.block-gallery {
-  --nuv-aspect-ratio-radius: var(--radius-lg);
+@layer host {
+  .block-gallery {
+    --nuv-aspect-ratio-radius: var(--radius-lg);
 
-  // As many squares to a row as fit, never narrower than 10rem.
-  &--grid {
-    display: grid;
-    gap: calc(var(--spacing) * 3);
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
+    // As many squares to a row as fit, never narrower than 10rem.
+    &--grid {
+      display: grid;
+      gap: calc(var(--spacing) * 3);
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
 
-  &__controls {
-    display: flex;
-    gap: calc(var(--spacing) * 3);
-    align-items: center;
-    justify-content: space-between;
+    &__controls {
+      display: flex;
+      gap: calc(var(--spacing) * 3);
+      align-items: center;
+      justify-content: space-between;
+    }
   }
 }

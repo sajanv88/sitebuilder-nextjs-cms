@@ -6,7 +6,7 @@
 // The page's own spacing between blocks, with a frame around each that shows on hover and when
 // it's selected. The frame is an outline, so it takes no room and the layout matches the site.
 // The canvas is the blocks' container and the page's grid (block-page), as the site's content
-// area is (entry-view.scss). It's as wide as the device it shows, the site's margin at that size
+// area is (site-blocks.scss). It's as wide as the device it shows, the site's margin at that size
 // included: desktop is the site's content width and its margins (block-canvas.tsx scales it).
 // A block set to fluid or full width runs into the margins, as it does on the site.
 // A canvas drawn smaller keeps its full width for layout; the viewport clips that width so the

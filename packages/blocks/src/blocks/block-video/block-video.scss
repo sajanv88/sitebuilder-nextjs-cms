@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-// nuvui's player, placed on the page. Edge to edge, its corners are square.
-.block-video {
-  &--edge {
-    --nuv-video-player-radius: 0;
+@layer host {
+  // nuvui's player, placed on the page. Edge to edge, its corners are square.
+  .block-video {
+    &--edge {
+      --nuv-video-player-radius: 0;
+    }
   }
 }

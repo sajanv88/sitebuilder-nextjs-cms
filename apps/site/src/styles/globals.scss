@@ -1,10 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-// Imported once, by src/app/layout.tsx, after @nuvui/react/styles.css.
-// Unlayered on purpose: these rules beat nuvui's `tokens`, `base` and `components` layers.
-// Component blocks aren't listed here; each component imports its own file.
-@use "base/theme";
-@use "base/elements";
-@use "layout/page";
-@use "layout/site";
+@use "sass:meta";
+
+// Imported once, by src/app/layout.tsx, after @nuvui/react/styles.css. Component blocks aren't
+// listed here; each component imports its own file.
+
+// The site's own CSS, and the blocks', is in the layer `host`, after nuvui's `tokens`, `base` and
+// `components`, so it beats nuvui's rules. The active template's stylesheet is unlayered, so its
+// rules beat the host's, whatever order the stylesheets load in (decisions #110).
+@layer tokens, base, components, host;
+
+@layer host {
+  @include meta.load-css("base/theme");
+  @include meta.load-css("base/elements");
+  @include meta.load-css("layout/page");
+}

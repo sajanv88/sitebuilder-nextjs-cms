@@ -69,7 +69,16 @@ const nextConfig: NextConfig = {
     useTypeScriptCli: true,
   },
   async headers() {
-    return [{ source: sitePaths, headers: securityHeaders }];
+    return [
+      { source: sitePaths, headers: securityHeaders },
+      // The templates' stylesheets and their files: each build's are in a folder named by a hash
+      // of their contents (templates/generated, then scripts/template-files.ts), so a file at an
+      // address never changes.
+      {
+        source: "/_templates/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+    ];
   },
   async rewrites() {
     return {

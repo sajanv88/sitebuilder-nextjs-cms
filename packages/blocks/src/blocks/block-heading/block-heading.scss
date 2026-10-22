@@ -1,38 +1,40 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-// Sizes step down with the level and grow a little with the screen.
-.block-heading {
-  margin: 0;
-  color: var(--color-foreground);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-  text-wrap: balance;
-  overflow-wrap: anywhere;
-  text-align: var(--block-align, start);
+@layer host {
+  // Sizes step down with the level and grow a little with the screen.
+  .block-heading {
+    margin: 0;
+    color: var(--color-foreground);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    text-align: var(--block-align, start);
 
-  &--level-1 {
-    font-size: clamp(2.25rem, 1.5rem + 3cqi, 3.5rem);
-  }
+    &--level-1 {
+      font-size: clamp(2.25rem, 1.5rem + 3cqi, 3.5rem);
+    }
 
-  &--level-2 {
-    font-size: clamp(1.75rem, 1.25rem + 2cqi, 2.5rem);
-  }
+    &--level-2 {
+      font-size: clamp(1.75rem, 1.25rem + 2cqi, 2.5rem);
+    }
 
-  &--level-3 {
-    font-size: clamp(1.375rem, 1.125rem + 1cqi, 1.75rem);
-  }
+    &--level-3 {
+      font-size: clamp(1.375rem, 1.125rem + 1cqi, 1.75rem);
+    }
 
-  &--level-4 {
-    font-size: var(--text-xl);
-  }
+    &--level-4 {
+      font-size: var(--text-xl);
+    }
 
-  &--level-5 {
-    font-size: var(--text-lg);
-  }
+    &--level-5 {
+      font-size: var(--text-lg);
+    }
 
-  &--level-6 {
-    font-size: var(--text-base);
+    &--level-6 {
+      font-size: var(--text-base);
+    }
   }
 }

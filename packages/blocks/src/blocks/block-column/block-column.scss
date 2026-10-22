@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-.block-column {
-  display: grid;
-  gap: calc(var(--spacing) * 4);
-  align-content: start;
-  min-inline-size: 0;
+@layer host {
+  .block-column {
+    display: grid;
+    gap: calc(var(--spacing) * 4);
+    align-content: start;
+    min-inline-size: 0;
+  }
 }

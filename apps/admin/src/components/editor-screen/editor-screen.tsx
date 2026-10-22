@@ -7,12 +7,13 @@ import {
   db,
   getEntryForEdit,
   getEntryLinks,
+  getSettings,
   listLatestPosts,
   listParentOptions,
   listTermOptions,
   listUserOptions,
 } from "@sitebuilder/db";
-import { type BlockList, type EntryKind, Uuid } from "@sitebuilder/schema";
+import { type BlockList, DEFAULT_TEMPLATE, type EntryKind, Uuid } from "@sitebuilder/schema";
 import type { Route } from "next";
 import { notFound, redirect } from "next/navigation";
 import * as v from "valibot";
@@ -27,6 +28,7 @@ import { type EditorOptions, EntryEditor } from "@/components/entry-editor/entry
 import { env } from "@/env";
 import { authorizeEntry } from "@/server/entries";
 import { renderMedia } from "@/server/media";
+import "@/lib/template-blocks";
 
 const EMPTY: EditorState["values"] = {
   title: "",
@@ -81,13 +83,14 @@ export async function EditorScreen({
   const owned = { type, ownerId } as const;
   const mediaIds = collectMediaIds(content);
   if (initial.values.featuredMediaId) mediaIds.push(initial.values.featuredMediaId);
-  const [allTerms, parents, authors, links, posts, media] = await Promise.all([
+  const [allTerms, parents, authors, links, posts, media, template] = await Promise.all([
     listTermOptions(db),
     type === "page" ? listParentOptions(db, id) : null,
     type === "post" && can(viewer, "post.update") ? listUserOptions(db) : null,
     getEntryLinks(db, collectEntryIds(content)),
     listLatestPosts(db),
     renderMedia(mediaIds),
+    getSettings(db, "template"),
   ]);
   const terms = type === "post" && can(viewer, "term.assign") ? allTerms : null;
   // The current parent is listed even when it's in the trash, so saving keeps it.
@@ -131,6 +134,7 @@ export async function EditorScreen({
     terms: allTerms,
     upload: { allowed: can(viewer, "media.upload"), maxBytes: env().MEDIA_MAX_BYTES },
     userId: viewer.id,
+    templateSlug: (template ?? DEFAULT_TEMPLATE).slug,
   };
 
   return (

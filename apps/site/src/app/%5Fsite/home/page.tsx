@@ -69,6 +69,7 @@ export default async function HomePage() {
   const media = await getCardMedia(rows.flatMap((row) => row.featuredMediaId ?? []));
   return (
     <PostList
+      kind="posts"
       title={site.title}
       description={site.tagline || undefined}
       posts={rows}

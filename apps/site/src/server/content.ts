@@ -32,12 +32,14 @@ import { mediaUrl } from "@sitebuilder/media";
 import {
   type BlockList,
   CacheTags,
+  DEFAULT_TEMPLATE,
   defaultSettings,
   type MenuLocation,
   type SettingsValue,
 } from "@sitebuilder/schema";
 import { cacheLife, cacheTag } from "next/cache";
 import { env } from "@/env";
+import "./template-blocks";
 
 // Everything the public site reads, cached across requests and tagged (design §7). The admin
 // zone invalidates the tags on every write, and the shared cache handler carries that to every
@@ -62,6 +64,14 @@ export async function getTheme(): Promise<SettingsValue<"theme">> {
   life();
   cacheTag(CacheTags.settings);
   return (await getSettings(db, "theme")) ?? defaultSettings(env().SITE_URL).theme;
+}
+
+// Which template is active, and its options' saved values.
+export async function getTemplateSettings(): Promise<SettingsValue<"template">> {
+  "use cache";
+  life();
+  cacheTag(CacheTags.settings, CacheTags.template);
+  return (await getSettings(db, "template")) ?? DEFAULT_TEMPLATE;
 }
 
 export async function getReadingSettings(): Promise<SettingsValue<"reading">> {

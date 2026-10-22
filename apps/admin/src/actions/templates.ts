@@ -20,6 +20,7 @@ import * as v from "valibot";
 import { getViewer } from "@/auth/session";
 import { invalidate } from "@/server/invalidate";
 import { buildActivation, type PlannedEntry, planStarter } from "@/server/template-plan";
+import "@/lib/template-blocks";
 
 // The Templates screen (design §14, docs/templates_and_ai_design.md A7). Only admins activate a
 // template (template.activate); it can write the theme, pages, menus and the home page at once.

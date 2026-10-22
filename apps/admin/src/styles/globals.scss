@@ -4,8 +4,11 @@
 // Imported once, by src/app/layout.tsx, after @nuvui/react/styles.css.
 // Unlayered on purpose: these rules beat nuvui's `tokens`, `base` and `components` layers.
 // Component blocks aren't listed here; each component imports its own file.
+// The blocks' CSS is in the layer `host`, after nuvui's, as on the site; the admin's own stays
+// unlayered and beats both.
 @use "base/theme";
 @use "base/elements";
 @use "layout/page";
 @use "layout/toaster";
+@layer tokens, base, components, host;
 

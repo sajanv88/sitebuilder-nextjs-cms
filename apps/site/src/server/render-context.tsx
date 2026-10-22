@@ -4,15 +4,18 @@
 import "server-only";
 import type { RenderContext } from "@sitebuilder/blocks";
 import type { SettingsValue } from "@sitebuilder/schema";
+import type { LoadedTemplate } from "@sitebuilder/templates/site";
 import { SiteImage } from "@/components/site-image/site-image";
 import type { RenderData } from "./content";
 
 // What blocks read while the site draws them: files and links from the page's render data,
-// dates in the site's format and zone, and next/image for pictures.
+// dates in the site's format and zone, next/image for pictures, and the active template's own
+// blocks' components (another template's blocks draw nothing).
 export function siteContext(
   data: RenderData,
   site: SettingsValue<"site">,
   headingBlockId: string | null,
+  template: LoadedTemplate,
 ): RenderContext {
   return {
     media: (id) => data.media[id],
@@ -23,5 +26,6 @@ export function siteContext(
     dates: { dateFormat: site.dateFormat, timeZone: site.timeZone, language: site.language },
     headingBlockId,
     image: (props) => <SiteImage {...props} />,
+    templateBlock: (type) => template.blocks[type],
   };
 }

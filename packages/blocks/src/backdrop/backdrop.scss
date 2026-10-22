@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-// The backdrop is the box of the section or hero it's in.
-.block-backdrop {
-  position: relative;
+@layer host {
+  // The backdrop is the box of the section or hero it's in.
+  .block-backdrop {
+    position: relative;
+  }
 }

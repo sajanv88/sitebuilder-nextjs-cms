@@ -13,7 +13,14 @@ import {
   CommandList,
   CommandShortcut,
 } from "@nuvui/react";
-import { ADDABLE, BlockOption, GROUPS, rank } from "@/components/block-inserter/block-inserter";
+import { useMemo } from "react";
+import { useEditorData } from "@/components/block-editor/editor-data";
+import {
+  addableBlocks,
+  BlockOption,
+  GROUPS,
+  rank,
+} from "@/components/block-inserter/block-inserter";
 
 // Ctrl+K in the editor: nuvui's command palette with every block type, the pinned ones first,
 // and what can be done to the selected block. The Add tab and the inspector do the same; this
@@ -45,7 +52,9 @@ export function QuickAdd({
     action();
     onOpenChange(false);
   };
-  const pinnedTypes = ADDABLE.filter((definition) => pinned.includes(definition.type));
+  const { templateSlug } = useEditorData();
+  const addable = useMemo(() => addableBlocks(templateSlug), [templateSlug]);
+  const pinnedTypes = addable.filter((definition) => pinned.includes(definition.type));
 
   return (
     <CommandDialog
@@ -119,19 +128,21 @@ export function QuickAdd({
         ) : null}
         {GROUPS.map((group) => (
           <CommandGroup key={group.category} heading={`Add: ${group.heading}`}>
-            {ADDABLE.filter(
-              (definition) =>
-                definition.category === group.category && !pinned.includes(definition.type),
-            ).map((definition) => (
-              <CommandItem
-                key={definition.type}
-                value={definition.type}
-                keywords={[definition.label, definition.description]}
-                onSelect={run(() => onAdd(definition.type))}
-              >
-                <BlockOption definition={definition} />
-              </CommandItem>
-            ))}
+            {addable
+              .filter(
+                (definition) =>
+                  definition.category === group.category && !pinned.includes(definition.type),
+              )
+              .map((definition) => (
+                <CommandItem
+                  key={definition.type}
+                  value={definition.type}
+                  keywords={[definition.label, definition.description]}
+                  onSelect={run(() => onAdd(definition.type))}
+                >
+                  <BlockOption definition={definition} />
+                </CommandItem>
+              ))}
           </CommandGroup>
         ))}
       </CommandList>

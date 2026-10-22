@@ -3,39 +3,41 @@
 
 @use "../../styles/layout";
 
-// One column at a time on a small screen; side by side, equal widths, from the chosen size.
-.block-columns {
-  --block-columns-count: 2;
+@layer host {
+  // One column at a time on a small screen; side by side, equal widths, from the chosen size.
+  .block-columns {
+    --block-columns-count: 2;
 
-  display: grid;
-  gap: calc(var(--spacing) * 6);
-  align-items: start;
+    display: grid;
+    gap: calc(var(--spacing) * 6);
+    align-items: start;
 
-  &--gap-sm {
-    gap: calc(var(--spacing) * 3);
-  }
-
-  &--gap-lg {
-    gap: calc(var(--spacing) * 12);
-  }
-
-  &--count-3 {
-    --block-columns-count: 3;
-  }
-
-  &--count-4 {
-    --block-columns-count: 4;
-  }
-
-  &--stack-sm {
-    @include layout.width("sm") {
-      grid-template-columns: repeat(var(--block-columns-count), minmax(0, 1fr));
+    &--gap-sm {
+      gap: calc(var(--spacing) * 3);
     }
-  }
 
-  &--stack-md {
-    @include layout.width("md") {
-      grid-template-columns: repeat(var(--block-columns-count), minmax(0, 1fr));
+    &--gap-lg {
+      gap: calc(var(--spacing) * 12);
+    }
+
+    &--count-3 {
+      --block-columns-count: 3;
+    }
+
+    &--count-4 {
+      --block-columns-count: 4;
+    }
+
+    &--stack-sm {
+      @include layout.width("sm") {
+        grid-template-columns: repeat(var(--block-columns-count), minmax(0, 1fr));
+      }
+    }
+
+    &--stack-md {
+      @include layout.width("md") {
+        grid-template-columns: repeat(var(--block-columns-count), minmax(0, 1fr));
+      }
     }
   }
 }

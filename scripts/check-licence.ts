@@ -8,7 +8,7 @@
 // Lists each file that doesn't and exits 1. `pnpm check:licence`, run in CI by pr.yaml.
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const LICENSE = "GPL-2.0-or-later";
 const HOLDER = "Sajankumar Vijayan";
@@ -44,13 +44,13 @@ function problemWithHeader(file: string): string | null {
   return null;
 }
 
-// Tracked files and new ones git doesn't ignore: what a commit would contain.
+// Tracked files and new ones git doesn't ignore, less those deleted: what a commit would contain.
 const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], {
   encoding: "utf8",
   maxBuffer: 16 * 1024 * 1024,
 })
   .split("\n")
-  .filter((file) => file !== "" && !SKIP.some((pattern) => pattern.test(file)));
+  .filter((file) => file !== "" && !SKIP.some((pattern) => pattern.test(file)) && existsSync(file));
 
 const problems: string[] = [];
 for (const file of files) {

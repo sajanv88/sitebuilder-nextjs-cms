@@ -4,6 +4,8 @@ node_modules/
 dist/
 # Written by `pnpm sitebuilder generate` on every build.
 templates/generated/
+# The site's copy of the templates' stylesheets (apps/site/scripts/template-files.ts).
+apps/site/public/_templates/
 coverage/
 out/
 next-env.d.ts

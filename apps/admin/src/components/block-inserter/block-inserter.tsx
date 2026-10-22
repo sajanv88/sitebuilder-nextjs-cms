@@ -19,8 +19,9 @@ import {
   PinnedListItem,
   Separator,
 } from "@nuvui/react";
-import { type AnyBlockDefinition, BLOCKS, type BlockCategory } from "@sitebuilder/blocks";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { type AnyBlockDefinition, allBlocks, type BlockCategory } from "@sitebuilder/blocks";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useEditorData } from "@/components/block-editor/editor-data";
 import "./block-inserter.scss";
 
 // The block types to add (design §8: a searchable inserter). A new block goes inside the
@@ -37,13 +38,19 @@ export const GROUPS: { category: BlockCategory; heading: string }[] = [
   { category: "data", heading: "Lists and tables" },
 ];
 
-// What can be added: everything but a column, which comes with Columns. In the groups' order.
-export const ADDABLE: readonly AnyBlockDefinition[] = GROUPS.flatMap((group) =>
-  BLOCKS.filter(
-    (definition) => definition.category === group.category && definition.type !== "column",
-  ),
-);
-const BY_TYPE = new Map(ADDABLE.map((definition) => [definition.type, definition]));
+// What can be added: every built-in block but a column, which comes with Columns, and the
+// active template's own blocks (<slug>:<name>), each in its category. Another template's blocks
+// stay valid but aren't offered: they draw nothing on the site. In the groups' order.
+export function addableBlocks(templateSlug: string): readonly AnyBlockDefinition[] {
+  const offered = allBlocks().filter((definition) =>
+    definition.type.includes(":")
+      ? definition.type.startsWith(`${templateSlug}:`)
+      : definition.type !== "column",
+  );
+  return GROUPS.flatMap((group) =>
+    offered.filter((definition) => definition.category === group.category),
+  );
+}
 
 // Names before descriptions, and words, not scattered letters: Command's own loose match puts
 // Callout above Columns for "columns", from letters spread through Callout's description.
@@ -79,7 +86,13 @@ export function BlockInserter({
   onPinnedChange: (pinned: string[]) => void;
 }) {
   const [search, setSearch] = useState("");
-  const pinnedTypes = ADDABLE.filter((definition) => pinned.includes(definition.type));
+  const { templateSlug } = useEditorData();
+  const addable = useMemo(() => addableBlocks(templateSlug), [templateSlug]);
+  const byType = useMemo(
+    () => new Map(addable.map((definition) => [definition.type, definition])),
+    [addable],
+  );
+  const pinnedTypes = addable.filter((definition) => pinned.includes(definition.type));
   const lists = useRef<HTMLDivElement>(null);
   const moved = useRef<string | null>(null);
 
@@ -100,7 +113,7 @@ export function BlockInserter({
   };
 
   const row = (type: string) => {
-    const definition = BY_TYPE.get(type);
+    const definition = byType.get(type);
     if (!definition) return null;
     const Icon = definition.icon;
     return (
@@ -150,19 +163,21 @@ export function BlockInserter({
             ) : null}
             {GROUPS.map((group) => (
               <CommandGroup key={group.category} heading={group.heading}>
-                {ADDABLE.filter(
-                  (definition) =>
-                    definition.category === group.category && !pinned.includes(definition.type),
-                ).map((definition) => (
-                  <CommandItem
-                    key={definition.type}
-                    value={definition.type}
-                    keywords={[definition.label, definition.description]}
-                    onSelect={onAdd}
-                  >
-                    <BlockOption definition={definition} />
-                  </CommandItem>
-                ))}
+                {addable
+                  .filter(
+                    (definition) =>
+                      definition.category === group.category && !pinned.includes(definition.type),
+                  )
+                  .map((definition) => (
+                    <CommandItem
+                      key={definition.type}
+                      value={definition.type}
+                      keywords={[definition.label, definition.description]}
+                      onSelect={onAdd}
+                    >
+                      <BlockOption definition={definition} />
+                    </CommandItem>
+                  ))}
               </CommandGroup>
             ))}
           </CommandList>
@@ -179,10 +194,12 @@ export function BlockInserter({
             {row}
           </PinnedList>
           {GROUPS.map((group, index) => {
-            const types = ADDABLE.filter(
-              (definition) =>
-                definition.category === group.category && !pinned.includes(definition.type),
-            ).map((definition) => definition.type);
+            const types = addable
+              .filter(
+                (definition) =>
+                  definition.category === group.category && !pinned.includes(definition.type),
+              )
+              .map((definition) => definition.type);
             // Each list stays drawn while empty: it says what was pinned from it.
             const line = types.length > 0 && (index > 0 || pinnedTypes.length > 0);
             return (

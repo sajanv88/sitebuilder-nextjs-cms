@@ -3,106 +3,108 @@
 
 @use "../../styles/layout";
 
-// The hero's layout, on the section itself or, with a backdrop, on the backdrop inside it.
-@mixin frame {
-  display: grid;
-  gap: calc(var(--spacing) * 12);
-  justify-items: var(--block-align, center);
-  padding: calc(var(--spacing) * 16) calc(var(--spacing) * 4) calc(var(--spacing) * 12);
-
-  @include layout.width("md") {
-    padding: calc(var(--spacing) * 24) calc(var(--spacing) * 8) calc(var(--spacing) * 16);
-  }
-}
-
-// From nuvui's hero block: a wash of the brand color behind the words, mixed from the theme's
-// own color, so a theme changes it and no text depends on it.
-.block-hero {
-  @include frame;
-
-  background-color: var(--color-background);
-  background-image: radial-gradient(
-    ellipse 70% 55% at 50% 0%,
-    color-mix(in oklab, var(--color-primary) 14%, transparent),
-    transparent
-  );
-  color: var(--color-foreground);
-
-  // A forced-colors theme has a background of its own.
-  @media (forced-colors: active) {
-    background-image: none;
-  }
-
-  // The backdrop fills the hero. justify-items applies to block layout too, so it's reset.
-  &--backdrop {
-    display: block;
-    justify-items: normal;
-    padding: 0;
-    background-image: none;
-  }
-
-  &__backdrop {
-    @include frame;
-  }
-
-  &__inner {
+@layer host {
+  // The hero's layout, on the section itself or, with a backdrop, on the backdrop inside it.
+  @mixin frame {
     display: grid;
-    gap: calc(var(--spacing) * 6);
+    gap: calc(var(--spacing) * 12);
     justify-items: var(--block-align, center);
-    max-inline-size: 48rem;
-    text-align: var(--block-align, center);
-  }
+    padding: calc(var(--spacing) * 16) calc(var(--spacing) * 4) calc(var(--spacing) * 12);
 
-  &__eyebrow {
-    margin: 0;
-    padding: calc(var(--spacing) * 1) calc(var(--spacing) * 3);
-    border: var(--nuv-border-width) solid var(--color-border-strong);
-    border-radius: var(--radius-full);
-    font-size: var(--text-sm);
-    font-weight: var(--font-weight-medium);
-  }
-
-  &__title {
-    margin: 0;
-    font-size: clamp(2.25rem, 1.5rem + 3.6cqi, 4rem);
-    font-weight: var(--font-weight-semibold);
-    line-height: 1.05;
-    letter-spacing: -0.035em;
-    text-wrap: balance;
-  }
-
-  &__lead {
-    max-inline-size: 38rem;
-    margin: 0;
-    color: var(--color-muted-foreground);
-    font-size: var(--text-lg);
-    line-height: var(--leading-relaxed);
-    text-wrap: pretty;
-  }
-
-  &__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: calc(var(--spacing) * 3);
-    justify-content: var(--block-align, center);
-
-    &:empty {
-      display: none;
+    @include layout.width("md") {
+      padding: calc(var(--spacing) * 24) calc(var(--spacing) * 8) calc(var(--spacing) * 16);
     }
   }
 
-  &__picture {
-    inline-size: 100%;
-    max-inline-size: 60rem;
-    overflow: hidden;
-    border: var(--nuv-border-width) solid var(--color-border);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl);
-  }
+  // From nuvui's hero block: a wash of the brand color behind the words, mixed from the theme's
+  // own color, so a theme changes it and no text depends on it.
+  .block-hero {
+    @include frame;
 
-  &__img {
-    display: block;
-    inline-size: 100%;
-    block-size: auto;
+    background-color: var(--color-background);
+    background-image: radial-gradient(
+      ellipse 70% 55% at 50% 0%,
+      color-mix(in oklab, var(--color-primary) 14%, transparent),
+      transparent
+    );
+    color: var(--color-foreground);
+
+    // A forced-colors theme has a background of its own.
+    @media (forced-colors: active) {
+      background-image: none;
+    }
+
+    // The backdrop fills the hero. justify-items applies to block layout too, so it's reset.
+    &--backdrop {
+      display: block;
+      justify-items: normal;
+      padding: 0;
+      background-image: none;
+    }
+
+    &__backdrop {
+      @include frame;
+    }
+
+    &__inner {
+      display: grid;
+      gap: calc(var(--spacing) * 6);
+      justify-items: var(--block-align, center);
+      max-inline-size: 48rem;
+      text-align: var(--block-align, center);
+    }
+
+    &__eyebrow {
+      margin: 0;
+      padding: calc(var(--spacing) * 1) calc(var(--spacing) * 3);
+      border: var(--nuv-border-width) solid var(--color-border-strong);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: var(--font-weight-medium);
+    }
+
+    &__title {
+      margin: 0;
+      font-size: clamp(2.25rem, 1.5rem + 3.6cqi, 4rem);
+      font-weight: var(--font-weight-semibold);
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      text-wrap: balance;
+    }
+
+    &__lead {
+      max-inline-size: 38rem;
+      margin: 0;
+      color: var(--color-muted-foreground);
+      font-size: var(--text-lg);
+      line-height: var(--leading-relaxed);
+      text-wrap: pretty;
+    }
+
+    &__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: calc(var(--spacing) * 3);
+      justify-content: var(--block-align, center);
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    &__picture {
+      inline-size: 100%;
+      max-inline-size: 60rem;
+      overflow: hidden;
+      border: var(--nuv-border-width) solid var(--color-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+    }
+
+    &__img {
+      display: block;
+      inline-size: 100%;
+      block-size: auto;
+    }
   }
 }

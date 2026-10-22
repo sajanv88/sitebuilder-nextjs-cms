@@ -99,6 +99,6 @@ export const config = {
   matcher: [
     // Pages only: not route handlers (/api/*, /media/<key>, /feed.xml), Next's files, the
     // metadata routes, or the admin zone's paths, which it answers with its own CSP.
-    "/((?!api/|media/|_next/|favicon.ico|robots.txt|sitemap.xml|feed.xml|admin(?:/|$)|setup(?:/|$)|admin-static/).*)",
+    "/((?!api/|media/|_next/|_templates/|favicon.ico|robots.txt|sitemap.xml|feed.xml|admin(?:/|$)|setup(?:/|$)|admin-static/).*)",
   ],
 };

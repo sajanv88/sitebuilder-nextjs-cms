@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+@layer host {
+  // The page's grid (block-page, from @sitebuilder/blocks): each block sits in the content column
+  // unless it's set to run fluid or full width. The template's layout sets the grid's margin each
+  // side and its content width (--block-page-gutter, --block-page-max), and may set the space
+  // between blocks (--block-page-gap). The blocks lay out by this box's width (container queries
+  // named `blocks`), as they do in the editor's canvas at each device width.
+  .site-blocks {
+    row-gap: var(--block-page-gap, #{a.space(6)});
+    container: blocks / inline-size;
+  }
+}

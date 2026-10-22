@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-import { BLOCKS } from "@sitebuilder/blocks";
+import { getBlockDefinition } from "@sitebuilder/blocks";
 import { useCallback, useEffect, useState } from "react";
 
 // The block types a person has pinned to the top of the inserter. A convenience, not content:
@@ -9,13 +9,15 @@ import { useCallback, useEffect, useState } from "react";
 // (decisions #86). Unknown types, such as one a later release removed, are dropped on reading.
 
 const key = (userId: string) => `sitebuilder:pinned-blocks:${userId}`;
-const KNOWN = new Set(BLOCKS.map((definition) => definition.type));
 
 function read(userId: string): string[] {
   try {
     const stored: unknown = JSON.parse(window.localStorage.getItem(key(userId)) ?? "[]");
     return Array.isArray(stored)
-      ? stored.filter((type): type is string => typeof type === "string" && KNOWN.has(type))
+      ? stored.filter(
+          (type): type is string =>
+            typeof type === "string" && getBlockDefinition(type) !== undefined,
+        )
       : [];
   } catch {
     return [];

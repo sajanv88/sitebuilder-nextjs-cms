@@ -19,9 +19,7 @@ import { headers } from "next/headers";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { NonceProvider } from "@/components/nonce-provider/nonce-provider";
-import { SiteFooter } from "@/components/site-footer/site-footer";
-import { SiteHeader } from "@/components/site-header/site-header";
-import { getSite, getSiteMenu, getTheme } from "@/server/content";
+import { getSite, getTheme } from "@/server/content";
 import { themeStylesheet } from "@/server/theme";
 
 // Every page renders per request (below), and the settings live in the database, which the
@@ -53,14 +51,7 @@ async function RequestTime() {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const requestHeaders = await headers();
   const nonce = requestHeaders.get("x-nonce") ?? "";
-  // The address the visitor asked for, before the proxy rewrote it (src/proxy.ts).
-  const path = requestHeaders.get("x-site-path") ?? "/";
-  const [site, theme, primary, footer] = await Promise.all([
-    getSite(),
-    getTheme(),
-    getSiteMenu("primary"),
-    getSiteMenu("footer"),
-  ]);
+  const [site, theme] = await Promise.all([getSite(), getTheme()]);
   const tokens = themeStylesheet(theme.tokens);
 
   return (
@@ -73,13 +64,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <head>{tokens ? <style nonce={nonce}>{tokens}</style> : null}</head>
       <body>
         <NonceProvider nonce={nonce}>
-          <div className="site">
-            <SiteHeader title={site.title} items={primary} currentPath={path} />
-            <main id="content" className="site__main">
-              {children}
-            </main>
-            <SiteFooter title={site.title} tagline={site.tagline} items={footer} />
-          </div>
+          {/* The template's frame is drawn below this, by the /_site layout and the not-found
+              page, so the error page here still shows when the template throws. */}
+          {children}
           <Suspense>
             <RequestTime />
           </Suspense>

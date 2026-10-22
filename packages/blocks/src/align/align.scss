@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-// Mixed onto a block's root (or a section's inner box): sets the alignment its styles, and
-// those of the blocks inside it, read as var(--block-align, start).
-.block-align {
-  &--start {
-    --block-align: start;
-  }
+@layer host {
+  // Mixed onto a block's root (or a section's inner box): sets the alignment its styles, and
+  // those of the blocks inside it, read as var(--block-align, start).
+  .block-align {
+    &--start {
+      --block-align: start;
+    }
 
-  &--center {
-    --block-align: center;
-  }
+    &--center {
+      --block-align: center;
+    }
 
-  &--end {
-    --block-align: end;
+    &--end {
+      --block-align: end;
+    }
   }
 }

@@ -1,68 +1,71 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-// The band is as wide as its place on the page (page/page.ts); its content is held to the chosen
-// width and centered. The background colors set nuvui's own foreground tokens too, so components
-// inside stay readable. With a backdrop, the backdrop is the band: it takes the section's padding.
-.block-section {
-  --block-section-max: 48rem;
-  --block-section-pad-block: calc(var(--spacing) * 12);
-  --block-section-pad-inline: calc(var(--spacing) * 4);
-
-  padding: var(--block-section-pad-block) var(--block-section-pad-inline);
-
-  &__inner {
-    display: grid;
-    gap: calc(var(--spacing) * 6);
-    max-inline-size: var(--block-section-max);
-    margin-inline: auto;
-  }
-
-  &--width-narrow {
-    --block-section-max: 36rem;
-  }
-
-  &--width-wide {
-    --block-section-max: 72rem;
-  }
-
-  &--width-full {
-    --block-section-max: none;
-  }
-
-  &--bg-muted {
-    background-color: var(--color-muted);
-  }
-
-  &--bg-primary {
-    --color-foreground: var(--color-primary-foreground);
-    --color-muted-foreground: var(--color-primary-foreground);
-
-    background-color: var(--color-primary);
-    color: var(--color-primary-foreground);
-  }
-
-  &--pad-none {
-    --block-section-pad-block: calc(var(--spacing) * 0);
-  }
-
-  &--pad-sm {
-    --block-section-pad-block: calc(var(--spacing) * 6);
-  }
-
-  &--pad-md {
+@layer host {
+  // The band is as wide as its place on the page (page/page.ts); its content is held to the
+  // chosen width and centered. The background colors set nuvui's own foreground tokens too, so
+  // components inside stay readable. With a backdrop, the backdrop is the band: it takes the
+  // section's padding.
+  .block-section {
+    --block-section-max: 48rem;
     --block-section-pad-block: calc(var(--spacing) * 12);
-  }
+    --block-section-pad-inline: calc(var(--spacing) * 4);
 
-  &--pad-lg {
-    --block-section-pad-block: calc(var(--spacing) * 20);
-  }
-
-  &--backdrop {
-    padding: 0;
-  }
-
-  &__backdrop {
     padding: var(--block-section-pad-block) var(--block-section-pad-inline);
+
+    &__inner {
+      display: grid;
+      gap: calc(var(--spacing) * 6);
+      max-inline-size: var(--block-section-max);
+      margin-inline: auto;
+    }
+
+    &--width-narrow {
+      --block-section-max: 36rem;
+    }
+
+    &--width-wide {
+      --block-section-max: 72rem;
+    }
+
+    &--width-full {
+      --block-section-max: none;
+    }
+
+    &--bg-muted {
+      background-color: var(--color-muted);
+    }
+
+    &--bg-primary {
+      --color-foreground: var(--color-primary-foreground);
+      --color-muted-foreground: var(--color-primary-foreground);
+
+      background-color: var(--color-primary);
+      color: var(--color-primary-foreground);
+    }
+
+    &--pad-none {
+      --block-section-pad-block: calc(var(--spacing) * 0);
+    }
+
+    &--pad-sm {
+      --block-section-pad-block: calc(var(--spacing) * 6);
+    }
+
+    &--pad-md {
+      --block-section-pad-block: calc(var(--spacing) * 12);
+    }
+
+    &--pad-lg {
+      --block-section-pad-block: calc(var(--spacing) * 20);
+    }
+
+    &--backdrop {
+      padding: 0;
+    }
+
+    &__backdrop {
+      padding: var(--block-section-pad-block) var(--block-section-pad-inline);
+    }
   }
 }

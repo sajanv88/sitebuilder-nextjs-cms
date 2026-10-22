@@ -3,81 +3,83 @@
 
 @use "@nuvui/react/scss/mixins" as nuv;
 
-// The elements the editor writes, styled from outside: the HTML has no classes of its own.
-// :where keeps these as light as the element selectors they are.
-.block-rich-text {
-  display: grid;
-  gap: calc(var(--spacing) * 4);
-  color: var(--color-foreground);
-  font-size: var(--text-base);
-  line-height: var(--leading-relaxed);
-  overflow-wrap: anywhere;
-  text-align: var(--block-align, start);
-}
+@layer host {
+  // The elements the editor writes, styled from outside: the HTML has no classes of its own.
+  // :where keeps these as light as the element selectors they are.
+  .block-rich-text {
+    display: grid;
+    gap: calc(var(--spacing) * 4);
+    color: var(--color-foreground);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    overflow-wrap: anywhere;
+    text-align: var(--block-align, start);
+  }
 
-.block-rich-text :where(p, ul, ol, blockquote, pre, h2, h3, h4) {
-  margin: 0;
-}
+  .block-rich-text :where(p, ul, ol, blockquote, pre, h2, h3, h4) {
+    margin: 0;
+  }
 
-.block-rich-text :where(h2, h3, h4) {
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-}
+  .block-rich-text :where(h2, h3, h4) {
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+  }
 
-.block-rich-text :where(h2) {
-  font-size: var(--text-2xl);
-}
+  .block-rich-text :where(h2) {
+    font-size: var(--text-2xl);
+  }
 
-.block-rich-text :where(h3) {
-  font-size: var(--text-xl);
-}
+  .block-rich-text :where(h3) {
+    font-size: var(--text-xl);
+  }
 
-.block-rich-text :where(h4) {
-  font-size: var(--text-lg);
-}
+  .block-rich-text :where(h4) {
+    font-size: var(--text-lg);
+  }
 
-.block-rich-text :where(ul, ol) {
-  display: grid;
-  gap: calc(var(--spacing) * 1);
-  padding-inline-start: calc(var(--spacing) * 6);
-}
+  .block-rich-text :where(ul, ol) {
+    display: grid;
+    gap: calc(var(--spacing) * 1);
+    padding-inline-start: calc(var(--spacing) * 6);
+  }
 
-.block-rich-text :where(blockquote) {
-  padding-inline-start: calc(var(--spacing) * 4);
-  border-inline-start: calc(var(--nuv-border-width) * 3) solid var(--color-border-strong);
-  color: var(--color-muted-foreground);
-}
+  .block-rich-text :where(blockquote) {
+    padding-inline-start: calc(var(--spacing) * 4);
+    border-inline-start: calc(var(--nuv-border-width) * 3) solid var(--color-border-strong);
+    color: var(--color-muted-foreground);
+  }
 
-// A link in a line of text is underlined: color alone doesn't tell it from the words around it.
-.block-rich-text :where(a) {
-  border-radius: var(--radius-xs);
-  color: var(--color-primary);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
+  // A link in a line of text is underlined: color alone doesn't tell it from the words around it.
+  .block-rich-text :where(a) {
+    border-radius: var(--radius-xs);
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
 
-  @include nuv.focus-ring;
-}
+    @include nuv.focus-ring;
+  }
 
-.block-rich-text :where(code) {
-  padding: 0.1em 0.35em;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-muted);
-  font-family: var(--font-mono);
-  font-size: 0.9em;
-}
+  .block-rich-text :where(code) {
+    padding: 0.1em 0.35em;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
 
-.block-rich-text :where(pre) {
-  overflow-x: auto;
-  padding: calc(var(--spacing) * 4);
-  border-radius: var(--radius-lg);
-  background-color: var(--color-muted);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
-}
+  .block-rich-text :where(pre) {
+    overflow-x: auto;
+    padding: calc(var(--spacing) * 4);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+  }
 
-.block-rich-text :where(pre code) {
-  padding: 0;
-  background-color: transparent;
+  .block-rich-text :where(pre code) {
+    padding: 0;
+    background-color: transparent;
+  }
 }

@@ -47,6 +47,7 @@ import {
 } from "@/components/entry-editor/editor-state";
 import { authorizeEntry } from "@/server/entries";
 import { invalidate } from "@/server/invalidate";
+import "@/lib/template-blocks";
 
 // The editor's actions. Each one: who's asking → valibot → can() against the entry → query.
 

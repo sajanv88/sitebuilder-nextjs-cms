@@ -3,22 +3,13 @@
 
 "use client";
 
-import { Button } from "@nuvui/react";
+import { ErrorView } from "@/components/error-view/error-view";
 
-// The error itself is logged on the server by onRequestError in instrumentation.ts. The user
-// sees the digest, which support can match to that log line, and never the message.
-export default function ErrorPage({
-  error,
-  reset,
-}: {
+// An error in the template's frame (its Site layout), or anywhere outside a page: shown with the
+// site's own styles alone, since the template is what failed.
+export default function ErrorPage(props: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return (
-    <div className="page">
-      <h1 className="page__title">Something went wrong</h1>
-      {error.digest && <p className="page__meta">Reference: {error.digest}</p>}
-      <Button onClick={reset}>Try again</Button>
-    </div>
-  );
+  return <ErrorView {...props} />;
 }

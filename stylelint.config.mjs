@@ -30,7 +30,7 @@ export default {
       1,
       {
         ignore: ["pseudo-classes", "blockless-at-rules"],
-        ignoreAtRules: ["include", "media", "supports", "container"],
+        ignoreAtRules: ["include", "media", "supports", "container", "layer"],
       },
     ],
     "selector-max-id": 0,

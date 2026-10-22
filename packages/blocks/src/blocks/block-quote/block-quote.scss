@@ -1,28 +1,30 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-.block-quote {
-  display: grid;
-  gap: calc(var(--spacing) * 3);
-  margin: 0;
-  padding-inline-start: calc(var(--spacing) * 5);
-  border-inline-start: calc(var(--nuv-border-width) * 4) solid var(--color-primary);
-  text-align: var(--block-align, start);
-
-  &__text {
+@layer host {
+  .block-quote {
+    display: grid;
+    gap: calc(var(--spacing) * 3);
     margin: 0;
-    color: var(--color-foreground);
-    font-size: var(--text-xl);
-    line-height: var(--leading-snug);
-    overflow-wrap: anywhere;
+    padding-inline-start: calc(var(--spacing) * 5);
+    border-inline-start: calc(var(--nuv-border-width) * 4) solid var(--color-primary);
+    text-align: var(--block-align, start);
+
+    &__text {
+      margin: 0;
+      color: var(--color-foreground);
+      font-size: var(--text-xl);
+      line-height: var(--leading-snug);
+      overflow-wrap: anywhere;
+    }
+
+    &__cite {
+      color: var(--color-muted-foreground);
+      font-size: var(--text-sm);
+    }
   }
 
-  &__cite {
-    color: var(--color-muted-foreground);
-    font-size: var(--text-sm);
+  .block-quote__text :where(p) {
+    margin: 0;
   }
-}
-
-.block-quote__text :where(p) {
-  margin: 0;
 }

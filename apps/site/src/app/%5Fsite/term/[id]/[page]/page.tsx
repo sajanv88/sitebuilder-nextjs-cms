@@ -45,6 +45,7 @@ export default async function TermPage({ params }: PageProps<"/_site/term/[id]/[
   const media = await getCardMedia(rows.flatMap((row) => row.featuredMediaId ?? []));
   return (
     <PostList
+      kind={term.taxonomy}
       title={term.name}
       description={
         term.taxonomy === "category" ? `Posts in ${term.name}.` : `Posts tagged ${term.name}.`

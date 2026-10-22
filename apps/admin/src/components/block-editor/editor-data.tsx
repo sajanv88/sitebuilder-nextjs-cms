@@ -21,6 +21,8 @@ export interface EditorData {
   upload: { allowed: boolean; maxBytes: number };
   // Who's editing: the browser keeps their pinned blocks under it.
   userId: string;
+  // The active template: its own blocks are offered in the inserter.
+  templateSlug: string;
 }
 
 interface EditorDataValue extends EditorData {

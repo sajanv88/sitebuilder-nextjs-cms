@@ -104,6 +104,7 @@ import { QuickAdd } from "@/components/quick-add/quick-add";
 import { RevisionHistory } from "@/components/revision-history/revision-history";
 import type { BlockIssue, EditorEntry, EditorState } from "./editor-state";
 import "./entry-editor.scss";
+import "@/lib/template-blocks";
 
 export type { EditorOptions } from "@/components/entry-settings/entry-settings";
 

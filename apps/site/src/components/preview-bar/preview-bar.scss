@@ -3,12 +3,14 @@
 
 @use "abstracts" as a;
 
-.preview-bar {
-  padding: a.space(4) var(--page-gutter) 0;
+@layer host {
+  .preview-bar {
+    padding: a.space(4) var(--page-gutter) 0;
 
-  @include a.content-column;
+    @include a.content-column;
 
-  &__alert {
-    margin: 0;
+    &__alert {
+      margin: 0;
+    }
   }
 }

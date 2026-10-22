@@ -3,55 +3,57 @@
 
 @use "@nuvui/react/scss/mixins" as nuv;
 
-.block-image {
-  --nuv-aspect-ratio-radius: var(--radius-lg);
+@layer host {
+  .block-image {
+    --nuv-aspect-ratio-radius: var(--radius-lg);
 
-  display: grid;
-  gap: calc(var(--spacing) * 2);
-  margin: 0;
+    display: grid;
+    gap: calc(var(--spacing) * 2);
+    margin: 0;
 
-  &--contain {
-    --nuv-aspect-ratio-fit: contain;
+    &--contain {
+      --nuv-aspect-ratio-fit: contain;
+    }
+
+    // At its own size, the picture (or its link) and the caption line up as aligned.
+    &--natural {
+      justify-items: var(--block-align, start);
+      text-align: var(--block-align, start);
+    }
+
+    // Never wider than the column it's in; the height follows.
+    &__img {
+      display: block;
+      inline-size: var(--block-image-size, auto);
+      max-inline-size: 100%;
+      block-size: auto;
+      border-radius: var(--block-image-radius, var(--radius-lg));
+    }
+
+    &__link {
+      display: block;
+      border-radius: var(--block-image-radius, var(--radius-lg));
+
+      @include nuv.focus-ring;
+    }
+
+    &--stretch {
+      --block-image-size: 100%;
+    }
+
+    // Edge to edge: square corners, and the caption keeps the page's margin.
+    &--edge {
+      --nuv-aspect-ratio-radius: 0;
+      --block-image-radius: 0;
+    }
+
+    &__caption {
+      color: var(--color-muted-foreground);
+      font-size: var(--text-sm);
+    }
   }
 
-  // At its own size, the picture (or its link) and the caption line up as aligned.
-  &--natural {
-    justify-items: var(--block-align, start);
-    text-align: var(--block-align, start);
+  .block-image--edge .block-image__caption {
+    padding-inline: var(--block-page-gutter, calc(var(--spacing) * 4));
   }
-
-  // Never wider than the column it's in; the height follows.
-  &__img {
-    display: block;
-    inline-size: var(--block-image-size, auto);
-    max-inline-size: 100%;
-    block-size: auto;
-    border-radius: var(--block-image-radius, var(--radius-lg));
-  }
-
-  &__link {
-    display: block;
-    border-radius: var(--block-image-radius, var(--radius-lg));
-
-    @include nuv.focus-ring;
-  }
-
-  &--stretch {
-    --block-image-size: 100%;
-  }
-
-  // Edge to edge: square corners, and the caption keeps the page's margin.
-  &--edge {
-    --nuv-aspect-ratio-radius: 0;
-    --block-image-radius: 0;
-  }
-
-  &__caption {
-    color: var(--color-muted-foreground);
-    font-size: var(--text-sm);
-  }
-}
-
-.block-image--edge .block-image__caption {
-  padding-inline: var(--block-page-gutter, calc(var(--spacing) * 4));
 }

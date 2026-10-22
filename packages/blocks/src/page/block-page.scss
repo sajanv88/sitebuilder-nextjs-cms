@@ -1,33 +1,35 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-// The page's columns, on the box that holds a page of blocks. The host sets the margin each side
-// (--block-page-gutter) and the content width (--block-page-max). Every block sits in the content
-// column unless its class places it in the fluid one (inside the margins) or the full one (edge
-// to edge). Only the box's own children are placed, so a block's class does nothing inside a
-// section, a column or the editor's frame.
-.block-page {
-  display: grid;
-  grid-template-columns:
-    [full-start] var(--block-page-gutter, calc(var(--spacing) * 4))
-    [fluid-start] minmax(0, 1fr)
-    [content-start] min(
-      var(--block-page-max, 72rem),
-      100% - 2 * var(--block-page-gutter, calc(var(--spacing) * 4))
-    )
-    [content-end] minmax(0, 1fr)
-    [fluid-end] var(--block-page-gutter, calc(var(--spacing) * 4))
-    [full-end];
+@layer host {
+  // The page's columns, on the box that holds a page of blocks. The host sets the margin each side
+  // (--block-page-gutter) and the content width (--block-page-max). Every block sits in the content
+  // column unless its class places it in the fluid one (inside the margins) or the full one (edge
+  // to edge). Only the box's own children are placed, so a block's class does nothing inside a
+  // section, a column or the editor's frame.
+  .block-page {
+    display: grid;
+    grid-template-columns:
+      [full-start] var(--block-page-gutter, calc(var(--spacing) * 4))
+      [fluid-start] minmax(0, 1fr)
+      [content-start] min(
+        var(--block-page-max, 72rem),
+        100% - 2 * var(--block-page-gutter, calc(var(--spacing) * 4))
+      )
+      [content-end] minmax(0, 1fr)
+      [fluid-end] var(--block-page-gutter, calc(var(--spacing) * 4))
+      [full-end];
 
-  > * {
-    grid-column: content;
+    > * {
+      grid-column: content;
+    }
   }
-}
 
-.block-page > .block-page__item--fluid {
-  grid-column: fluid;
-}
+  .block-page > .block-page__item--fluid {
+    grid-column: fluid;
+  }
 
-.block-page > .block-page__item--full {
-  grid-column: full;
+  .block-page > .block-page__item--full {
+    grid-column: full;
+  }
 }

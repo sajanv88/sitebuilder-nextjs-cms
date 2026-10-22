@@ -34,6 +34,7 @@ export default async function PostsPage({ params }: PageProps<"/_site/posts/[pag
   const media = await getCardMedia(rows.flatMap((row) => row.featuredMediaId ?? []));
   return (
     <PostList
+      kind="posts"
       title="Posts"
       posts={rows}
       total={total}
