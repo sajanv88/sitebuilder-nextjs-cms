@@ -50,6 +50,13 @@ export function TemplateGallery({
 }) {
   return (
     <div className="template-gallery">
+      <Alert intent="info" role="note" className="template-gallery__note">
+        <AlertTitle>Where templates come from</AlertTitle>
+        <AlertDescription>
+          These come with Sitebuilder and update with it. Adding a template of your own arrives in a
+          later version.
+        </AlertDescription>
+      </Alert>
       <ul className="template-gallery__list">
         {templates.map((template) => {
           const [desktop, phone] = template.screenshots;
@@ -108,13 +115,6 @@ export function TemplateGallery({
           );
         })}
       </ul>
-      <Alert intent="info" role="note">
-        <AlertTitle>Where templates come from</AlertTitle>
-        <AlertDescription>
-          These come with Sitebuilder and update with it. Adding a template of your own arrives in a
-          later version.
-        </AlertDescription>
-      </Alert>
     </div>
   );
 }
