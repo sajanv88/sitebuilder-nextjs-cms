@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import "@nuvui/react/styles.css";
+// The editor's canvas draws the same section and hero backdrops as the site.
+import "@nuvui/backgrounds/styles.css";
 import "@nuvui/date-picker/styles.css";
 import "@nuvui/editor/styles.css";
 import "@nuvui/media/styles.css";

@@ -10,6 +10,7 @@
     "analyze": "next analyze"
   },
   "dependencies": {
+    "@nuvui/backgrounds": "catalog:",
     "@nuvui/icons": "catalog:",
     "@nuvui/media": "catalog:",
     "@nuvui/react": "catalog:",

@@ -8,7 +8,8 @@ import "@nuvui/react/themes/high-contrast.css";
 import "@nuvui/react/themes/ink.css";
 import "@nuvui/react/themes/ledger.css";
 import "@nuvui/react/themes/meadow.css";
-// The video and table blocks.
+// The video and table blocks, and the moving backdrops of sections and heroes.
+import "@nuvui/backgrounds/styles.css";
 import "@nuvui/media/styles.css";
 import "@nuvui/table/styles.css";
 import "@/styles/globals.scss";

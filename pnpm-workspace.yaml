@@ -6,12 +6,13 @@ packages:
 # turbo is pinned in the root package.json instead: the Dockerfile reads it from there.
 catalog:
   "@biomejs/biome": 2.5.15
-  "@nuvui/date-picker": 0.1.7
-  "@nuvui/editor": 0.1.3
+  "@nuvui/backgrounds": 0.1.0
+  "@nuvui/date-picker": 0.1.8
+  "@nuvui/editor": 0.1.4
   "@nuvui/icons": 0.1.0
-  "@nuvui/media": 0.1.0
-  "@nuvui/react": 0.7.0
-  "@nuvui/table": 0.1.7
+  "@nuvui/media": 0.1.1
+  "@nuvui/react": 0.8.0
+  "@nuvui/table": 0.1.8
   "@opentelemetry/api": 1.9.1
   "@opentelemetry/api-logs": 0.223.0
   "@opentelemetry/instrumentation": 0.223.0
@@ -60,6 +61,15 @@ allowBuilds:
 # Supply chain: a version must be a day old before it can be installed, and a package
 # whose new version lost the provenance its previous version had is refused.
 minimumReleaseAge: 1440
+# nuvui 0.8 (ScrollProgress, PinnedList, backgrounds), published 2026-10-21 16:36 UTC, taken
+# before it's a day old. Remove these lines after 2026-10-22 16:36 UTC.
+minimumReleaseAgeExclude:
+  - "@nuvui/react@0.8.0"
+  - "@nuvui/backgrounds@0.1.0"
+  - "@nuvui/date-picker@0.1.8"
+  - "@nuvui/editor@0.1.4"
+  - "@nuvui/media@0.1.1"
+  - "@nuvui/table@0.1.8"
 trustPolicy: no-downgrade
 
 audit:

@@ -12,7 +12,7 @@ machine; their licences are checked all the same.
 
 | Licence | Packages | Shipped | Review |
 |---|---|---|---|
-| MIT | 356 | 206 | Permissive, GPL-compatible. |
+| MIT | 357 | 207 | Permissive, GPL-compatible. |
 | Apache-2.0 | 21 | 14 | Compatible with GPL-3.0 only, which Sitebuilder's “or later” allows: a build that includes Apache-2.0 code is distributed under GPL-3.0. |
 | ISC | 13 | 3 | Permissive, GPL-compatible. |
 | BSD-2-Clause | 4 | 4 | Permissive, GPL-compatible. |
@@ -199,12 +199,13 @@ Licences that only appear in platform packages:
 | @nodelib/fs.stat | 2.0.5 | MIT | no |
 | @nodelib/fs.walk | 1.2.8 | MIT | no |
 | normalize-path | 3.0.0 | MIT | no |
-| @nuvui/date-picker | 0.1.7 | MIT | yes |
-| @nuvui/editor | 0.1.3 | MIT | yes |
+| @nuvui/backgrounds | 0.1.0 | MIT | yes |
+| @nuvui/date-picker | 0.1.8 | MIT | yes |
+| @nuvui/editor | 0.1.4 | MIT | yes |
 | @nuvui/icons | 0.1.0 | MIT | yes |
-| @nuvui/media | 0.1.0 | MIT | yes |
-| @nuvui/react | 0.7.0 | MIT | yes |
-| @nuvui/table | 0.1.7 | MIT | yes |
+| @nuvui/media | 0.1.1 | MIT | yes |
+| @nuvui/react | 0.8.0 | MIT | yes |
+| @nuvui/table | 0.1.8 | MIT | yes |
 | obug | 3.0.0 | MIT | no |
 | @opentelemetry/api-logs | 0.223.0 | Apache-2.0 | yes |
 | @opentelemetry/api | 1.9.1 | Apache-2.0 | yes |

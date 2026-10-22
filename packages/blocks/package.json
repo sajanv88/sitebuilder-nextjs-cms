@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@nuvui/backgrounds": "catalog:",
     "@nuvui/icons": "catalog:",
     "@nuvui/media": "catalog:",
     "@nuvui/react": "catalog:",

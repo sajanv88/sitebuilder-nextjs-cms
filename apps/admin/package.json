@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@nuvui/backgrounds": "catalog:",
     "@nuvui/date-picker": "catalog:",
     "@nuvui/editor": "catalog:",
     "@nuvui/icons": "catalog:",
