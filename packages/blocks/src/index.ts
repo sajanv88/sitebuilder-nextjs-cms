@@ -14,8 +14,17 @@ export {
 } from "./content";
 export { FEATURE_ICON_NAMES, FEATURE_ICONS, type FeatureIconName } from "./icons";
 export { type PageWidth, pageItemClass } from "./page/page";
-export { allowedChildren, BLOCKS, blockRules, getBlockDefinition, LEAF_TYPES } from "./registry";
+export {
+  allBlocks,
+  allowedChildren,
+  BLOCKS,
+  blockRules,
+  getBlockDefinition,
+  leafTypes,
+  registerTemplateBlocks,
+} from "./registry";
 export { type BlockFrameProps, BlockList } from "./render";
+export { templateBlockDefinition, templateBlockSchema } from "./template-block";
 export type {
   AnyBlockDefinition,
   BlockCategory,

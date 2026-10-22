@@ -47,13 +47,9 @@ function walkValues(value: unknown, visit: (key: string, value: unknown) => void
   }
 }
 
-const MEDIA_KEYS = new Set([
-  "mediaId",
-  "imageMediaId",
-  "posterMediaId",
-  "beforeMediaId",
-  "afterMediaId",
-]);
+// A field that names a file: mediaId, or a name ending in MediaId (imageMediaId, posterMediaId),
+// the built-in blocks' and, by rule, template blocks' (decisions #112).
+const isMediaKey = (key: string) => key === "mediaId" || key.endsWith("MediaId");
 
 // The media a list of blocks uses, by the same props the database's usage check looks at
 // (packages/db mediaUsage): mediaId, imageMediaId, posterMediaId, beforeMediaId,
@@ -61,7 +57,7 @@ const MEDIA_KEYS = new Set([
 export function collectMediaIds(blocks: readonly Block[]): string[] {
   const ids = new Set<string>();
   walkValues(blocks, (key, value) => {
-    if (MEDIA_KEYS.has(key) && typeof value === "string" && value) ids.add(value);
+    if (isMediaKey(key) && typeof value === "string" && value) ids.add(value);
     if (key === "mediaIds" && Array.isArray(value)) {
       for (const id of value) if (typeof id === "string") ids.add(id);
     }

@@ -10,10 +10,14 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --test-timeout=30000"
   },
   "dependencies": {
     "@sitebuilder/schema": "workspace:*",
+    "esbuild": "catalog:",
+    "postcss": "catalog:",
+    "sass": "catalog:",
+    "typescript6": "catalog:",
     "valibot": "catalog:"
   },
   "devDependencies": {

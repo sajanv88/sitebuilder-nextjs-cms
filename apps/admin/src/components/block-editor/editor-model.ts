@@ -104,7 +104,7 @@ function countAfterInsert(
 ): boolean {
   if (parentId === null) return true;
   const parent = findBlock(blocks, parentId);
-  const max = parent ? blockRules[parent.type]?.container?.max : undefined;
+  const max = parent ? blockRules()[parent.type]?.container?.max : undefined;
   return max === undefined || (parent?.children?.length ?? 0) + adding <= max;
 }
 
@@ -112,7 +112,7 @@ function countAfterInsert(
 function countAfterRemove(blocks: readonly Block[], id: string): boolean {
   const where = locate(blocks, id);
   if (!where?.parent) return true;
-  const min = blockRules[where.parent.type]?.container?.min;
+  const min = blockRules()[where.parent.type]?.container?.min;
   return min === undefined || (where.parent.children?.length ?? 0) - 1 >= min;
 }
 

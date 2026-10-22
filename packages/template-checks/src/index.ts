@@ -16,11 +16,14 @@ import {
   withBlockIds,
 } from "@sitebuilder/schema";
 import * as v from "valibot";
+import { codeRules } from "./code";
 import { listFiles, type TemplateFile } from "./files";
+import { type RenderContext, renderRules } from "./render";
+import { type CompiledStyles, styleRules } from "./styles";
 
 // The rules a template folder must pass (docs/templates_and_ai_design.md A5), run by the CLI at
-// build time and by `template verify`. Phase 7A has the data rules; 7B adds the code rules.
-// Each finding names its rule, so a fixture can show it fails with that rule and no other.
+// build time and by `template verify`: the data rules here, the code rules in code.ts. Each
+// finding names its rule, so a fixture can show it fails with that rule and no other.
 
 export interface Finding {
   rule: string;
@@ -31,12 +34,15 @@ export interface Finding {
   message: string;
 }
 
-export interface CheckContext {
+export interface CheckContext extends RenderContext {
   sitebuilderVersion: string;
   nuvuiVersion: string;
-  // The content check every write goes through (validateContent from @sitebuilder/blocks).
-  // Passed in, so this package depends on neither the blocks nor an app.
-  validateContent: (input: unknown) => BlockListResult;
+  // The content check every write goes through (validateContent from @sitebuilder/blocks), with
+  // the template's own blocks known to it. Passed in, so this package depends on neither the
+  // blocks nor an app.
+  validateContent: (input: unknown, manifest: TemplateManifest) => BlockListResult;
+  // The icons a template block may name (FEATURE_ICON_NAMES from @sitebuilder/blocks).
+  blockIcons?: readonly string[];
 }
 
 export interface CheckReport {
@@ -44,6 +50,8 @@ export interface CheckReport {
   // Set when template.json parsed; the starter content when it parsed and passed.
   manifest: TemplateManifest | null;
   starter: StarterContent | null;
+  // The stylesheet as it ships, when there is one and it compiled.
+  styles: CompiledStyles | null;
 }
 
 const KiB = 1024;
@@ -59,8 +67,6 @@ const IMAGE = [".png", ".jpg", ".webp", ".avif"];
 const FONT = [".woff2"];
 const LICENCE_FILES = ["LICENSE", "LICENSE.md"];
 const LOCKFILES = ["package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lockb", "bun.lock"];
-// Manifest keys for layouts, styles, blocks and options, which phase 7B reads.
-const PHASE_7B_KEYS = ["components", "styles", "blocks", "options"] as const;
 
 const extension = (file: string) => posix.extname(file).toLowerCase();
 
@@ -184,6 +190,9 @@ async function manifestRules(
   const referenced = [
     ...manifest.screenshots.map((shot) => shot.file),
     ...(manifest.starter ? [manifest.starter] : []),
+    ...Object.values(manifest.components ?? {}).filter((file) => file !== undefined),
+    ...(manifest.styles ? [manifest.styles.entry] : []),
+    ...(manifest.blocks ?? []).map((block) => block.component),
   ];
   for (const file of referenced) {
     if (!present.has(file))
@@ -200,9 +209,12 @@ async function manifestRules(
   if (!LICENCE_FILES.some((file) => present.has(file))) {
     error("TPL-MANIFEST-004", "There's no LICENSE file", "LICENSE");
   }
-  for (const key of PHASE_7B_KEYS) {
-    if (manifest[key] !== undefined) {
-      error("TPL-MANIFEST-005", `"${key}" arrives in phase 7B: templates are data only for now`);
+  for (const block of manifest.blocks ?? []) {
+    if (context.blockIcons && !context.blockIcons.includes(block.icon)) {
+      error(
+        "TPL-MANIFEST-001",
+        `blocks.${block.name}.icon: "${block.icon}" isn't one of the icons blocks use`,
+      );
     }
   }
   return { findings, manifest };
@@ -235,6 +247,7 @@ const fakeUuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12
 function contentRules(
   file: string,
   json: unknown,
+  manifest: TemplateManifest,
   context: CheckContext,
 ): { findings: Finding[]; starter: StarterContent | null } {
   const findings: Finding[] = [];
@@ -277,7 +290,7 @@ function contentRules(
       const blocks = withBlockIds(entry.content, makeId);
       // Unknown refs are reported by starterIssues; here they're only resolved.
       const resolved = resolveRefs(blocks, ids).value;
-      const result = media.length > 0 ? null : context.validateContent(resolved);
+      const result = media.length > 0 ? null : context.validateContent(resolved, manifest);
       if (result && !result.ok) report(result.issues, [kind, index, "content"]);
     });
   }
@@ -290,6 +303,22 @@ export async function runChecks(dir: string, context: CheckContext): Promise<Che
   const { findings: manifestFindings, manifest } = await manifestRules(dir, files, context);
   findings.push(...manifestFindings);
 
+  let styles: CompiledStyles | null = null;
+  if (manifest) {
+    const sources = files.filter((file) => !file.symlink).map((file) => file.path);
+    findings.push(...(await codeRules(dir, sources, manifest, context)));
+    const entry = manifest.styles?.entry;
+    if (entry && sources.includes(entry)) {
+      const result = styleRules(dir, sources, entry, context);
+      findings.push(...result.findings);
+      styles = result.compiled;
+    }
+    // Template code runs only once every static rule has passed.
+    if (!findings.some((finding) => finding.severity === "error")) {
+      findings.push(...(await renderRules(dir, manifest, context)));
+    }
+  }
+
   let starter: StarterContent | null = null;
   if (manifest?.starter && files.some((file) => file.path === manifest.starter)) {
     const json = await readJson(dir, manifest.starter);
@@ -301,12 +330,15 @@ export async function runChecks(dir: string, context: CheckContext): Promise<Che
         message: json.message,
       });
     } else {
-      const content = contentRules(manifest.starter, json.value, context);
+      const content = contentRules(manifest.starter, json.value, manifest, context);
       findings.push(...content.findings);
       starter = content.starter;
     }
   }
-  return { findings, manifest, starter };
+  return { findings, manifest, starter, styles };
 }
 
+export { type CodeContext, propsType } from "./code";
 export { listFiles, type TemplateFile } from "./files";
+export type { RenderContext } from "./render";
+export type { CompiledStyles } from "./styles";

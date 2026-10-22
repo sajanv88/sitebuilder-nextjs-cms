@@ -69,6 +69,175 @@ const RelativeFile = (extensions: readonly string[]) =>
     ),
   );
 
+// ── Phase 7B: layouts, styles, options and blocks ────────────────────────────────────────────
+
+// The layouts a template draws the public site with (design §14). Site and Page are required;
+// one left out is drawn with the default template's.
+export const TemplateComponents = v.strictObject({
+  site: RelativeFile([".tsx"]),
+  page: RelativeFile([".tsx"]),
+  post: v.optional(RelativeFile([".tsx"])),
+  archive: v.optional(RelativeFile([".tsx"])),
+  notFound: v.optional(RelativeFile([".tsx"])),
+});
+export type TemplateComponents = v.InferOutput<typeof TemplateComponents>;
+export const LAYOUT_NAMES = ["site", "page", "post", "archive", "notFound"] as const;
+export type LayoutName = (typeof LAYOUT_NAMES)[number];
+
+// The stylesheet, compiled ahead of time to one static file (decisions #110).
+export const TemplateStyles = v.strictObject({ entry: RelativeFile([".css", ".scss"]) });
+export type TemplateStyles = v.InferOutput<typeof TemplateStyles>;
+
+// An option an admin sets on the Templates screen: on or off, or one of a few choices. Every
+// layout gets the values (design §14).
+const OptionKey = v.pipe(
+  v.string(),
+  v.regex(/^[a-z][a-zA-Z0-9]{0,39}$/, "Use a name such as stickyHeader"),
+);
+const ShortText = (max: number) => v.pipe(v.string(), v.minLength(1), v.maxLength(max));
+const Choices = v.pipe(
+  v.array(v.strictObject({ value: OptionKey, label: ShortText(80) })),
+  v.minLength(2),
+  v.maxLength(12),
+);
+const OptionText = {
+  key: OptionKey,
+  label: ShortText(60),
+  description: v.optional(ShortText(200)),
+};
+export const TemplateOption = v.variant("type", [
+  v.strictObject({ ...OptionText, type: v.literal("boolean"), default: v.boolean() }),
+  v.pipe(
+    v.strictObject({
+      ...OptionText,
+      type: v.literal("choice"),
+      choices: Choices,
+      default: OptionKey,
+    }),
+    v.check(
+      (option) => option.choices.some((choice) => choice.value === option.default),
+      "The default must be one of the choices",
+    ),
+  ),
+]);
+export type TemplateOption = v.InferOutput<typeof TemplateOption>;
+export type TemplateOptionValues = Readonly<Record<string, boolean | string>>;
+
+// The values to draw with: each option's saved value while it's still valid, its default
+// otherwise. Unknown keys are dropped (design A7).
+export function optionValues(
+  options: readonly TemplateOption[],
+  saved: Readonly<Record<string, unknown>>,
+): TemplateOptionValues {
+  const values: Record<string, boolean | string> = {};
+  for (const option of options) {
+    const value = saved[option.key];
+    if (option.type === "boolean") {
+      values[option.key] = typeof value === "boolean" ? value : option.default;
+    } else {
+      const known = option.choices.some((choice) => choice.value === value);
+      values[option.key] = known && typeof value === "string" ? value : option.default;
+    }
+  }
+  return values;
+}
+
+// A template's own block (design A9, revised by decisions #112). What it is and how the editor
+// edits it are data, here, so the admin can check and edit it without loading template code;
+// only drawing it is code, in `component`, which only the site zone loads. Its type is
+// "<template slug>:<name>". The fields are a subset of the built-in blocks' (no rich text,
+// lists or terms), and a media field's name is mediaId or ends in MediaId (design A9).
+const FieldName = v.pipe(
+  v.string(),
+  v.regex(/^[a-z][a-zA-Z0-9]{0,39}$/, "Use a name such as title"),
+);
+const FieldBase = {
+  name: FieldName,
+  label: ShortText(80),
+  description: v.optional(ShortText(200)),
+};
+export const TemplateField = v.variant("kind", [
+  v.strictObject({
+    ...FieldBase,
+    kind: v.literal("text"),
+    max: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(2000)),
+    optional: v.optional(v.boolean()),
+    multiline: v.optional(v.boolean()),
+  }),
+  v.strictObject({ ...FieldBase, kind: v.literal("choice"), options: Choices }),
+  v.strictObject({ ...FieldBase, kind: v.literal("toggle") }),
+  v.pipe(
+    v.strictObject({
+      ...FieldBase,
+      kind: v.literal("number"),
+      min: v.pipe(v.number(), v.integer()),
+      max: v.pipe(v.number(), v.integer()),
+    }),
+    v.check((field) => field.min < field.max, "min must be below max"),
+  ),
+  v.strictObject({ ...FieldBase, kind: v.literal("link"), optional: v.optional(v.boolean()) }),
+  v.strictObject({
+    ...FieldBase,
+    kind: v.literal("action"),
+    max: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(60)),
+    optional: v.optional(v.boolean()),
+  }),
+  v.pipe(
+    v.strictObject({
+      ...FieldBase,
+      kind: v.literal("media"),
+      accept: v.picklist(["image", "video", "any"]),
+      optional: v.optional(v.boolean()),
+    }),
+    v.check(
+      (field) => field.name === "mediaId" || field.name.endsWith("MediaId"),
+      "A media field is named mediaId, or its name ends in MediaId",
+    ),
+  ),
+  v.strictObject({
+    ...FieldBase,
+    kind: v.literal("alt"),
+    max: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(200)),
+  }),
+  v.strictObject({ ...FieldBase, kind: v.literal("icon") }),
+]);
+export type TemplateField = v.InferOutput<typeof TemplateField>;
+
+export const TemplateBlockName = v.pipe(
+  v.string(),
+  v.regex(/^[a-z][a-z0-9-]{1,30}$/, "Use lowercase letters, digits and hyphens"),
+);
+export const TemplateBlockDeclaration = v.pipe(
+  v.strictObject({
+    name: TemplateBlockName,
+    label: ShortText(40),
+    description: ShortText(120),
+    category: v.picklist(["text", "media", "layout", "marketing", "data"]),
+    // One of the feature grid's icons (FEATURE_ICON_NAMES in @sitebuilder/blocks).
+    icon: v.pipe(v.string(), v.regex(/^[a-z][a-z0-9-]{0,39}$/)),
+    component: RelativeFile([".tsx"]),
+    fields: v.pipe(v.array(TemplateField), v.minLength(1), v.maxLength(20)),
+    // The props of a block just added.
+    defaults: v.record(FieldName, v.unknown()),
+    // The text field that names a block in the editor's outline.
+    summaryField: v.optional(FieldName),
+  }),
+  v.check(
+    (block) => new Set(block.fields.map((field) => field.name)).size === block.fields.length,
+    "Each field needs a name of its own",
+  ),
+  v.check(
+    (block) =>
+      block.summaryField === undefined ||
+      block.fields.some((field) => field.name === block.summaryField && field.kind === "text"),
+    "summaryField must name a text field",
+  ),
+);
+export type TemplateBlockDeclaration = v.InferOutput<typeof TemplateBlockDeclaration>;
+
+// A template block's type, "<template slug>:<name>".
+export const templateBlockType = (slug: string, name: string) => `${slug}:${name}`;
+
 export const TemplateManifestSchema = v.strictObject({
   slug: TemplateSlug,
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(60)),
@@ -90,12 +259,29 @@ export const TemplateManifestSchema = v.strictObject({
     v.maxLength(6),
   ),
   starter: v.optional(RelativeFile([".json"])),
-  // Phase 7B: layouts, styles, extra blocks and options. Accepted here so a 7B manifest parses;
-  // the CLI refuses a template that uses them until 7B (TPL-MANIFEST-005).
-  components: v.optional(v.unknown()),
-  styles: v.optional(v.unknown()),
-  blocks: v.optional(v.unknown()),
-  options: v.optional(v.unknown()),
+  // Without components the default template's layouts draw the site: a data-only template.
+  components: v.optional(TemplateComponents),
+  styles: v.optional(TemplateStyles),
+  blocks: v.optional(
+    v.pipe(
+      v.array(TemplateBlockDeclaration),
+      v.maxLength(20),
+      v.check(
+        (blocks) => new Set(blocks.map((block) => block.name)).size === blocks.length,
+        "Each block needs a name of its own",
+      ),
+    ),
+  ),
+  options: v.optional(
+    v.pipe(
+      v.array(TemplateOption),
+      v.maxLength(20),
+      v.check(
+        (options) => new Set(options.map((option) => option.key)).size === options.length,
+        "Each option needs a key of its own",
+      ),
+    ),
+  ),
 });
 export type TemplateManifest = v.InferOutput<typeof TemplateManifestSchema>;
 

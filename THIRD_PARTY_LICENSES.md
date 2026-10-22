@@ -12,8 +12,8 @@ machine; their licences are checked all the same.
 
 | Licence | Packages | Shipped | Review |
 |---|---|---|---|
-| MIT | 357 | 207 | Permissive, GPL-compatible. |
-| Apache-2.0 | 21 | 14 | Compatible with GPL-3.0 only, which Sitebuilder's “or later” allows: a build that includes Apache-2.0 code is distributed under GPL-3.0. |
+| MIT | 357 | 212 | Permissive, GPL-compatible. |
+| Apache-2.0 | 22 | 15 | Compatible with GPL-3.0 only, which Sitebuilder's “or later” allows: a build that includes Apache-2.0 code is distributed under GPL-3.0. |
 | ISC | 13 | 3 | Permissive, GPL-compatible. |
 | BSD-2-Clause | 4 | 4 | Permissive, GPL-compatible. |
 | BSD-3-Clause | 3 | 1 | Permissive, GPL-compatible. |
@@ -65,7 +65,7 @@ Licences that only appear in platform packages:
 | callsites | 3.1.0 | MIT | no |
 | caniuse-lite | 1.0.30001816 | CC-BY-4.0 | yes |
 | chai | 6.3.0 | MIT | no |
-| chokidar | 5.0.0 | MIT | no |
+| chokidar | 5.0.0 | MIT | yes |
 | cjs-module-lexer | 2.3.0 | MIT | yes |
 | client-only | 0.0.1 | MIT | yes |
 | cmdk | 1.1.1 | MIT | yes |
@@ -109,7 +109,7 @@ Licences that only appear in platform packages:
 | es-module-lexer | 2.3.2 | MIT | no |
 | es-module-lexer | 3.0.4 | MIT | yes |
 | esbuild | 0.25.12 | MIT | no |
-| esbuild | 0.28.2 | MIT | no |
+| esbuild | 0.28.2 | MIT | yes |
 | escape-string-regexp | 4.0.0 | MIT | yes |
 | estree-walker | 3.0.3 | MIT | no |
 | expect-type | 1.4.0 | Apache-2.0 | no |
@@ -145,7 +145,7 @@ Licences that only appear in platform packages:
 | ignore | 7.0.13 | MIT | no |
 | image-size | 2.0.4 | MIT | yes |
 | @img/colour | 1.1.0 | MIT | no |
-| immutable | 5.1.9 | MIT | no |
+| immutable | 5.1.9 | MIT | yes |
 | import-fresh | 3.3.1 | MIT | no |
 | import-in-the-middle | 3.5.2 | Apache-2.0 | yes |
 | import-meta-resolve | 4.2.0 | MIT | no |
@@ -333,7 +333,7 @@ Licences that only appear in platform packages:
 | react-resizable-panels | 4.14.7 | MIT | yes |
 | react-style-singleton | 2.2.3 | MIT | yes |
 | react | 19.3.1 | MIT | yes |
-| readdirp | 5.1.1 | MIT | no |
+| readdirp | 5.1.1 | MIT | yes |
 | require-from-string | 2.0.2 | MIT | no |
 | require-in-the-middle | 8.0.1 | MIT | yes |
 | resolve-from | 4.0.0 | MIT | no |
@@ -345,7 +345,7 @@ Licences that only appear in platform packages:
 | rou3 | 0.9.2 | MIT | yes |
 | run-parallel | 1.2.0 | MIT | no |
 | sanitize-html | 2.18.1 | MIT | yes |
-| sass | 1.105.2 | MIT | no |
+| sass | 1.105.2 | MIT | yes |
 | scheduler | 0.28.0 | MIT | yes |
 | semver | 7.8.5 | ISC | no |
 | server-only | 0.0.1 | MIT | yes |
@@ -422,6 +422,7 @@ Licences that only appear in platform packages:
 | @types/react | 19.3.0 | MIT | yes |
 | @types/sanitize-html | 2.16.2 | MIT | no |
 | @types/use-sync-external-store | 0.0.6 | MIT | yes |
+| typescript | 6.0.3 | Apache-2.0 | yes |
 | typescript | 7.0.2 | Apache-2.0 | no |
 | undici-types | 8.9.0 | MIT | no |
 | unicorn-magic | 0.4.1 | MIT | no |

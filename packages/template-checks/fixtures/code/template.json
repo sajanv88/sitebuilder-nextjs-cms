@@ -1,0 +1,36 @@
+{
+  "slug": "code",
+  "name": "Code",
+  "version": "1.0.0",
+  "description": "A template with layouts, a stylesheet, an option and a block that passes every rule.",
+  "licence": "GPL-2.0-or-later",
+  "requires": { "sitebuilder": "^0.1.0", "nuvui": "^0.8.0" },
+  "screenshots": [{ "file": "screenshots/home.png", "label": "The home page" }],
+  "components": { "site": "components/Site.tsx", "page": "components/Page.tsx" },
+  "styles": { "entry": "styles/main.scss" },
+  "options": [
+    { "key": "stickyHeader", "label": "Sticky header", "type": "boolean", "default": true }
+  ],
+  "blocks": [
+    {
+      "name": "testimonial",
+      "label": "Testimonial",
+      "description": "A quote with a photo of who said it.",
+      "category": "marketing",
+      "icon": "star",
+      "component": "components/blocks/Testimonial.tsx",
+      "fields": [
+        { "name": "quote", "label": "Quote", "kind": "text", "max": 300 },
+        {
+          "name": "photoMediaId",
+          "label": "Photo",
+          "kind": "media",
+          "accept": "image",
+          "optional": true
+        }
+      ],
+      "defaults": { "quote": "Words a customer said." },
+      "summaryField": "quote"
+    }
+  ]
+}

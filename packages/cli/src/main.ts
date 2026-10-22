@@ -1,11 +1,19 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
+import { readFile } from "node:fs/promises";
 import { basename, join, relative, resolve } from "node:path";
+import {
+  FEATURE_ICON_NAMES,
+  registerTemplateBlocks,
+  templateBlockDefinition,
+  templateBlockSchema,
+} from "@sitebuilder/blocks";
 import { validateContent } from "@sitebuilder/blocks/server";
-import { SITEBUILDER_VERSION } from "@sitebuilder/schema";
+import { SITEBUILDER_VERSION, type TemplateManifest } from "@sitebuilder/schema";
 import { type CheckContext, type Finding, runChecks } from "@sitebuilder/template-checks";
-import { writeGenerated } from "./generate";
+import * as v from "valibot";
+import { GENERATED_DIR, writeGenerated } from "./generate";
 import { folderHash } from "./hash";
 import {
   checkInstalled,
@@ -48,11 +56,38 @@ const posixPath = (path: string) => path.replaceAll("\\", "/");
 
 const errorsIn = (findings: readonly Finding[]) => findings.filter((f) => f.severity === "error");
 
+// The @nuvui packages a template may import: those the templates package depends on, which are
+// the ones whose stylesheet the site loads.
+async function nuvuiPackages(root: string): Promise<string[]> {
+  const manifest = JSON.parse(await readFile(join(root, TEMPLATES_DIR, "package.json"), "utf8"));
+  return Object.keys(manifest.dependencies ?? {}).filter((name) => name.startsWith("@nuvui/"));
+}
+
+// The template's own blocks, as each zone registers them (decisions #112).
+const templateBlocks = (manifest: TemplateManifest) =>
+  (manifest.blocks ?? []).map((block) =>
+    templateBlockDefinition(manifest.slug, manifest.name, block),
+  );
+
 async function context(root: string): Promise<CheckContext> {
   return {
     sitebuilderVersion: SITEBUILDER_VERSION,
     nuvuiVersion: await nuvuiVersion(root),
-    validateContent,
+    // Starter content may use the template's own blocks, and no other template's.
+    validateContent: (input, manifest) => {
+      registerTemplateBlocks(templateBlocks(manifest));
+      return validateContent(input);
+    },
+    blockIcons: FEATURE_ICON_NAMES,
+    resolveDir: join(root, TEMPLATES_DIR),
+    nuvuiPackages: await nuvuiPackages(root),
+    blockDefaults: (manifest, name) => {
+      const block = manifest.blocks?.find((candidate) => candidate.name === name);
+      if (!block) return { ok: false, message: "not declared" };
+      const parsed = v.safeParse(templateBlockSchema(block), block.defaults);
+      if (parsed.success) return { ok: true, props: parsed.output };
+      return { ok: false, message: parsed.issues.map((issue) => issue.message).join("; ") };
+    },
   };
 }
 
@@ -76,7 +111,8 @@ class FindingsError extends CliError {
 
 async function generate(root: string, out: Output): Promise<void> {
   const report = await installedOrFail(root);
-  const file = await writeGenerated(root, report.checked);
+  await writeGenerated(root, report.checked);
+  const file = join(root, TEMPLATES_DIR, GENERATED_DIR);
   const slugs = report.checked.map((c) => c.entry.slug);
   print(
     out,

@@ -3,9 +3,11 @@
 
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
+import { BlockType } from "./blocks";
 import { MenuSchema } from "./menu";
 import { defaultSettings, SettingsSchemas, TemplateSettings, TemplateSlug } from "./settings";
 import {
+  optionValues,
   resolveRefs,
   type StarterContent,
   StarterContentSchema,
@@ -13,6 +15,7 @@ import {
   starterIssues,
   starterMenu,
   TemplateManifestSchema,
+  type TemplateOption,
   withBlockIds,
 } from "./templates";
 
@@ -31,6 +34,96 @@ function counter(prefix = "block") {
   let n = 0;
   return () => `${prefix}${String(++n).padStart(4, "0")}`;
 }
+
+// A template with code (phase 7B): layouts, a stylesheet, an option and a block.
+const withCode = {
+  ...manifest,
+  components: { site: "components/Site.tsx", page: "components/Page.tsx" },
+  styles: { entry: "styles/main.scss" },
+  options: [
+    { key: "stickyHeader", label: "Sticky header", type: "boolean", default: true },
+    {
+      key: "menuPosition",
+      label: "Menu",
+      type: "choice",
+      choices: [
+        { value: "start", label: "Beside the name" },
+        { value: "end", label: "At the end" },
+      ],
+      default: "end",
+    },
+  ],
+  blocks: [
+    {
+      name: "testimonial",
+      label: "Testimonial",
+      description: "A quote with a photo of who said it.",
+      category: "marketing",
+      icon: "star",
+      component: "components/blocks/Testimonial.tsx",
+      fields: [
+        { name: "quote", label: "Quote", kind: "text", max: 300, multiline: true },
+        { name: "photoMediaId", label: "Photo", kind: "media", accept: "image", optional: true },
+      ],
+      defaults: { quote: "Words a customer said." },
+      summaryField: "quote",
+    },
+  ],
+};
+
+describe("a template with code", () => {
+  test("parses: layouts, a stylesheet, options and a block", () => {
+    expect(v.is(TemplateManifestSchema, withCode)).toBe(true);
+  });
+
+  const block = withCode.blocks[0] as (typeof withCode.blocks)[number];
+  test.each([
+    ["a layout that isn't .tsx", { components: { site: "Site.js", page: "Page.tsx" } }],
+    ["no page layout", { components: { site: "components/Site.tsx" } }],
+    ["a stylesheet engine it doesn't compile", { styles: { entry: "styles/main.less" } }],
+    [
+      "a choice whose default isn't a choice",
+      { options: [{ ...withCode.options[1], default: "middle" }] },
+    ],
+    ["two options with one key", { options: [withCode.options[0], withCode.options[0]] }],
+    [
+      "a media field not named as media",
+      {
+        blocks: [
+          { ...block, fields: [{ name: "photo", label: "Photo", kind: "media", accept: "image" }] },
+        ],
+      },
+    ],
+    [
+      "a field kind templates can't use",
+      { blocks: [{ ...block, fields: [{ name: "body", label: "Body", kind: "richtext" }] }] },
+    ],
+    ["a summary that isn't a text field", { blocks: [{ ...block, summaryField: "photoMediaId" }] }],
+    ["two blocks with one name", { blocks: [block, block] }],
+  ])("refuses %s", (_, change) => {
+    expect(v.is(TemplateManifestSchema, { ...withCode, ...change })).toBe(false);
+  });
+
+  test("a template block's type is namespaced by the template", () => {
+    expect(v.is(BlockType, "studio:testimonial")).toBe(true);
+    expect(v.is(BlockType, "hero")).toBe(true);
+    expect(v.is(BlockType, "studio:")).toBe(false);
+    expect(v.is(BlockType, "a:b:c")).toBe(false);
+  });
+
+  test("option values: what's saved while valid, the default otherwise, unknown keys dropped", () => {
+    const options = withCode.options as TemplateOption[];
+    expect(optionValues(options, {})).toEqual({ stickyHeader: true, menuPosition: "end" });
+    expect(optionValues(options, { stickyHeader: false, menuPosition: "start", gone: 1 })).toEqual({
+      stickyHeader: false,
+      menuPosition: "start",
+    });
+    expect(optionValues(options, { stickyHeader: "yes", menuPosition: "middle" })).toEqual({
+      stickyHeader: true,
+      menuPosition: "end",
+    });
+  });
+});
 
 describe("TemplateManifestSchema", () => {
   test("accepts a data-only manifest", () => {

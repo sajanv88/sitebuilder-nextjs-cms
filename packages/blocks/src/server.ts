@@ -61,5 +61,5 @@ export function sanitizeRichText(html: string): string {
 // The one check content passes before it's stored: shape, limits, types, props, containers,
 // and cleaned rich text (validateBlockList with this registry's rules).
 export function validateContent(input: unknown): BlockListResult {
-  return validateBlockList(input, blockRules, { sanitizeHtml: sanitizeRichText });
+  return validateBlockList(input, blockRules(), { sanitizeHtml: sanitizeRichText });
 }

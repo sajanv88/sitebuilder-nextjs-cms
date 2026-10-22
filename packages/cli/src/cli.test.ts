@@ -1,23 +1,34 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { BlockListResult } from "@sitebuilder/schema";
 import type { CheckContext } from "@sitebuilder/template-checks";
 import { afterEach, describe, expect, test } from "vitest";
-import { adminModule } from "./generate";
+import { adminModule, writeGenerated } from "./generate";
 import { folderHash } from "./hash";
 import { checkInstalled } from "./installed";
 import { type LockEntry, readLockfile, writeLockfile } from "./lockfile";
 
-const GOOD = join(import.meta.dirname, "..", "..", "template-checks", "fixtures", "good");
+const FIXTURES = join(import.meta.dirname, "..", "..", "template-checks", "fixtures");
+const GOOD = join(FIXTURES, "good");
+const DEFAULT = join(import.meta.dirname, "..", "..", "..", "templates", "default");
 
 const context: CheckContext = {
   sitebuilderVersion: "0.1.0",
   nuvuiVersion: "0.8.0",
   validateContent: (input) => ({ ok: true, value: input }) as BlockListResult,
+  resolveDir: join(import.meta.dirname, "..", "..", "..", "templates"),
+  // As templates/package.json allows.
+  nuvuiPackages: [
+    "@nuvui/backgrounds",
+    "@nuvui/icons",
+    "@nuvui/media",
+    "@nuvui/react",
+    "@nuvui/table",
+  ],
 };
 
 const dirs: string[] = [];
@@ -148,5 +159,80 @@ describe("adminModule", () => {
     expect(source).toContain('"slug":"default"');
     expect(source).toContain('screenshots: [{ image: shot0, label: "The home page" }]');
     expect(source.match(/^import /gm)).toHaveLength(2);
+  });
+});
+
+describe("writeGenerated", () => {
+  // The real default template, and the code fixture beside it with its stylesheet and block.
+  async function withCode(): Promise<string> {
+    const root = await temp();
+    const entries: LockEntry[] = [];
+    for (const [slug, from] of [
+      ["default", DEFAULT],
+      ["code", join(FIXTURES, "code")],
+    ] as const) {
+      const dir = join(root, "templates", slug);
+      await cp(from, dir, { recursive: true });
+      entries.push({ slug, version: "1.0.0", source: "bundled", sha256: await folderHash(dir) });
+    }
+    await writeLockfile(root, { lockfileVersion: 1, templates: entries });
+    return root;
+  }
+
+  test("writes loaders, and each stylesheet under a hash of what's served", async () => {
+    const root = await withCode();
+    const report = await checkInstalled(root, context, { allowLocal: false });
+    expect(report.findings.filter((f) => f.severity === "error")).toEqual([]);
+    await writeGenerated(root, report.checked);
+
+    const generated = join(root, "templates", "generated");
+    const site = await readFile(join(generated, "site.ts"), "utf8");
+    expect(site).toContain('notFound: () => import("../default/components/NotFound")');
+    expect(site).toContain('site: () => import("../code/components/Site")');
+    expect(site).not.toContain('archive: () => import("../code/');
+    expect(site).toContain('"code:testimonial": () =>');
+    expect(site).toContain('import type { TemplateBlock } from "@sitebuilder/template-sdk";');
+    expect(site).not.toMatch(/^import (?!type)/m);
+    // Both zones register the blocks from data: the code template's, and no layout code.
+    const blocks = await readFile(join(generated, "blocks.ts"), "utf8");
+    expect(blocks).toContain('{ slug: "code", name: "Code", blocks: [{"name":"testimonial"');
+    expect(blocks).not.toContain('slug: "default"');
+    expect(blocks).not.toMatch(/import\(|^import (?!type)/m);
+
+    const href =
+      /"code": \{\s+stylesheet: "(\/_templates\/code\/[0-9a-f]{12}\/styles\/main\.css)"/.exec(
+        site,
+      )?.[1];
+    expect(href).toBeDefined();
+    const served = join(generated, "public", ...(href ?? "").split("/").filter(Boolean));
+    expect(await readFile(served, "utf8")).toContain(".code-site");
+
+    // A changed stylesheet gets a new folder, and the old one goes.
+    const [code] = report.checked.filter((c) => c.entry.slug === "code");
+    if (!code?.styles) throw new Error("fixture");
+    await writeGenerated(root, [
+      ...report.checked.filter((c) => c !== code),
+      {
+        ...code,
+        styles: {
+          ...code.styles,
+          css: `${code.styles.css}
+.code-site { gap: 0; }`,
+        },
+      },
+    ]);
+    const folders = await readdir(join(generated, "public", "_templates", "code"));
+    expect(folders).toHaveLength(1);
+    expect(href).not.toContain(folders[0]);
+    // Two whole templates checked, rendered included: slower than the default limit allows when
+    // every package's tests run at once.
+  }, 30_000);
+
+  test("fails when the default template lacks a layout the others fall back to", async () => {
+    const { root } = await repo();
+    const report = await checkInstalled(root, context, { allowLocal: false });
+    await expect(writeGenerated(root, report.checked)).rejects.toThrow(
+      "The default template has no site, page, post, archive, notFound layout",
+    );
   });
 });

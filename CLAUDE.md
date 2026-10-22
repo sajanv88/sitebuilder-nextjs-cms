@@ -63,7 +63,8 @@ apps/admin/              admin zone: /admin, /setup, /api/auth, Better Auth, can
 packages/schema/         valibot schemas: blocks, menus, settings, accounts, env (valibot only)
 packages/db/             Drizzle schema, migrations, queries, bundled migrate/seed/create-admin
 packages/blocks/         the block registry and renderer, drawn by both zones
-packages/template-checks/  the rules a template must pass (data only until phase 7B)
+packages/template-checks/  the rules a template must pass: data, code (TypeScript 6's API), styles, a server render
+packages/template-sdk/     what a template's layouts and blocks receive: types and defineBlock
 packages/cli/            the `sitebuilder` binary: generate, template verify/list/lock
 templates/               bundled templates and templates.lock.json; its build runs `sitebuilder generate`
 packages/tsconfig/       shared tsconfig (base.json)

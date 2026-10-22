@@ -18,6 +18,7 @@
     "@nuvui/react": "catalog:",
     "@nuvui/table": "catalog:",
     "@sitebuilder/schema": "workspace:*",
+    "@sitebuilder/template-sdk": "workspace:*",
     "@tanstack/react-table": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

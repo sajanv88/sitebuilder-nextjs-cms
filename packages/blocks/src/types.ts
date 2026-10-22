@@ -3,6 +3,7 @@
 
 import type { IconComponent } from "@nuvui/icons";
 import type { DateSettings, LinkTarget, MediaKind, MediaType } from "@sitebuilder/schema";
+import type { TemplateBlock } from "@sitebuilder/template-sdk";
 import type { ComponentType, ReactNode } from "react";
 import type * as v from "valibot";
 
@@ -54,6 +55,12 @@ export interface RenderContext {
   // Draws a picture. The site zone passes one built on next/image (decisions #70); without
   // it, a plain <img> with the stored width and height.
   image?: ((props: ImageProps) => ReactNode) | undefined;
+  // The component of a template block, by type ("<slug>:<name>"): passed by the site zone for
+  // the active template's blocks only (template-block.tsx). Without it, the block is a
+  // placeholder in the editor and nothing on the site.
+  templateBlock?:
+    | ((type: string) => TemplateBlock<Record<string, unknown>> | undefined)
+    | undefined;
 }
 
 export interface ImageProps {

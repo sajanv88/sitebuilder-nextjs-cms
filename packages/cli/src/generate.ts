@@ -1,15 +1,30 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { createHash } from "node:crypto";
+import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { dirname, join, posix } from "node:path";
+import { LAYOUT_NAMES, templateBlockType } from "@sitebuilder/schema";
 import { type Checked, TEMPLATES_DIR } from "./installed";
+import { CliError } from "./lockfile";
 
-// The build's output (A3 step 5, revised by R3). Phase 7A writes the admin's module only: the
-// manifests, the starter content and the screenshots, which the admin's bundler serves as
-// static images. No template code is imported, so the admin can't run any. 7B adds site.ts.
+// The build's output (A3 step 5, revised by R3), in templates/generated/:
+//   - admin.ts, for the admin zone: the manifests, the starter content and the screenshots,
+//     which the admin's bundler serves as static images. No template code is imported, so the
+//     admin can't run any.
+//   - site.ts, for the site zone: a loader for each template's layouts and blocks, and the
+//     address of its stylesheet.
+//   - blocks.ts, for both zones: the templates' block declarations, data only, which each
+//     registers so its validation, inserter and renderer know the types (decisions #112).
+//   - public/_templates/<slug>/<hash>/, each template's compiled stylesheet and the files it
+//     points at, at their paths in the template (so its relative url()s still work). The site
+//     zone copies the folder into its own public/ before it builds (decisions #110, #117). The
+//     hash is of what's served, so the files can be cached for good.
 
 export const GENERATED_DIR = "generated";
+export const PUBLIC_DIR = "public";
+// Where the site serves them from; src/proxy.ts leaves it alone.
+export const TEMPLATES_URL = "/_templates";
 
 export function adminModule(templates: readonly Checked[]): string {
   const imports: string[] = [];
@@ -43,10 +58,148 @@ export function adminModule(templates: readonly Checked[]): string {
   ].join("\n");
 }
 
-export async function writeGenerated(root: string, templates: readonly Checked[]): Promise<string> {
+// A template's stylesheet as served: the compiled CSS beside its entry file, and the files it
+// points at, all under a folder named by a hash of their contents.
+export interface ServedStyles {
+  slug: string;
+  dir: string;
+  hash: string;
+  // The address of the stylesheet.
+  href: string;
+  css: string;
+  // The stylesheet's path in the template, with .css for its extension.
+  file: string;
+  assets: readonly string[];
+}
+
+export async function servedStyles(checked: Checked): Promise<ServedStyles | null> {
+  const entry = checked.manifest?.styles?.entry;
+  if (!entry || !checked.styles) return null;
+  const hash = createHash("sha256").update(checked.styles.css);
+  for (const asset of checked.styles.assets) {
+    hash.update(`\0${asset}\0`).update(await readFile(join(checked.dir, asset)));
+  }
+  const short = hash.digest("hex").slice(0, 12);
+  const file = entry.replace(/\.s?css$/, ".css");
+  const slug = checked.entry.slug;
+  return {
+    slug,
+    dir: checked.dir,
+    hash: short,
+    href: posix.join(TEMPLATES_URL, slug, short, file),
+    css: checked.styles.css,
+    file,
+    assets: checked.styles.assets,
+  };
+}
+
+// Import paths in generated/site.ts: from templates/generated to the component, without .tsx.
+const componentPath = (slug: string, file: string) =>
+  JSON.stringify(`../${slug}/${file.replace(/\.tsx$/, "")}`);
+
+export function siteModule(
+  templates: readonly Checked[],
+  styles: ReadonlyMap<string, ServedStyles>,
+): string {
+  const items = templates.map(({ entry, manifest }) => {
+    if (!manifest) throw new Error(`${entry.slug} has no manifest`);
+    const layouts = LAYOUT_NAMES.flatMap((name) => {
+      const file = manifest.components?.[name];
+      return file
+        ? [
+            `      ${name}: () => import(${componentPath(entry.slug, file)}).then((m) => m.default),`,
+          ]
+        : [];
+    });
+    // A block's props have passed the schema built from its fields, so its component gets what
+    // it was typed for.
+    const blocks = (manifest.blocks ?? []).map(
+      (block) =>
+        `      ${JSON.stringify(templateBlockType(manifest.slug, block.name))}: () =>\n` +
+        `        import(${componentPath(entry.slug, block.component)}).then(\n` +
+        "          (m) => m.default as TemplateBlock<Record<string, unknown>>,\n" +
+        "        ),",
+    );
+    return [
+      `  ${JSON.stringify(entry.slug)}: {`,
+      `    stylesheet: ${JSON.stringify(styles.get(entry.slug)?.href ?? null)},`,
+      `    options: ${JSON.stringify(manifest.options ?? [])},`,
+      "    layouts: {",
+      ...layouts,
+      "    },",
+      "    blocks: {",
+      ...blocks,
+      "    },",
+      "  },",
+    ].join("\n");
+  });
+  return [
+    "// Generated by `pnpm sitebuilder generate` from templates/templates.lock.json. Don't edit it: it's",
+    "// rewritten on every build.",
+    "",
+    ...(templates.some((checked) => (checked.manifest?.blocks ?? []).length > 0)
+      ? ['import type { TemplateBlock } from "@sitebuilder/template-sdk";']
+      : []),
+    'import type { GeneratedSiteTemplate } from "../src/types";',
+    "",
+    "export const templates: Readonly<Record<string, GeneratedSiteTemplate>> = {",
+    ...items,
+    "};",
+    "",
+  ].join("\n");
+}
+
+export function blocksModule(templates: readonly Checked[]): string {
+  const items = templates.flatMap(({ manifest }) =>
+    manifest?.blocks?.length
+      ? [
+          `  { slug: ${JSON.stringify(manifest.slug)}, name: ${JSON.stringify(manifest.name)}, blocks: ${JSON.stringify(manifest.blocks)} },`,
+        ]
+      : [],
+  );
+  return [
+    "// Generated by `pnpm sitebuilder generate` from templates/templates.lock.json. Don't edit it: it's",
+    "// rewritten on every build.",
+    "",
+    'import type { InstalledTemplateBlocks } from "../src/types";',
+    "",
+    "export const templateBlocks: readonly InstalledTemplateBlocks[] = [",
+    ...items,
+    "];",
+    "",
+  ].join("\n");
+}
+
+export async function writeGenerated(root: string, templates: readonly Checked[]): Promise<void> {
+  // Every layout the others fall back to.
+  const fallback = templates.find((checked) => checked.entry.slug === "default")?.manifest;
+  const missing = LAYOUT_NAMES.filter((name) => !fallback?.components?.[name]);
+  if (missing.length > 0) {
+    throw new CliError(`The default template has no ${missing.join(", ")} layout`, 1);
+  }
+
   const dir = join(root, TEMPLATES_DIR, GENERATED_DIR);
   await mkdir(dir, { recursive: true });
-  const file = join(dir, "admin.ts");
-  await writeFile(file, adminModule(templates));
-  return file;
+
+  const served = new Map<string, ServedStyles>();
+  for (const checked of templates) {
+    const styles = await servedStyles(checked);
+    if (styles) served.set(styles.slug, styles);
+  }
+  // Only this build's files: an old hash is never served again.
+  const out = join(dir, PUBLIC_DIR, TEMPLATES_URL.slice(1));
+  await rm(out, { recursive: true, force: true });
+  for (const styles of served.values()) {
+    const base = join(out, styles.slug, styles.hash);
+    await mkdir(dirname(join(base, styles.file)), { recursive: true });
+    await writeFile(join(base, styles.file), styles.css);
+    for (const asset of styles.assets) {
+      await mkdir(dirname(join(base, asset)), { recursive: true });
+      await copyFile(join(styles.dir, asset), join(base, asset));
+    }
+  }
+
+  await writeFile(join(dir, "site.ts"), siteModule(templates, served));
+  await writeFile(join(dir, "blocks.ts"), blocksModule(templates));
+  await writeFile(join(dir, "admin.ts"), adminModule(templates));
 }

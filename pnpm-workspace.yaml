@@ -39,6 +39,8 @@ catalog:
   stylelint: 17.16.0
   stylelint-config-standard-scss: 17.0.0
   typescript: 7.0.2
+  # TypeScript 7 has no JavaScript compiler API; template-checks reads template code with 6's (decisions #113).
+  typescript6: npm:typescript@6.0.3
   valibot: 1.5.0
   "@electric-sql/pglite": 0.4.6
   "@types/pg": 8.23.1

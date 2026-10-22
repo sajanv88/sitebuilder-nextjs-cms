@@ -7,7 +7,11 @@ import { NodeId } from "./shared";
 // The structure of a block list (design §5.2). Props are checked per block type by
 // validateBlockList, with the rules the block registry provides.
 
-export const BlockType = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9-]{1,39}$/));
+// A built-in block's type ("hero"), or a template's own, "<template slug>:<name>" (design A9).
+export const BlockType = v.pipe(
+  v.string(),
+  v.regex(/^[a-z][a-z0-9-]{1,39}(?::[a-z][a-z0-9-]{1,30})?$/),
+);
 
 export interface Block {
   id: string;

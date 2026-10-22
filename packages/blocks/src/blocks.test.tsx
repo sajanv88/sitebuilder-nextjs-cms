@@ -12,7 +12,15 @@ vi.mock("server-only", () => ({}));
 const { collectEntryIds, collectMediaIds, cloneBlock, createBlock, headingBlockId } = await import(
   "./content"
 );
-const { allowedChildren, BLOCKS, blockRules, LEAF_TYPES } = await import("./registry");
+const {
+  allowedChildren,
+  BLOCKS,
+  blockRules,
+  getBlockDefinition,
+  leafTypes,
+  registerTemplateBlocks,
+} = await import("./registry");
+const { templateBlockDefinition } = await import("./template-block");
 const { BlockList } = await import("./render");
 const { sanitizeRichText, validateContent } = await import("./server");
 
@@ -137,10 +145,10 @@ describe("the registry", () => {
   });
 
   test("containers follow design §5.2", () => {
-    expect(blockRules.columns?.container).toEqual({ allow: ["column"], min: 2, max: 4 });
-    expect(blockRules.section?.container?.allow).toEqual(LEAF_TYPES);
-    expect(LEAF_TYPES).not.toContain("columns");
-    expect(LEAF_TYPES).not.toContain("section");
+    expect(blockRules().columns?.container).toEqual({ allow: ["column"], min: 2, max: 4 });
+    expect(blockRules().section?.container?.allow).toEqual(leafTypes());
+    expect(leafTypes()).not.toContain("columns");
+    expect(leafTypes()).not.toContain("section");
     expect(allowedChildren(null)).not.toContain("column");
     expect(allowedChildren("columns")).toEqual(["column"]);
   });
@@ -446,5 +454,99 @@ describe("alignment", () => {
     expect(natural).toContain("block-image--natural");
     const shaped = draw([block("image", { mediaId: IMAGE, ratio: "16:9", align: "center" })]);
     expect(shaped).not.toContain("block-image--natural");
+  });
+});
+
+describe("template blocks", () => {
+  // As template.json declares it (decisions #112).
+  const testimonial = templateBlockDefinition("studio", "Studio", {
+    name: "testimonial",
+    label: "Testimonial",
+    description: "A quote with a photo of who said it.",
+    category: "marketing",
+    icon: "star",
+    component: "components/blocks/Testimonial.tsx",
+    fields: [
+      { name: "quote", label: "Quote", kind: "text", max: 300 },
+      { name: "author", label: "Who said it", kind: "text", max: 80, optional: true },
+      { name: "photoMediaId", label: "Photo", kind: "media", accept: "image", optional: true },
+      {
+        name: "tone",
+        label: "Tone",
+        kind: "choice",
+        options: [
+          { value: "plain", label: "Plain" },
+          { value: "bold", label: "Bold" },
+        ],
+      },
+    ],
+    defaults: { quote: "Words a customer said.", tone: "plain" },
+    summaryField: "quote",
+  });
+
+  test("its type is namespaced, and its props are checked by the declared fields", () => {
+    expect(testimonial.type).toBe("studio:testimonial");
+    expect(v.parse(testimonial.props, testimonial.defaults())).toEqual({
+      quote: "Words a customer said.",
+      tone: "plain",
+    });
+    // A block stored before "tone" existed gets its default.
+    expect(v.parse(testimonial.props, { quote: "Hi" })).toEqual({ quote: "Hi", tone: "plain" });
+    expect(v.is(testimonial.props, { quote: "Hi", colour: "red" })).toBe(false);
+    expect(v.is(testimonial.props, { quote: "Hi", photoMediaId: "photo.jpg" })).toBe(false);
+    expect(v.is(testimonial.props, { quote: "Hi", tone: "loud" })).toBe(false);
+    expect(testimonial.summary({ quote: "Great work" })).toBe("Great work");
+  });
+
+  test("registered, content may use it, in a section too; unregistered, it's refused", () => {
+    const content = [
+      block("studio:testimonial", { quote: "Great work" }),
+      block("section", {}, [block("studio:testimonial", { quote: "Again" })]),
+    ];
+    expect(validateContent(content).ok).toBe(false);
+    registerTemplateBlocks([testimonial]);
+    try {
+      expect(validateContent(content).ok).toBe(true);
+      expect(getBlockDefinition("studio:testimonial")?.label).toBe("Testimonial");
+      expect(allowedChildren("section")).toContain("studio:testimonial");
+    } finally {
+      registerTemplateBlocks([]);
+    }
+    expect(getBlockDefinition("studio:testimonial")).toBeUndefined();
+  });
+
+  test("drawn by the component the site hands over; otherwise nothing, or a placeholder", () => {
+    registerTemplateBlocks([testimonial]);
+    try {
+      const blocks = [block("studio:testimonial", { quote: "Great work", photoMediaId: IMAGE })];
+      const Quote = ({
+        props,
+        media,
+      }: {
+        props: Record<string, unknown>;
+        media: (id: string) => { src: string; alt: string } | undefined;
+      }) => (
+        <blockquote cite={media(String(props.photoMediaId))?.src}>{String(props.quote)}</blockquote>
+      );
+      const drawn = renderToStaticMarkup(
+        <BlockList
+          blocks={blocks}
+          context={{
+            ...context,
+            templateBlock: (type) => (type === "studio:testimonial" ? (Quote as never) : undefined),
+          }}
+        />,
+      );
+      expect(drawn).toContain('<blockquote cite="/media/2026/10/x-photo.jpg">Great work');
+      // The site reads its picture with the page's, by the field's name.
+      expect(collectMediaIds(blocks)).toEqual([IMAGE]);
+      // No component: a template that isn't active, or the admin zone.
+      expect(renderToStaticMarkup(<BlockList blocks={blocks} context={context} />)).toBe("");
+      expect(
+        renderToStaticMarkup(<BlockList blocks={blocks} context={{ ...context, editing: true }} />),
+      ).toContain("drawn by the Studio template");
+    } finally {
+      registerTemplateBlocks([]);
+    }
   });
 });

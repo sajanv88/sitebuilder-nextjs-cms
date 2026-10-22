@@ -4,7 +4,12 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import type { StarterContent, TemplateManifest } from "@sitebuilder/schema";
-import { type CheckContext, type Finding, runChecks } from "@sitebuilder/template-checks";
+import {
+  type CheckContext,
+  type CompiledStyles,
+  type Finding,
+  runChecks,
+} from "@sitebuilder/template-checks";
 import { folderHash } from "./hash";
 import { CliError, LOCKFILE, type LockEntry, readLockfile } from "./lockfile";
 
@@ -21,6 +26,8 @@ export interface Checked {
   dir: string;
   manifest: TemplateManifest | null;
   starter: StarterContent | null;
+  // The stylesheet as it ships, when the template has one.
+  styles: CompiledStyles | null;
 }
 
 export interface TemplateFinding extends Finding {
@@ -129,7 +136,13 @@ export async function checkInstalled(
         `template.json says ${report.manifest.version}; ${LOCKFILE} says ${entry.version}`,
       );
     }
-    checked.push({ entry, dir, manifest: report.manifest, starter: report.starter });
+    checked.push({
+      entry,
+      dir,
+      manifest: report.manifest,
+      starter: report.starter,
+      styles: report.styles,
+    });
   }
   return { checked, findings };
 }

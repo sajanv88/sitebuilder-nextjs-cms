@@ -58,39 +58,58 @@ export const BLOCKS: readonly AnyBlockDefinition[] = [
   timeline,
 ];
 
-const BY_TYPE = new Map(BLOCKS.map((definition) => [definition.type, definition]));
+// Every block type in use: the built-in ones, and the installed templates' (design A9), which
+// each zone registers once at start-up, before it draws or checks any content.
+let registered: readonly AnyBlockDefinition[] = BLOCKS;
+let byType = new Map<string, AnyBlockDefinition>();
+let leaves: readonly string[] = [];
+let rules: BlockRules = {};
 
-export function getBlockDefinition(type: string): AnyBlockDefinition | undefined {
-  return BY_TYPE.get(type);
+function index(definitions: readonly AnyBlockDefinition[]): void {
+  registered = definitions;
+  byType = new Map(definitions.map((definition) => [definition.type, definition]));
+  // Every block type that isn't a container: what a section or a column may hold (design §5.2).
+  leaves = definitions.filter((definition) => !definition.container).map((d) => d.type);
+  // The rules validateBlockList checks content against.
+  rules = Object.fromEntries(
+    definitions.map((definition): [string, BlockRule] => {
+      const spec = definition.container;
+      if (!spec) return [definition.type, { props: definition.props }];
+      return [
+        definition.type,
+        {
+          props: definition.props,
+          container: {
+            allow: spec.allow === "leaves" ? [...leaves] : [...spec.allow],
+            ...(spec.min !== undefined ? { min: spec.min } : {}),
+            ...(spec.max !== undefined ? { max: spec.max } : {}),
+          },
+        },
+      ];
+    }),
+  );
+}
+index(BLOCKS);
+
+// The installed templates' blocks, "<slug>:<name>" (template-block.tsx). Registering again
+// replaces the last set: what's installed is fixed for a build.
+export function registerTemplateBlocks(definitions: readonly AnyBlockDefinition[]): void {
+  index([...BLOCKS, ...definitions.filter((definition) => definition.type.includes(":"))]);
 }
 
-// Every block type that isn't a container: what a section or a column may hold (design §5.2).
-export const LEAF_TYPES: readonly string[] = BLOCKS.filter(
-  (definition) => !definition.container,
-).map((definition) => definition.type);
+export const allBlocks = (): readonly AnyBlockDefinition[] => registered;
 
-// The rules validateBlockList checks content against.
-export const blockRules: BlockRules = Object.fromEntries(
-  BLOCKS.map((definition): [string, BlockRule] => {
-    const spec = definition.container;
-    if (!spec) return [definition.type, { props: definition.props }];
-    return [
-      definition.type,
-      {
-        props: definition.props,
-        container: {
-          allow: spec.allow === "leaves" ? [...LEAF_TYPES] : [...spec.allow],
-          ...(spec.min !== undefined ? { min: spec.min } : {}),
-          ...(spec.max !== undefined ? { max: spec.max } : {}),
-        },
-      },
-    ];
-  }),
-);
+export function getBlockDefinition(type: string): AnyBlockDefinition | undefined {
+  return byType.get(type);
+}
+
+export const leafTypes = (): readonly string[] => leaves;
+
+export const blockRules = (): BlockRules => rules;
 
 // Which types may go where: at the top of the page, anything but a lone column; inside a
 // container, what its rule allows.
 export function allowedChildren(parentType: string | null): readonly string[] {
-  if (parentType === null) return BLOCKS.filter((d) => d.type !== "column").map((d) => d.type);
-  return blockRules[parentType]?.container?.allow ?? [];
+  if (parentType === null) return registered.filter((d) => d.type !== "column").map((d) => d.type);
+  return rules[parentType]?.container?.allow ?? [];
 }

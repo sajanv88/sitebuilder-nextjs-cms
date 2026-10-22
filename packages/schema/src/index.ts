@@ -138,6 +138,9 @@ export {
 } from "./settings";
 export { LinkTarget, NodeId, Url, Uuid } from "./shared";
 export {
+  LAYOUT_NAMES,
+  type LayoutName,
+  optionValues,
   resolveRefs,
   SITEBUILDER_VERSION,
   type StarterBlock,
@@ -151,8 +154,16 @@ export {
   starterIssues,
   starterMenu,
   TEMPLATE_LICENCES,
+  TemplateBlockDeclaration,
+  TemplateBlockName,
+  TemplateComponents,
+  TemplateField,
   type TemplateManifest,
   TemplateManifestSchema,
+  TemplateOption,
+  type TemplateOptionValues,
+  TemplateStyles,
+  templateBlockType,
   withBlockIds,
 } from "./templates";
 export {

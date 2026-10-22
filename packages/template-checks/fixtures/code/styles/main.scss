@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+.code-site {
+  display: grid;
+}
+
+.code-site--sticky .code-site__header {
+  position: sticky;
+  inset-block-start: 0;
+}
