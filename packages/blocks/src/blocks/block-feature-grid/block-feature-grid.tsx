@@ -4,6 +4,7 @@
 import { GridIcon } from "@nuvui/icons";
 import { Card, CardDescription, CardHeader, CardTitle } from "@nuvui/react";
 import * as v from "valibot";
+import { CardRow, layoutField, layoutProp } from "../../card-row/card-row";
 import { FEATURE_ICONS, FeatureIcon } from "../../icons";
 import { optionalText, text } from "../../shared";
 import type { BlockDefinition } from "../../types";
@@ -18,6 +19,7 @@ const Item = v.strictObject({
 const Props = v.strictObject({
   heading: optionalText(120),
   items: v.pipe(v.array(Item), v.minLength(1, "Add at least one feature"), v.maxLength(12)),
+  layout: layoutProp,
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -34,6 +36,7 @@ export const featureGrid: BlockDefinition<Props> = {
   defaults: () => ({
     heading: "What you get",
     items: [newItem(), newItem(), newItem()] as Props["items"],
+    layout: "grid",
   }),
   fields: [
     { kind: "text", name: "heading", label: "Heading", max: 120, optional: true },
@@ -52,18 +55,23 @@ export const featureGrid: BlockDefinition<Props> = {
         { kind: "text", name: "text", label: "Sentence", max: 240, multiline: true },
       ],
     },
+    layoutField,
   ],
   summary: (props) => props.heading ?? `${props.items.length} features`,
   Render: ({ props }) => (
     <div className="block-feature-grid">
       {props.heading ? <h2 className="block-feature-grid__title">{props.heading}</h2> : null}
-      <ul className="block-feature-grid__list">
-        {props.items.map((item, index) => {
+      <CardRow
+        layout={props.layout}
+        label={props.heading ?? "Features"}
+        className="block-feature-grid__list"
+        cards={props.items.map((item, index) => {
           const Icon = FEATURE_ICONS[item.icon];
-          return (
-            // Items have no ids; their order is their identity, and they're never reordered here.
-            // biome-ignore lint/suspicious/noArrayIndexKey: the list is drawn whole from stored props.
-            <li key={index}>
+          return {
+            // Items have no ids; their order is their identity, and the list is drawn whole
+            // from stored props.
+            key: String(index),
+            card: (
               <Card className="block-feature-grid__card">
                 <CardHeader>
                   <span className="block-feature-grid__icon">
@@ -75,10 +83,10 @@ export const featureGrid: BlockDefinition<Props> = {
                   <CardDescription>{item.text}</CardDescription>
                 </CardHeader>
               </Card>
-            </li>
-          );
+            ),
+          };
         })}
-      </ul>
+      />
     </div>
   ),
 };

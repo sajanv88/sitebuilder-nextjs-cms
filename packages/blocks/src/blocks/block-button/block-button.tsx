@@ -5,8 +5,9 @@ import { LinkIcon } from "@nuvui/icons";
 import { Button } from "@nuvui/react";
 import { LinkTarget } from "@sitebuilder/schema";
 import * as v from "valibot";
+import { alignClass, alignField, alignProp } from "../../align/align";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
-import { newTab, text } from "../../shared";
+import { cx, newTab, text } from "../../shared";
 import type { BlockDefinition } from "../../types";
 import "./block-button.scss";
 
@@ -16,6 +17,7 @@ const Props = v.strictObject({
   intent: v.optional(v.picklist(["primary", "secondary", "ghost"]), "primary"),
   size: v.optional(v.picklist(["sm", "md", "lg"]), "md"),
   openInNewTab: v.optional(v.boolean(), false),
+  align: alignProp,
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -36,6 +38,7 @@ export const button: BlockDefinition<Props> = {
     openInNewTab: false,
   }),
   fields: [
+    alignField(true),
     { kind: "text", name: "label", label: "Words on the button", max: 60 },
     { kind: "link", name: "href", label: "Goes to" },
     {
@@ -69,7 +72,7 @@ export const button: BlockDefinition<Props> = {
       ) : null;
     }
     return (
-      <div className="block-button">
+      <div className={cx("block-button", alignClass(props.align))}>
         <Button asChild intent={props.intent} size={props.size}>
           <a href={href} {...newTab(props.openInNewTab)}>
             {props.label}

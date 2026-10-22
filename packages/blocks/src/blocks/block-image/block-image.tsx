@@ -6,6 +6,7 @@ import { AspectRatio } from "@nuvui/react";
 import { LinkTarget } from "@sitebuilder/schema";
 import type { ReactNode } from "react";
 import * as v from "valibot";
+import { alignClass, alignField, alignProp } from "../../align/align";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
 import { cx, mediaId, optionalText } from "../../shared";
 import type { BlockDefinition, ImageProps, RenderContext } from "../../types";
@@ -21,6 +22,7 @@ const Props = v.strictObject({
   link: v.optional(LinkTarget),
   ratio: v.optional(v.picklist(["auto", "16:9", "4:3", "1:1"]), "auto"),
   fit: v.optional(v.picklist(["cover", "contain"]), "cover"),
+  align: alignProp,
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -54,6 +56,11 @@ export const image: BlockDefinition<Props> = {
   // No file yet: the editor asks for one, and a save refuses until it's chosen.
   defaults: () => ({ mediaId: "", ratio: "auto", fit: "cover" }),
   fields: [
+    {
+      ...alignField(true),
+      description:
+        "For a picture narrower than its column, as uploaded. With none pressed, it follows the section it's in.",
+    },
     { kind: "media", name: "mediaId", label: "Image", accept: "image" },
     {
       kind: "alt",
@@ -117,7 +124,15 @@ export const image: BlockDefinition<Props> = {
       );
     }
     return (
-      <figure className={cx("block-image", props.fit === "contain" && "block-image--contain")}>
+      <figure
+        className={cx(
+          "block-image",
+          props.fit === "contain" && "block-image--contain",
+          // Only a picture at its own size can sit anywhere but across the whole column.
+          props.ratio === "auto" && "block-image--natural",
+          alignClass(props.align),
+        )}
+      >
         {picture}
         {props.caption ? (
           <figcaption className="block-image__caption">{props.caption}</figcaption>

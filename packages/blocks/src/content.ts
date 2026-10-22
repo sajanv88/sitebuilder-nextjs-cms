@@ -47,10 +47,17 @@ function walkValues(value: unknown, visit: (key: string, value: unknown) => void
   }
 }
 
-const MEDIA_KEYS = new Set(["mediaId", "imageMediaId", "posterMediaId"]);
+const MEDIA_KEYS = new Set([
+  "mediaId",
+  "imageMediaId",
+  "posterMediaId",
+  "beforeMediaId",
+  "afterMediaId",
+]);
 
 // The media a list of blocks uses, by the same props the database's usage check looks at
-// (packages/db mediaUsage): mediaId, imageMediaId, posterMediaId and mediaIds.
+// (packages/db mediaUsage): mediaId, imageMediaId, posterMediaId, beforeMediaId,
+// afterMediaId and mediaIds.
 export function collectMediaIds(blocks: readonly Block[]): string[] {
   const ids = new Set<string>();
   walkValues(blocks, (key, value) => {

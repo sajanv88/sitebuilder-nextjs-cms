@@ -125,6 +125,8 @@ export type Field =
       // A line naming an item in the list, from its props.
       title: (item: Record<string, unknown>) => string;
     })
+  // Horizontal alignment (align/align.ts). `inherit`: none pressed means "as the section".
+  | (FieldBase & { kind: "align"; inherit: boolean })
   // A table's rows: one text cell per column, as many columns as the `columns` field holds.
   | (FieldBase & { kind: "rows"; columnsFrom: string; max: number; maxLength: number });
 

@@ -3,12 +3,15 @@
 
 import { TypeIcon } from "@nuvui/icons";
 import * as v from "valibot";
+import { alignClass, alignField, alignProp } from "../../align/align";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
+import { cx } from "../../shared";
 import type { BlockDefinition } from "../../types";
 import "./block-rich-text.scss";
 
 const Props = v.strictObject({
   html: v.pipe(v.string(), v.maxLength(100_000, "Use at most 100,000 characters")),
+  align: alignProp,
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -23,7 +26,7 @@ export const richText: BlockDefinition<Props> = {
   icon: TypeIcon,
   props: Props,
   defaults: () => ({ html: "" }),
-  fields: [{ kind: "richtext", name: "html", label: "Text" }],
+  fields: [alignField(true), { kind: "richtext", name: "html", label: "Text" }],
   summary: (props) =>
     props.html
       .replace(/<[^>]*>/g, " ")
@@ -38,7 +41,7 @@ export const richText: BlockDefinition<Props> = {
     }
     return (
       <div
-        className="block-rich-text"
+        className={cx("block-rich-text", alignClass(props.align))}
         // biome-ignore lint/security/noDangerouslySetInnerHtml: sanitised on the server with an allow-list before it was stored (packages/blocks/src/server.ts).
         dangerouslySetInnerHTML={{ __html: props.html }}
       />

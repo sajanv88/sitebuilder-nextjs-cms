@@ -12,6 +12,7 @@
   font-size: var(--text-base);
   line-height: var(--leading-relaxed);
   overflow-wrap: anywhere;
+  text-align: var(--block-align, start);
 }
 
 .block-rich-text :where(p, ul, ol, blockquote, pre, h2, h3, h4) {

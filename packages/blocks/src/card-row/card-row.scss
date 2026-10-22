@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "../styles/layout";
+
+// One card at a time in a narrow box, two from md and three from lg: the block's own width
+// (container queries), so the editor's phone preview shows one.
+.card-row {
+  --nuv-carousel-slide-size: 100%;
+
+  @include layout.width("md") {
+    --nuv-carousel-slide-size: 50%;
+  }
+
+  @include layout.width("lg") {
+    --nuv-carousel-slide-size: calc(100% / 3);
+  }
+
+  // Cards of a slide row are as tall as the tallest.
+  &__slide {
+    display: grid;
+  }
+
+  &__controls {
+    display: flex;
+    gap: calc(var(--spacing) * 3);
+    align-items: center;
+    justify-content: space-between;
+  }
+}

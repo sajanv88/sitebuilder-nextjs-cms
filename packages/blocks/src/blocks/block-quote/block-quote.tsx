@@ -3,13 +3,15 @@
 
 import { QuoteIcon } from "@nuvui/icons";
 import * as v from "valibot";
-import { optionalText, text } from "../../shared";
+import { alignClass, alignField, alignProp } from "../../align/align";
+import { cx, optionalText, text } from "../../shared";
 import type { BlockDefinition } from "../../types";
 import "./block-quote.scss";
 
 const Props = v.strictObject({
   text: text(1000),
   cite: optionalText(200),
+  align: alignProp,
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -22,12 +24,13 @@ export const quote: BlockDefinition<Props> = {
   props: Props,
   defaults: () => ({ text: "A quote worth repeating." }),
   fields: [
+    alignField(true),
     { kind: "text", name: "text", label: "Quote", max: 1000, multiline: true },
     { kind: "text", name: "cite", label: "Who said it", max: 200, optional: true },
   ],
   summary: (props) => props.text,
   Render: ({ props }) => (
-    <figure className="block-quote">
+    <figure className={cx("block-quote", alignClass(props.align))}>
       <blockquote className="block-quote__text">
         <p>{props.text}</p>
       </blockquote>

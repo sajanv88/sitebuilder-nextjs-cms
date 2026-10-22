@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-@use "@nuvui/react/scss/mixins" as nuv;
+@use "../../styles/layout";
 
 // One column at a time on a small screen; side by side, equal widths, from the chosen size.
 .block-columns {
@@ -28,13 +28,13 @@
   }
 
   &--stack-sm {
-    @include nuv.breakpoint("sm") {
+    @include layout.width("sm") {
       grid-template-columns: repeat(var(--block-columns-count), minmax(0, 1fr));
     }
   }
 
   &--stack-md {
-    @include nuv.breakpoint("md") {
+    @include layout.width("md") {
       grid-template-columns: repeat(var(--block-columns-count), minmax(0, 1fr));
     }
   }

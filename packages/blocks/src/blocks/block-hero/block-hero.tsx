@@ -4,6 +4,8 @@
 import { SparklesIcon } from "@nuvui/icons";
 import { Button } from "@nuvui/react";
 import * as v from "valibot";
+import { alignClass, alignField } from "../../align/align";
+import { Backdrop, backdropFields, backdropProps } from "../../backdrop/backdrop";
 import { Action, cx, mediaId, optionalText, text } from "../../shared";
 import type { BlockDefinition, RenderContext } from "../../types";
 import { MediaImage } from "../block-image/block-image";
@@ -16,6 +18,9 @@ const Props = v.strictObject({
   primaryAction: v.optional(Action),
   secondaryAction: v.optional(Action),
   imageMediaId: v.optional(mediaId),
+  // Centered, as heroes were before alignment existed.
+  align: v.optional(v.picklist(["start", "center", "end"]), "center"),
+  ...backdropProps,
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -51,8 +56,12 @@ export const hero: BlockDefinition<Props> = {
     headline: "Say what you do in one line",
     body: "One or two sentences on who it's for and why it helps.",
     primaryAction: { label: "Get started", href: { kind: "url", url: "/" } },
+    align: "center",
+    backdrop: "none",
+    scrim: "strong",
   }),
   fields: [
+    alignField(false),
     { kind: "text", name: "eyebrow", label: "Line over the headline", max: 60, optional: true },
     { kind: "text", name: "headline", label: "Headline", max: 120 },
     {
@@ -66,6 +75,7 @@ export const hero: BlockDefinition<Props> = {
     { kind: "action", name: "primaryAction", label: "Main button", max: 60, optional: true },
     { kind: "action", name: "secondaryAction", label: "Second button", max: 60, optional: true },
     { kind: "media", name: "imageMediaId", label: "Picture", accept: "image", optional: true },
+    ...backdropFields,
   ],
   summary: (props) => props.headline,
   Render: ({ id, props, context }) => {
@@ -74,8 +84,8 @@ export const hero: BlockDefinition<Props> = {
     // (decisions #68).
     const lead = context.headingBlockId === id;
     const Heading = lead ? "h1" : "h2";
-    return (
-      <section className={cx("block-hero", picture && "block-hero--with-picture")}>
+    const content = (
+      <>
         <div className="block-hero__inner">
           {props.eyebrow ? <p className="block-hero__eyebrow">{props.eyebrow}</p> : null}
           <Heading className="block-hero__title">{props.headline}</Heading>
@@ -97,6 +107,30 @@ export const hero: BlockDefinition<Props> = {
             />
           </div>
         ) : null}
+      </>
+    );
+    // With a backdrop, the backdrop is the hero's box, in place of the brand-color wash.
+    if (props.backdrop !== "none") {
+      return (
+        <section
+          className={cx(
+            "block-hero",
+            "block-hero--backdrop",
+            picture && "block-hero--with-picture",
+            alignClass(props.align),
+          )}
+        >
+          <Backdrop kind={props.backdrop} scrim={props.scrim} className="block-hero__backdrop">
+            {content}
+          </Backdrop>
+        </section>
+      );
+    }
+    return (
+      <section
+        className={cx("block-hero", picture && "block-hero--with-picture", alignClass(props.align))}
+      >
+        {content}
       </section>
     );
   },

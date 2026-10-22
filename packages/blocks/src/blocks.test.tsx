@@ -90,15 +90,17 @@ const landing: Blocks = [
 ];
 
 describe("the registry", () => {
-  test("has the design's block set, each with a strict schema", () => {
+  test("has the design's block set and the additions, each with a strict schema", () => {
     expect(BLOCKS.map((d) => d.type).sort()).toEqual(
       [
         "button",
         "callout",
         "column",
         "columns",
+        "compare",
         "faq",
         "feature-grid",
+        "figures",
         "file-download",
         "gallery",
         "heading",
@@ -113,6 +115,7 @@ describe("the registry", () => {
         "separator",
         "spacer",
         "table",
+        "timeline",
         "video",
       ].sort(),
     );
@@ -126,7 +129,7 @@ describe("the registry", () => {
   });
 
   test("defaults are valid, except a file that hasn't been chosen yet", () => {
-    const needsAFile = new Set(["image", "gallery", "video", "file-download"]);
+    const needsAFile = new Set(["image", "gallery", "video", "file-download", "compare"]);
     for (const definition of BLOCKS) {
       const ok = v.safeParse(definition.props, definition.defaults()).success;
       expect(ok, definition.type).toBe(!needsAFile.has(definition.type));
@@ -258,5 +261,133 @@ describe("BlockList", () => {
       <BlockList blocks={[createBlock("image")]} context={{ ...context, editing: true }} />,
     );
     expect(html).toContain("Choose an image");
+  });
+});
+
+describe("the blocks added with nuvui 0.8", () => {
+  const AFTER = "44444444-4444-4444-8444-444444444444";
+  const withAfter = {
+    ...context,
+    media: (id: string) =>
+      id === AFTER
+        ? {
+            ...(context.media(IMAGE) as NonNullable<ReturnType<typeof context.media>>),
+            id,
+            alt: "After",
+          }
+        : context.media(id),
+  };
+  const draw = (blocks: Blocks, ctx = withAfter) => {
+    const result = validateContent(blocks);
+    if (!result.ok) throw new Error(JSON.stringify(result.issues));
+    return renderToStaticMarkup(<BlockList blocks={result.value} context={ctx} />);
+  };
+
+  test("a section and a hero take a backdrop, drawn in place of the background color", () => {
+    const html = draw([
+      block("section", { background: "muted", backdrop: "stars", scrim: "soft" }, [
+        block("heading", { text: "Over the stars", level: 2 }),
+      ]),
+      block("hero", { headline: "On a grid", backdrop: "grid" }),
+    ]);
+    expect(html).toContain("block-section--backdrop");
+    expect(html).not.toContain("block-section--bg-muted");
+    expect(html).toContain("Over the stars");
+    // A moving backdrop can be paused; a grid doesn't move, so it has no button.
+    expect(html.match(/Pause the background/g)).toHaveLength(1);
+    expect(html).toContain("block-hero__backdrop");
+    // Fireworks aren't offered.
+    expect(validateContent([block("section", { backdrop: "fireworks" }, [])]).ok).toBe(false);
+  });
+
+  test("compare draws both pictures and says what changed; its files count as used", () => {
+    const compare = block("compare", {
+      beforeMediaId: IMAGE,
+      afterMediaId: AFTER,
+      beforeAlt: "The old kitchen",
+      caption: "New cabinets and a window",
+    });
+    const html = draw([compare]);
+    expect(html).toContain('alt="The old kitchen"');
+    expect(html).toContain('alt="After"');
+    expect(html).toContain("New cabinets and a window");
+    expect(collectMediaIds([compare]).sort()).toEqual([IMAGE, AFTER].sort());
+    // Without its files, visitors get nothing and the editor a placeholder.
+    const missing = [block("compare", { beforeMediaId: IMAGE, afterMediaId: VIDEO })];
+    expect(draw(missing)).toBe("");
+    expect(draw(missing, { ...withAfter, editing: true })).toContain(
+      "Choose a before and an after",
+    );
+  });
+
+  test("figures write the real number on the server; a timeline dates only what is a date", () => {
+    const html = draw([
+      block("figures", {
+        items: [{ value: 12000, suffix: "+", label: "Customers" }],
+        animate: true,
+      }),
+      block("timeline", {
+        items: [
+          { date: "2019", title: "Founded" },
+          { date: "Spring 2025", title: "Moved" },
+        ],
+      }),
+    ]);
+    expect(html).toContain("12,000");
+    expect(html).toContain("Customers");
+    expect(html).toMatch(/<time [^>]*dateTime="2019"/);
+    expect(html).not.toContain('dateTime="Spring 2025"');
+    expect(validateContent([block("figures", { items: [] })]).ok).toBe(false);
+  });
+
+  test("reviews and features can be a carousel", () => {
+    const html = draw([
+      block("reviews", {
+        layout: "carousel",
+        items: [{ quote: "Lovely.", author: "Ana" }],
+      }),
+    ]);
+    expect(html).toContain('aria-label="Reviews"');
+    expect(html).toContain("Lovely.");
+    expect(validateContent([block("reviews", { layout: "slideshow", items: [] })]).ok).toBe(false);
+  });
+});
+
+describe("alignment", () => {
+  const draw = (blocks: Blocks) => {
+    const result = validateContent(blocks);
+    if (!result.ok) throw new Error(JSON.stringify(result.issues));
+    return renderToStaticMarkup(<BlockList blocks={result.value} context={context} />);
+  };
+
+  test("a block set to an alignment carries it; one left unset follows its section", () => {
+    const html = draw([
+      block("section", { align: "center" }, [
+        block("rich-text", { html: "<p>Follows the section</p>" }),
+        block("button", {
+          label: "Go",
+          href: { kind: "url", url: "/" },
+          align: "end",
+        }),
+      ]),
+    ]);
+    expect(html).toContain('class="block-section__inner block-align--center"');
+    expect(html).toContain('class="block-rich-text"');
+    expect(html).toContain('class="block-button block-align--end"');
+  });
+
+  test("heroes stay centered unless set, and older headings keep their stored start", () => {
+    expect(draw([block("hero", { headline: "Hi" })])).toContain("block-align--center");
+    expect(draw([block("heading", { text: "Old", level: 2, align: "start" })])).toContain(
+      "block-align--start",
+    );
+    expect(validateContent([block("heading", { text: "x", align: "middle" })]).ok).toBe(false);
+  });
+
+  test("a picture at its own size can be aligned; one in a set shape fills its column", () => {
+    const natural = draw([block("image", { mediaId: IMAGE, align: "center" })]);
+    expect(natural).toContain("block-image--natural");
+    const shaped = draw([block("image", { mediaId: IMAGE, ratio: "16:9", align: "center" })]);
+    expect(shaped).not.toContain("block-image--natural");
   });
 });

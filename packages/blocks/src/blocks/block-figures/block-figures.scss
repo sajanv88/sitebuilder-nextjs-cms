@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+.block-figures {
+  display: grid;
+  gap: calc(var(--spacing) * 8);
+  text-align: var(--block-align, start);
+
+  &__title {
+    max-inline-size: 22ch;
+    margin: 0;
+    font-size: clamp(1.75rem, 1.25rem + 2.2cqi, 2.75rem);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+    justify-self: var(--block-align, start);
+  }
+
+  // As many to a row as fit, never one narrower than 12rem.
+  &__list {
+    display: grid;
+    gap: calc(var(--spacing) * 6);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  // The number first and large, then what it counts: a marketing figure, not a dashboard's.
+  &__figure {
+    display: flex;
+    flex-direction: column;
+    block-size: 100%;
+  }
+
+  &__value {
+    order: -1;
+    font-size: clamp(2.25rem, 1.75rem + 2cqi, 3rem);
+    line-height: 1.1;
+  }
+}

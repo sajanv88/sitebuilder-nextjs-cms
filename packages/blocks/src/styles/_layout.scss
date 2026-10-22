@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "sass:map";
+@use "@nuvui/react/scss/mixins" as nuv;
+
+// Blocks lay out by the width they're given, not the window's: whatever draws them (the site's
+// page, the editor's canvas at a phone's width) makes the box around them an inline-size
+// container named `blocks`. The widths are nuvui's breakpoints, smallest first, as with
+// nuv.breakpoint().
+@mixin width($name) {
+  @container blocks (min-width: #{map.get(nuv.$breakpoints, $name)}) {
+    @content;
+  }
+}

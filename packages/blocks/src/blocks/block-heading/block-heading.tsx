@@ -3,6 +3,7 @@
 
 import { HeadingIcon } from "@nuvui/icons";
 import * as v from "valibot";
+import { alignClass, alignField, alignProp } from "../../align/align";
 import { cx, text } from "../../shared";
 import type { BlockDefinition } from "../../types";
 import "./block-heading.scss";
@@ -10,7 +11,8 @@ import "./block-heading.scss";
 const Props = v.strictObject({
   text: text(200),
   level: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(6)), 2),
-  align: v.optional(v.picklist(["start", "center"]), "start"),
+  // Headings saved before decisions #93 carry "start"; new ones follow their section.
+  align: alignProp,
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -23,8 +25,9 @@ export const heading: BlockDefinition<Props> = {
   category: "text",
   icon: HeadingIcon,
   props: Props,
-  defaults: () => ({ text: "Heading", level: 2, align: "start" }),
+  defaults: () => ({ text: "Heading", level: 2 }),
   fields: [
+    alignField(true),
     { kind: "text", name: "text", label: "Text", max: 200 },
     {
       kind: "choice",
@@ -33,15 +36,6 @@ export const heading: BlockDefinition<Props> = {
       description: "Level 1 is the page's title; use 2 for the parts under it, 3 inside those.",
       options: TAGS.map((tag, index) => ({ value: String(index + 1), label: tag.toUpperCase() })),
       numeric: true,
-    },
-    {
-      kind: "choice",
-      name: "align",
-      label: "Alignment",
-      options: [
-        { value: "start", label: "Start" },
-        { value: "center", label: "Center" },
-      ],
     },
   ],
   summary: (props) => props.text,
@@ -52,7 +46,7 @@ export const heading: BlockDefinition<Props> = {
         className={cx(
           "block-heading",
           `block-heading--level-${props.level}`,
-          props.align === "center" && "block-heading--center",
+          alignClass(props.align),
         )}
       >
         {props.text}

@@ -6,8 +6,10 @@ import { button } from "./blocks/block-button/block-button";
 import { callout } from "./blocks/block-callout/block-callout";
 import { column } from "./blocks/block-column/block-column";
 import { columns } from "./blocks/block-columns/block-columns";
+import { compare } from "./blocks/block-compare/block-compare";
 import { faq } from "./blocks/block-faq/block-faq";
 import { featureGrid } from "./blocks/block-feature-grid/block-feature-grid";
+import { figures } from "./blocks/block-figures/block-figures";
 import { fileDownload } from "./blocks/block-file-download/block-file-download";
 import { gallery } from "./blocks/block-gallery/block-gallery";
 import { heading } from "./blocks/block-heading/block-heading";
@@ -22,11 +24,13 @@ import { section } from "./blocks/block-section/block-section";
 import { separator } from "./blocks/block-separator/block-separator";
 import { spacer } from "./blocks/block-spacer/block-spacer";
 import { table } from "./blocks/block-table/block-table";
+import { timeline } from "./blocks/block-timeline/block-timeline";
 import { video } from "./blocks/block-video/block-video";
 import type { AnyBlockDefinition } from "./types";
 
-// The first block set (design §5.5). Adding a block type is a folder in src/blocks/ and a line
-// here (design §8); nothing else needs to know about it.
+// The first block set (design §5.5), with compare, figures and timeline added since
+// (decisions #84). Adding a block type is a folder in src/blocks/ and a line here (design §8);
+// nothing else needs to know about it.
 export const BLOCKS: readonly AnyBlockDefinition[] = [
   heading,
   richText,
@@ -36,6 +40,7 @@ export const BLOCKS: readonly AnyBlockDefinition[] = [
   image,
   gallery,
   video,
+  compare,
   fileDownload,
   section,
   columns,
@@ -47,8 +52,10 @@ export const BLOCKS: readonly AnyBlockDefinition[] = [
   pricing,
   faq,
   reviews,
+  figures,
   latestPosts,
   table,
+  timeline,
 ];
 
 const BY_TYPE = new Map(BLOCKS.map((definition) => [definition.type, definition]));

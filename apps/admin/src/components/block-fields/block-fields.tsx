@@ -4,6 +4,9 @@
 "use client";
 
 import {
+  AlignCenterIcon,
+  AlignLeftIcon,
+  AlignRightIcon,
   ArrowDownIcon,
   ArrowUpIcon,
   FileTextIcon,
@@ -37,6 +40,8 @@ import {
   Skeleton,
   Switch,
   Textarea,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@nuvui/react";
 import {
   type Field as BlockField,
@@ -173,6 +178,53 @@ function ChoiceField({
       {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
       <FieldError>{errors[field.name]}</FieldError>
     </Field>
+  );
+}
+
+// Horizontal alignment as three icon buttons, each named for a screen reader. Stored as start
+// and end, so a right-to-left site mirrors. A field that inherits can have none pressed: the
+// block then follows its section, and pressing the pressed one again lets it go.
+const ALIGN_OPTIONS = [
+  { value: "start", label: "Left", icon: AlignLeftIcon },
+  { value: "center", label: "Center", icon: AlignCenterIcon },
+  { value: "end", label: "Right", icon: AlignRightIcon },
+] as const;
+
+function AlignField({
+  field,
+  value,
+  onChange,
+}: FieldProps & { field: Extract<BlockField, { kind: "align" }> }) {
+  const id = useId();
+  return (
+    <div className="block-fields__rich">
+      <span id={`${id}-label`} className="block-fields__label">
+        {field.label}
+      </span>
+      <ToggleGroup
+        type="single"
+        size="sm"
+        aria-labelledby={`${id}-label`}
+        {...(field.description ? { "aria-describedby": `${id}-hint` } : {})}
+        value={typeof value === "string" ? value : ""}
+        onValueChange={(next) => {
+          if (next) onChange(next);
+          else if (field.inherit) onChange(undefined);
+        }}
+        className="block-fields__align"
+      >
+        {ALIGN_OPTIONS.map(({ value: option, label, icon: Icon }) => (
+          <ToggleGroupItem key={option} value={option} aria-label={label}>
+            <Icon aria-hidden="true" size={16} />
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+      {field.description ? (
+        <p id={`${id}-hint`} className="block-fields__hint">
+          {field.description}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
@@ -977,5 +1029,7 @@ export function BlockFieldControl(props: FieldProps) {
       return <ListField {...props} field={field} />;
     case "rows":
       return <RowsField {...props} field={field} />;
+    case "align":
+      return <AlignField {...props} field={field} />;
   }
 }

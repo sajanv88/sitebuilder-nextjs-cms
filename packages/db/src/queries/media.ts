@@ -244,12 +244,13 @@ export interface MediaUse {
 }
 
 // Entries that use a file: as their featured image, or in any block, however deeply nested,
-// through mediaId, imageMediaId, posterMediaId or mediaIds (design §4.2). Trashed entries count
-// too: restoring one would bring the file back into use (decisions #57).
+// through mediaId, imageMediaId, posterMediaId, beforeMediaId, afterMediaId or mediaIds
+// (design §4.2). Trashed entries count too: restoring one would bring the file back into use
+// (decisions #57).
 function usesMedia(id: string) {
   return or(
     eq(entries.featuredMediaId, id),
-    sql`jsonb_path_exists(${entries.content}, '$.** ? (@.mediaId == $id || @.imageMediaId == $id || @.posterMediaId == $id || exists(@.mediaIds[*] ? (@ == $id)))', jsonb_build_object('id', ${id}::text))`,
+    sql`jsonb_path_exists(${entries.content}, '$.** ? (@.mediaId == $id || @.imageMediaId == $id || @.posterMediaId == $id || @.beforeMediaId == $id || @.afterMediaId == $id || exists(@.mediaIds[*] ? (@ == $id)))', jsonb_build_object('id', ${id}::text))`,
   );
 }
 

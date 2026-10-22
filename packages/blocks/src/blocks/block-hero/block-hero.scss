@@ -1,15 +1,25 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-@use "@nuvui/react/scss/mixins" as nuv;
+@use "../../styles/layout";
+
+// The hero's layout, on the section itself or, with a backdrop, on the backdrop inside it.
+@mixin frame {
+  display: grid;
+  gap: calc(var(--spacing) * 12);
+  justify-items: var(--block-align, center);
+  padding: calc(var(--spacing) * 16) calc(var(--spacing) * 4) calc(var(--spacing) * 12);
+
+  @include layout.width("md") {
+    padding: calc(var(--spacing) * 24) calc(var(--spacing) * 8) calc(var(--spacing) * 16);
+  }
+}
 
 // From nuvui's hero block: a wash of the brand color behind the words, mixed from the theme's
 // own color, so a theme changes it and no text depends on it.
 .block-hero {
-  display: grid;
-  gap: calc(var(--spacing) * 12);
-  justify-items: center;
-  padding: calc(var(--spacing) * 16) calc(var(--spacing) * 4) calc(var(--spacing) * 12);
+  @include frame;
+
   background-color: var(--color-background);
   background-image: radial-gradient(
     ellipse 70% 55% at 50% 0%,
@@ -18,21 +28,29 @@
   );
   color: var(--color-foreground);
 
-  @include nuv.breakpoint("md") {
-    padding: calc(var(--spacing) * 24) calc(var(--spacing) * 8) calc(var(--spacing) * 16);
-  }
-
   // A forced-colors theme has a background of its own.
   @media (forced-colors: active) {
     background-image: none;
   }
 
+  // The backdrop fills the hero. justify-items applies to block layout too, so it's reset.
+  &--backdrop {
+    display: block;
+    justify-items: normal;
+    padding: 0;
+    background-image: none;
+  }
+
+  &__backdrop {
+    @include frame;
+  }
+
   &__inner {
     display: grid;
     gap: calc(var(--spacing) * 6);
-    justify-items: center;
+    justify-items: var(--block-align, center);
     max-inline-size: 48rem;
-    text-align: center;
+    text-align: var(--block-align, center);
   }
 
   &__eyebrow {
@@ -46,7 +64,7 @@
 
   &__title {
     margin: 0;
-    font-size: clamp(2.25rem, 1.5rem + 3.6vw, 4rem);
+    font-size: clamp(2.25rem, 1.5rem + 3.6cqi, 4rem);
     font-weight: var(--font-weight-semibold);
     line-height: 1.05;
     letter-spacing: -0.035em;
@@ -66,7 +84,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: calc(var(--spacing) * 3);
-    justify-content: center;
+    justify-content: var(--block-align, center);
 
     &:empty {
       display: none;

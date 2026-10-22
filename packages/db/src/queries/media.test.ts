@@ -220,6 +220,26 @@ describe("where a file is used", () => {
     expect(await mediaUsage(db, unused.id)).toEqual([]);
   });
 
+  it("counts both pictures of a before-and-after block", async () => {
+    const before = await createMedia(db, file());
+    const after = await createMedia(db, file());
+    await page(
+      [
+        {
+          id: "compare-0001",
+          type: "compare",
+          props: { beforeMediaId: before.id, afterMediaId: after.id },
+        },
+      ],
+      { title: "Renovation" },
+    );
+
+    expect(await mediaUsage(db, before.id)).toEqual([
+      expect.objectContaining({ title: "Renovation" }),
+    ]);
+    expect(await deleteMedia(db, after.id)).toMatchObject({ ok: false, error: "in-use" });
+  });
+
   it("deleting is refused while used, and hands back the key once deleted", async () => {
     const used = await createMedia(db, file());
     const free = await createMedia(db, file({ storage: "s3" }));

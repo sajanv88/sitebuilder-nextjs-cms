@@ -4,6 +4,7 @@
 import { StarIcon } from "@nuvui/icons";
 import { Card, CardContent, Rating } from "@nuvui/react";
 import * as v from "valibot";
+import { CardRow, layoutField, layoutProp } from "../../card-row/card-row";
 import { optionalText, text } from "../../shared";
 import type { BlockDefinition } from "../../types";
 import "./block-reviews.scss";
@@ -17,6 +18,7 @@ const Item = v.strictObject({
 
 const Props = v.strictObject({
   items: v.pipe(v.array(Item), v.minLength(1, "Add at least one review"), v.maxLength(12)),
+  layout: layoutProp,
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -31,7 +33,7 @@ export const reviews: BlockDefinition<Props> = {
   category: "marketing",
   icon: StarIcon,
   props: Props,
-  defaults: () => ({ items: [newItem(), newItem(), newItem()] }),
+  defaults: () => ({ items: [newItem(), newItem(), newItem()], layout: "grid" }),
   fields: [
     {
       kind: "list",
@@ -55,13 +57,18 @@ export const reviews: BlockDefinition<Props> = {
         },
       ],
     },
+    layoutField,
   ],
   summary: (props) => `${props.items.length} reviews`,
   Render: ({ props }) => (
-    <ul className="block-reviews">
-      {props.items.map((item, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: reviews have no ids; the list is drawn whole from stored props.
-        <li key={index}>
+    <CardRow
+      layout={props.layout}
+      label="Reviews"
+      className="block-reviews"
+      cards={props.items.map((item, index) => ({
+        // Reviews have no ids; the list is drawn whole from stored props.
+        key: String(index),
+        card: (
           <Card className="block-reviews__card">
             <CardContent className="block-reviews__body">
               {item.rating ? <Rating readOnly size="sm" value={item.rating} /> : null}
@@ -76,8 +83,8 @@ export const reviews: BlockDefinition<Props> = {
               </figure>
             </CardContent>
           </Card>
-        </li>
-      ))}
-    </ul>
+        ),
+      }))}
+    />
   ),
 };

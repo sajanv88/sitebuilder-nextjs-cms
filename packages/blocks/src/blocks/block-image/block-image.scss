@@ -14,6 +14,12 @@
     --nuv-aspect-ratio-fit: contain;
   }
 
+  // At its own size, the picture (or its link) and the caption line up as aligned.
+  &--natural {
+    justify-items: var(--block-align, start);
+    text-align: var(--block-align, start);
+  }
+
   // Never wider than the column it's in; the height follows.
   &__img {
     display: block;

@@ -30,6 +30,11 @@
     font-size: var(--text-xs);
   }
 
+  // Three icon buttons, as wide as they need, at the start of the line.
+  &__align {
+    justify-self: start;
+  }
+
   &__group {
     --nuv-fieldset-gap: #{a.space(3)};
   }

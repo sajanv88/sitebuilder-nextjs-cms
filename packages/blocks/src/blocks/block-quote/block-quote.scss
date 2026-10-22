@@ -7,6 +7,7 @@
   margin: 0;
   padding-inline-start: calc(var(--spacing) * 5);
   border-inline-start: calc(var(--nuv-border-width) * 4) solid var(--color-primary);
+  text-align: var(--block-align, start);
 
   &__text {
     margin: 0;

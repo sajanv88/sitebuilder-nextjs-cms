@@ -5,14 +5,16 @@ import { DownloadIcon } from "@nuvui/icons";
 import { Button } from "@nuvui/react";
 import type { MediaType } from "@sitebuilder/schema";
 import * as v from "valibot";
+import { alignClass, alignField, alignProp } from "../../align/align";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
-import { formatBytes, mediaId, text } from "../../shared";
+import { cx, formatBytes, mediaId, text } from "../../shared";
 import type { BlockDefinition } from "../../types";
 import "./block-file-download.scss";
 
 const Props = v.strictObject({
   mediaId,
   label: text(80),
+  align: alignProp,
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -36,6 +38,7 @@ export const fileDownload: BlockDefinition<Props> = {
   props: Props,
   defaults: () => ({ mediaId: "", label: "Download" }),
   fields: [
+    alignField(true),
     { kind: "media", name: "mediaId", label: "File", accept: "any" },
     { kind: "text", name: "label", label: "Words on the button", max: 80 },
   ],
@@ -49,7 +52,7 @@ export const fileDownload: BlockDefinition<Props> = {
     }
     const facts = `${KIND[media.mimeType]}, ${formatBytes(media.sizeBytes)}`;
     return (
-      <div className="block-file-download">
+      <div className={cx("block-file-download", alignClass(props.align))}>
         <Button asChild intent="secondary">
           <a href={media.url} download={media.filename}>
             <DownloadIcon aria-hidden="true" size={16} />
