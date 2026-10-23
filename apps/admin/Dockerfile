@@ -53,6 +53,11 @@ COPY --from=pruner /repo/out/full/ .
 # build time. Runtime configuration and secrets come from the environment in Kubernetes.
 ARG NEXT_DEPLOYMENT_ID
 ENV NEXT_DEPLOYMENT_ID=${NEXT_DEPLOYMENT_ID}
+# A production build: the templates build refuses a template that hasn't been reviewed (source
+# "local" in templates/templates.lock.json) unless this is set to true on purpose.
+ARG ALLOW_UNREVIEWED_TEMPLATES=false
+ENV NODE_ENV=production \
+    ALLOW_UNREVIEWED_TEMPLATES=${ALLOW_UNREVIEWED_TEMPLATES}
 # Optional BuildKit secret, only needed if the same commit is built more than once and served
 # together (see the nextjs-production skill, references/self-hosting.md).
 RUN --mount=type=secret,id=next_server_actions_key,env=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY \

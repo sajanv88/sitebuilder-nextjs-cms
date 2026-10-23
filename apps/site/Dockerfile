@@ -53,6 +53,11 @@ COPY --from=pruner /repo/out/full/ .
 # build time. Runtime configuration and secrets come from the environment in Kubernetes.
 ARG NEXT_DEPLOYMENT_ID
 ENV NEXT_DEPLOYMENT_ID=${NEXT_DEPLOYMENT_ID}
+# A production build: the templates build refuses a template that hasn't been reviewed (source
+# "local" in templates/templates.lock.json) unless this is set to true on purpose.
+ARG ALLOW_UNREVIEWED_TEMPLATES=false
+ENV NODE_ENV=production \
+    ALLOW_UNREVIEWED_TEMPLATES=${ALLOW_UNREVIEWED_TEMPLATES}
 # Multi-Zones: where the admin paths are forwarded. Rewrites are fixed at build time; the default
 # is the admin service's name, the same in compose and in every Kubernetes namespace.
 ARG ADMIN_ZONE_URL=http://admin:3000

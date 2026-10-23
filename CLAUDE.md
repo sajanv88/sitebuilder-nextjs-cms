@@ -51,6 +51,8 @@ helm lint --strict charts/sitebuilder
 pnpm licence-list --check                        # dependency licences reviewed, THIRD_PARTY_LICENSES.md current
 pnpm sitebuilder template verify                 # every installed template passes the checks and matches its lock
 pnpm sitebuilder template lock <slug>            # after changing a bundled template on purpose
+pnpm sitebuilder template add <path> [--replace] # install a template from a folder (as local, unreviewed)
+pnpm sitebuilder template remove <slug>          # uninstall one (never default)
 ```
 
 Run `pnpm typecheck && pnpm lint && pnpm build` before calling a change done.
@@ -67,6 +69,7 @@ packages/template-checks/  the rules a template must pass: data, code (TypeScrip
 packages/template-sdk/     what a template's layouts and blocks receive: types and defineBlock
 packages/cli/            the `sitebuilder` binary: generate, template verify/list/lock
 templates/               bundled templates and templates.lock.json; its build runs `sitebuilder generate`
+examples/templates/      the example template (ledger-example): not installed; CI adds it to build two templates
 packages/tsconfig/       shared tsconfig (base.json)
 charts/sitebuilder/      Helm chart: both zones, the migrate Job (admin image), ingress routing
 scripts/licences.ts      the licence review and THIRD_PARTY_LICENSES.md

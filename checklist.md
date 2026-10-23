@@ -383,7 +383,7 @@ Design: §12 (Templates), §14 (AI assistant), §5.2 (blocks), §6 (roles), §9 
 - [x] Schemas in packages/schema: `TemplateManifestSchema`, `StarterContentSchema`, `resolveRefs`, the `template` settings row and cache tag, with tests
 - [x] `templates/` as a workspace package, its lockfile inside it, and three bundled templates (Company as `default`, Studio, Journal) with screenshots
 - [x] packages/template-checks with the data rules (manifest, files, theme tokens, starter content, lockfile), a good fixture and a failing case per rule
-- [x] packages/cli: `generate`, `template verify`, `template list`, `template lock`; `add` and `remove` say they arrive in 7B
+- [x] packages/cli: `generate`, `template verify`, `template list`, `template lock` (`add` and `remove` came in 7B)
 - [x] `template.activate` for admins only; activation in one transaction, idempotent by source ref, with a dry run first
 - [x] Templates screen and Activate dialog (theme, starter pages, menus, home page, publish now)
 - [x] "Start from a template" in the dashboard's setup steps
@@ -392,65 +392,76 @@ Design: §12 (Templates), §14 (AI assistant), §5.2 (blocks), §6 (roles), §9 
 - [x] Gate 7A: each template applied on a fresh database in a production build; applying again creates only what's missing
 
 
+### 7B: templates with code (built 2026-10-22 and 23, decisions #109 to #124)
+- [x] Spikes S1 to S3; the template SDK and `defineBlock`; template blocks as data (`<slug>:<name>`)
+- [x] The code rules on TypeScript 6's compiler API, the render rules in a sandboxed child process
+- [x] The default template draws the site; `generate` compiles stylesheets under a content hash and writes the site, canvas, blocks and admin modules
+- [x] Layouts below the root layout, with the host's error pages around them
+- [x] The live canvas in the editor (an iframe of the site zone), at four widths
+- [x] Template options on the Templates screen; the default template's header options and font pairs
+- [x] `template add` and `remove`; CI verifies the templates and builds the images with two templates
+- [x] The example template, Ledger
+- [ ] The Templates screen at phone width (next.md)
+
 ### 1. packages/template-sdk
-- [ ] `TemplateManifestSchema`, `TemplateSettings`, layout prop types, `ResolvedLink`, `ResolvedImage`, `PublicEntry`, `PublicPost`, `defineBlock`
-- [ ] packages/schema: `BlockType` allows `<slug>:<name>`
+- [x] `TemplateManifestSchema`, `TemplateSettings`, layout prop types, `ResolvedLink`, `ResolvedImage`, `PublicEntry`, `PublicPost`, `defineBlock`
+- [x] packages/schema: `BlockType` allows `<slug>:<name>`
 - [x] A required `description` on every block definition, written for the existing blocks
 
 ### 2. packages/template-checks
-- [ ] Every §12.8 rule: one function from a folder path to findings (file, line, rule id, message)
-- [ ] A real parser (TypeScript compiler API or the toolchain's own, postcss for CSS), no regular expressions on source; choice in decisions.md
-- [ ] Render group: every layout renders with sample data, light and dark, without throwing
-- [ ] Contrast, size budget and real-browser checks written in next.md as marketplace pipeline work, not faked
+- [x] Every §12.8 rule: one function from a folder path to findings (file, line, rule id, message)
+- [x] A real parser (TypeScript compiler API or the toolchain's own, postcss for CSS), no regular expressions on source; choice in decisions.md
+- [x] Render group: every layout renders with sample data, light and dark, without throwing
+- [x] Contrast, size budget and real-browser checks written in next.md as marketplace pipeline work, not faked
 
 ### 3. template-checks tests
-- [ ] Fixtures in packages/template-checks/fixtures: one good template
-- [ ] One bad template per rule group: banned import, banned API, obfuscation, external CSS url, raw button where a nuvui component exists, symlink or disallowed file, bad manifest
-- [ ] Each bad fixture fails with the right rule id and no other
+- [x] Fixtures in packages/template-checks/fixtures: one good template
+- [x] One bad template per rule group: banned import, banned API, obfuscation, external CSS url, raw button where a nuvui component exists, symlink or disallowed file, bad manifest
+- [x] Each bad fixture fails with the right rule id and no other
 
 ### 4. The host
-- [ ] A build step reads templates/ and templates.lock.json and writes `templates.generated.ts` with static imports
+- [x] A build step reads templates/ and templates.lock.json and writes `templates.generated.ts` with static imports
 - [x] Active template from the `template` settings row, falling back to `default` when missing or unknown
-- [ ] Site layout around the page, post, archive and not-found layouts; the host renders the entry's blocks and passes them as children
-- [ ] Template blocks registered as `<slug>:<name>`; an "unavailable block" placeholder in the editor and nothing on the public site when their template isn't active
+- [x] Site layout around the page, post, archive and not-found layouts; the host renders the entry's blocks and passes them as children
+- [x] Template blocks registered as `<slug>:<name>`; an "unavailable block" placeholder in the editor and nothing on the public site when their template isn't active
 
 ### 5. Styles
-- [ ] css, scss or Tailwind compiled to one content-hashed stylesheet, loaded only by the public root layout
-- [ ] The admin never loads it; the editor canvas loads it only inside its iframe
-- [ ] A test or build-output check that no template CSS reaches an /admin page
-- [ ] Tailwind scans only the template's own folder, with no plugins and no external config
+- [x] css or scss compiled to one content-hashed stylesheet, linked by the site zone below the root layout (Tailwind not offered: decisions #114)
+- [x] The admin never loads it; the editor canvas loads it only inside its iframe
+- [x] A test or build-output check that no template CSS reaches an /admin page
+- [ ] Tailwind scans only the template's own folder, with no plugins and no external config (not offered yet, decisions #114)
 
 ### 6. Activation
-- [ ] `settings.template` and the options validated against the manifest
-- [ ] Activate dialog with two checkboxes, both off: apply the theme defaults; import starter content as drafts with sourceRef `template:<slug>:<n>`
+- [x] `settings.template` and the options validated against the manifest
+- [x] Activate dialog with two checkboxes, both off: apply the theme defaults; import starter content as drafts with sourceRef `template:<slug>:<n>`
 - [x] Activation never deletes or edits existing content
-- [ ] `template` resource in permissions.ts and `can()`: install, activate, remove for admins only
+- [x] `template` resource in permissions.ts and `can()`: install, activate, remove for admins only
 
 ### 7. Admin: Templates screen (nuvui; read each component's page through the MCP first)
-- [ ] Installed templates with screenshots, the active one marked, a "not reviewed" badge for source `local`
-- [ ] Options form and the Activate dialog
-- [ ] No Install button: the copyable CLI command instead
+- [x] Installed templates with screenshots, the active one marked, a "not reviewed" badge for source `local`
+- [x] Options form and the Activate dialog
+- [x] No Install button: the copyable CLI command instead
 
 ### 8. CLI
-- [ ] `pnpm sitebuilder template add <local-path>`: copies to templates/<slug>/, runs the checks, writes templates.lock.json (slug, version, source `local`, a deterministic sha256 of sorted paths and contents)
-- [ ] `remove <slug>`, `verify` (checks again, compares hashes with the lockfile), `list`
-- [ ] Anything needing the marketplace fails with a message saying it arrives in a later phase
+- [x] `pnpm sitebuilder template add <local-path>`: copies to templates/<slug>/, runs the checks, writes templates.lock.json (slug, version, source `local`, a deterministic sha256 of sorted paths and contents)
+- [x] `remove <slug>`, `verify` (checks again, compares hashes with the lockfile), `list`
+- [x] Anything needing the marketplace fails with a message saying it arrives in a later phase
 - [x] Production builds refuse source `local` unless `ALLOW_UNREVIEWED_TEMPLATES=true`
 
 ### 9. Docker, compose, CI
 - [x] The image build copies templates/ and the lockfile and runs the generate step (docker-nextjs)
-- [ ] CI runs `template verify` and the template-checks tests (github-actions)
+- [x] CI runs `template verify` and the template-checks tests (github-actions)
 
 ### 10. Example template
-- [ ] examples/templates/ledger-example: manifest, layouts, one extra block, scss styles, starter content, a screenshot; passes every check
+- [x] examples/templates/ledger-example: manifest, layouts, one extra block, scss styles, starter content, a screenshot; passes every check
 
 ### 11. Verify and report
-- [ ] Install, biome ci, stylelint, typecheck, tests, build, docker build, the container read-only and /api/health
-- [ ] Gate from a clean clone: `template add` the example, rebuild, activate it in /admin with starter content, the public site changes
-- [ ] Blocks of the old template don't break pages
-- [ ] A template breaking any rule fails `verify` naming the file and rule
-- [ ] No template CSS on /admin pages
-- [ ] decisions.md (with a reason for each new package), next.md updated
+- [x] Install, biome ci, stylelint, typecheck, tests, build, docker build, the container read-only and /api/health
+- [x] Gate: `template add` the example, rebuild, activate it in /admin with starter content, the public site changes (on the local test database, not a fresh clone)
+- [x] Blocks of the old template don't break pages
+- [x] A template breaking any rule fails `verify` naming the file and rule
+- [x] No template CSS on /admin pages
+- [x] decisions.md (with a reason for each new package), next.md updated
 - [ ] Report: finished, how to run, deviations, design errors, open items. Then stop until told to continue
 
 ## Part 2: AI assistant (§14)

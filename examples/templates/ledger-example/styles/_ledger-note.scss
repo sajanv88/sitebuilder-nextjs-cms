@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+// The client note block: the words between a rule above and a double rule below, with who said
+// them under it.
+.ledger-note {
+  display: grid;
+  gap: calc(var(--spacing) * 4);
+  margin: 0;
+  padding-block: calc(var(--spacing) * 6);
+  border-block: var(--nuv-border-width) solid var(--color-border-strong);
+  border-block-end: calc(var(--nuv-border-width) * 3) double var(--color-border-strong);
+
+  &__quote {
+    margin: 0;
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+  }
+
+  &__who {
+    display: flex;
+    gap: calc(var(--spacing) * 3);
+    align-items: center;
+  }
+
+  &__photo {
+    inline-size: calc(var(--spacing) * 12);
+    block-size: calc(var(--spacing) * 12);
+    border-radius: var(--radius-full);
+    object-fit: cover;
+  }
+
+  &__name {
+    display: block;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &__role {
+    display: block;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+}
