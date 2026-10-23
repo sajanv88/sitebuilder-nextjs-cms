@@ -14,6 +14,12 @@
       "sha256": "7ccfd6d7f7877e9e509a78dc1858607d56c585575acbb4fe2fc0e1add13e1c47"
     },
     {
+      "slug": "ledger-example",
+      "version": "1.0.0",
+      "source": "local",
+      "sha256": "aa3b6724e71db90a8580f5b23479f3fd656254b8bd2031c018a775105f1b5496"
+    },
+    {
       "slug": "studio",
       "version": "1.0.0",
       "source": "bundled",
