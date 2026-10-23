@@ -1,8 +1,8 @@
 {
-  "slug": "ledger-example",
+  "slug": "ledger",
   "name": "Ledger",
   "version": "1.0.0",
-  "description": "An example of a template with code: its own header, footer and page layout, a stylesheet, two options and a block of its own, for an accountant or an advisory firm.",
+  "description": "For an accountant or an advisory firm: a sober, ruled look with its own header and page layout, client notes, and Services with fees, About and Contact.",
   "author": "Sitebuilder",
   "licence": "GPL-2.0-or-later",
   "requires": {

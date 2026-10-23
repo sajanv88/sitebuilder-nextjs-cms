@@ -68,7 +68,7 @@
               }
             },
             {
-              "type": "ledger-example:client-note",
+              "type": "ledger:client-note",
               "props": {
                 "quote": "[What a client said about working with you, used with their permission.]",
                 "name": "[Client name]",
@@ -76,7 +76,7 @@
               }
             },
             {
-              "type": "ledger-example:client-note",
+              "type": "ledger:client-note",
               "props": {
                 "quote": "[Another client's words. Placeholders like these are only here for the layout.]",
                 "name": "[Client name]",

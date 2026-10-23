@@ -400,7 +400,7 @@ Design: §12 (Templates), §14 (AI assistant), §5.2 (blocks), §6 (roles), §9 
 - [x] The live canvas in the editor (an iframe of the site zone), at four widths
 - [x] Template options on the Templates screen; the default template's header options and font pairs
 - [x] `template add` and `remove`; CI verifies the templates and builds the images with two templates
-- [x] The example template, Ledger
+- [x] The example template, Ledger, shipped as a fourth bundled template
 - [ ] The Templates screen at phone width (next.md)
 
 ### 1. packages/template-sdk
@@ -453,7 +453,7 @@ Design: §12 (Templates), §14 (AI assistant), §5.2 (blocks), §6 (roles), §9 
 - [x] CI runs `template verify` and the template-checks tests (github-actions)
 
 ### 10. Example template
-- [x] examples/templates/ledger-example: manifest, layouts, one extra block, scss styles, starter content, a screenshot; passes every check
+- [x] The example template, Ledger: manifest, layouts, one extra block, scss styles, starter content, screenshots; passes every check (bundled as `templates/ledger` since 2026-10-23)
 
 ### 11. Verify and report
 - [x] Install, biome ci, stylelint, typecheck, tests, build, docker build, the container read-only and /api/health

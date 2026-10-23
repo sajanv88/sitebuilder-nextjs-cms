@@ -14,10 +14,10 @@
       "sha256": "7ccfd6d7f7877e9e509a78dc1858607d56c585575acbb4fe2fc0e1add13e1c47"
     },
     {
-      "slug": "ledger-example",
+      "slug": "ledger",
       "version": "1.0.0",
-      "source": "local",
-      "sha256": "aa3b6724e71db90a8580f5b23479f3fd656254b8bd2031c018a775105f1b5496"
+      "source": "bundled",
+      "sha256": "e68a2876c46a362d63366cdd5b27f8f8c2b8b6a3ea5c42f38154384023057507"
     },
     {
       "slug": "studio",

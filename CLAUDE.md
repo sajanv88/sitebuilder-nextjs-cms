@@ -69,7 +69,6 @@ packages/template-checks/  the rules a template must pass: data, code (TypeScrip
 packages/template-sdk/     what a template's layouts and blocks receive: types and defineBlock
 packages/cli/            the `sitebuilder` binary: generate, template verify/list/lock
 templates/               bundled templates and templates.lock.json; its build runs `sitebuilder generate`
-examples/templates/      the example template (ledger-example): not installed; CI adds it to build two templates
 packages/tsconfig/       shared tsconfig (base.json)
 charts/sitebuilder/      Helm chart: both zones, the migrate Job (admin image), ingress routing
 scripts/licences.ts      the licence review and THIRD_PARTY_LICENSES.md

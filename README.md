@@ -96,7 +96,7 @@ Without `CRON_SECRET` the route doesn't exist.
 
 ## Templates
 
-A template decides how the public site looks: its header and footer, how pages and posts are laid out, its styles, and sometimes blocks of its own. It can also bring a theme, starter pages and menus. Three come with Sitebuilder. An admin picks one, and sets its options, under **Templates** in the admin. Nothing anyone has written is changed or removed.
+A template decides how the public site looks: its header and footer, how pages and posts are laid out, its styles, and sometimes blocks of its own. It can also bring a theme, starter pages and menus. Four come with Sitebuilder. An admin picks one, and sets its options, under **Templates** in the admin. Nothing anyone has written is changed or removed.
 
 Templates are installed when the images are built, never in a running site. To add one from a folder:
 
@@ -107,7 +107,7 @@ pnpm build                                           # or: docker compose up --b
 
 `add` refuses a template that breaks a rule, naming the file and the rule. It records the template in `templates/templates.lock.json` as **local**, which means not reviewed. A production build refuses a local template unless it's built with `ALLOW_UNREVIEWED_TEMPLATES=true` (a build argument of both Dockerfiles). `template remove <slug>` uninstalls one. A site that was using it falls back to the default template. `template verify` checks every installed template, and `template list` lists them.
 
-To write a template, start from `examples/templates/ledger-example`. It has its own layouts, a stylesheet, options, a block and starter pages. `pnpm sitebuilder template verify <folder>` runs the same checks as `add`. A template's code gets only plain values (`packages/template-sdk`), and may import only React, nuvui, `next/link`, `next/image` and its own files.
+To write a template, start from a copy of `templates/ledger` under a new name. It has its own layouts, a stylesheet, options, a block and starter pages. `pnpm sitebuilder template verify <folder>` runs the same checks as `add`. A template's code gets only plain values (`packages/template-sdk`), and may import only React, nuvui, `next/link`, `next/image` and its own files.
 
 ## Upgrading
 

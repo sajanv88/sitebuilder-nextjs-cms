@@ -41,10 +41,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec biome ci --reporter=github .
       - run: pnpm exec stylelint "**/*.scss" --allow-empty-input
-      # Every installed template passes the template rules and matches its lock, and so does the
-      # example template, which isn't installed.
+      # Every installed template passes the template rules and matches its lock.
       - run: pnpm sitebuilder template verify
-      - run: pnpm sitebuilder template verify examples/templates/ledger-example
       - run: pnpm exec turbo run typecheck test --affected
       - run: pnpm audit --audit-level high
       # Every source file carries the SPDX and copyright lines; every package.json is GPL-2.0-or-later.
@@ -89,15 +87,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # The example template, installed as a site's owner would install one, so the image is built
-      # with two templates that have code. It isn't reviewed, so the build is told to allow that.
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .node-version
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm sitebuilder template add examples/templates/ledger-example
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       # One platform, loaded into the local daemon so it can be run. main.yaml builds both.
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -110,7 +99,6 @@ jobs:
           tags: ${{ env.APP }}:pr
           build-args: |
             NEXT_DEPLOYMENT_ID=${{ github.event.pull_request.head.sha }}
-            ALLOW_UNREVIEWED_TEMPLATES=true
           # Reads the cache main.yaml writes; a PR never writes it.
           cache-from: type=gha,scope=${{ env.APP }}
       - name: Run the image and hit /api/health
@@ -131,10 +119,11 @@ jobs:
           done
           docker logs app
           exit 1
+      # Two of the bundled templates have code and a stylesheet of their own.
       - name: Serve both templates' stylesheets from the read-only container
         if: ${{ matrix.app == 'site' }}
         run: |
-          for slug in default ledger-example; do
+          for slug in default ledger; do
             css="$(docker exec app find "apps/site/public/_templates/${slug}" -name '*.css' | head -n 1)"
             test -n "${css}"
             curl -fsS -o /dev/null -D - "http://127.0.0.1:3000/${css#apps/site/public/}" \
