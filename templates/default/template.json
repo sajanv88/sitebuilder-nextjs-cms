@@ -35,5 +35,85 @@
   "styles": {
     "entry": "styles/main.scss"
   },
+  "options": [
+    {
+      "key": "header",
+      "type": "choice",
+      "label": "The header",
+      "description": "What the bar with the site's name and menu does as a page scrolls.",
+      "choices": [
+        {
+          "value": "sticky",
+          "label": "Stays at the top of the window"
+        },
+        {
+          "value": "hides",
+          "label": "Hides while scrolling down, and comes back on the way up"
+        },
+        {
+          "value": "scrolls",
+          "label": "Scrolls away with the page"
+        }
+      ],
+      "default": "sticky"
+    },
+    {
+      "key": "menuPosition",
+      "type": "choice",
+      "label": "Where the menu sits",
+      "description": "In the header, on screens wide enough to show it. On a phone it's behind the menu button.",
+      "choices": [
+        {
+          "value": "start",
+          "label": "Beside the site's name"
+        },
+        {
+          "value": "center",
+          "label": "In the middle"
+        },
+        {
+          "value": "end",
+          "label": "At the far end"
+        }
+      ],
+      "default": "start"
+    },
+    {
+      "key": "menuButton",
+      "type": "boolean",
+      "label": "Show the menu's last link as a button",
+      "description": "For the one place you most want visitors to go, such as Contact. It stays in the header on a phone too.",
+      "default": false
+    },
+    {
+      "key": "fonts",
+      "type": "choice",
+      "label": "Fonts",
+      "description": "A pair for headings and text, from the fonts visitors' devices already have. A pair takes the place of the fonts set in Appearance.",
+      "choices": [
+        {
+          "value": "theme",
+          "label": "The theme's, as set in Appearance"
+        },
+        {
+          "value": "classic",
+          "label": "Classic: serif headings over plain text"
+        },
+        {
+          "value": "editorial",
+          "label": "Editorial: serifs throughout, as a magazine"
+        },
+        {
+          "value": "friendly",
+          "label": "Friendly: rounded headings over warm text"
+        },
+        {
+          "value": "technical",
+          "label": "Technical: typewriter headings over geometric text"
+        }
+      ],
+      "default": "theme"
+    }
+  ],
   "starter": "content/starter.json"
 }

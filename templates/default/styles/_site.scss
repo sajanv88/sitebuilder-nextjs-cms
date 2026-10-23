@@ -7,6 +7,7 @@
   --site-content-width: 72rem;
 
   display: grid;
+  font-family: var(--font-sans);
   grid-template-rows: auto 1fr auto;
   min-block-size: 100svh;
 
@@ -15,4 +16,36 @@
     align-content: start;
     min-inline-size: 0;
   }
+}
+
+// The fonts option: a pair of font stacks for text and headings, from fonts that come with
+// Windows, macOS, iOS, Android or Linux (each stack names one from each, then a generic family),
+// so nothing is downloaded. Text takes the theme's --font-sans here, inside the site only, so
+// a pair wins over the fonts set in Appearance; "theme" sets nothing. Names are written in lower
+// case without quotes, which match the same fonts: a theme token's value can't hold quotes.
+.site--fonts-classic {
+  --font-sans: system-ui, sans-serif;
+  --site-heading-font: charter, bitstream charter, sitka text, cambria, serif;
+}
+
+.site--fonts-editorial {
+  --font-sans: iowan old style, palatino linotype, urw palladio l, p052, serif;
+  --site-heading-font: didot, bodoni mt, noto serif display, urw palladio l, p052, sylfaen, serif;
+}
+
+.site--fonts-friendly {
+  --font-sans: seravek, gill sans nova, ubuntu, calibri, dejavu sans, sans-serif;
+  --site-heading-font:
+    ui-rounded, hiragino maru gothic pron, quicksand, comfortaa, manjari, arial rounded mt,
+    calibri, sans-serif;
+}
+
+.site--fonts-technical {
+  --font-sans: avenir, montserrat, corbel, urw gothic, sans-serif;
+  --site-heading-font: ui-monospace, cascadia code, menlo, consolas, dejavu sans mono, monospace;
+}
+
+// Headings in the page, the template's and the blocks' alike.
+.site :where(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--site-heading-font, inherit);
 }

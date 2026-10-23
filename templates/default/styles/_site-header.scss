@@ -74,3 +74,17 @@
     font-weight: var(--font-weight-semibold);
   }
 }
+
+// Where the menu sits in the bar (the menuPosition option). nuvui puts it beside the name and
+// pushes the actions to the end; in the middle, the space is shared either side of the menu.
+.site-header--menu-center .site-header__nav {
+  margin-inline: auto;
+}
+
+.site-header--menu-center .site-header__actions {
+  margin-inline-start: 0;
+}
+
+.site-header--menu-end .site-header__nav {
+  margin-inline-start: auto;
+}
