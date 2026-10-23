@@ -2,7 +2,8 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import { db, getTemplateSettings } from "@sitebuilder/db";
-import { listTemplates } from "@sitebuilder/templates/admin";
+import { optionValues } from "@sitebuilder/schema";
+import { findTemplate, listTemplates } from "@sitebuilder/templates/admin";
 import type { Metadata } from "next";
 import { requirePermission } from "@/auth/session";
 import { AdminPage } from "@/components/admin-page/admin-page";
@@ -10,6 +11,8 @@ import {
   TemplateGallery,
   type TemplateSummary,
 } from "@/components/template-gallery/template-gallery";
+import { TemplateOptions } from "@/components/template-options/template-options";
+import "./templates.scss";
 
 export const metadata: Metadata = { title: "Templates" };
 
@@ -33,9 +36,22 @@ export default async function TemplatesPage() {
       screenshots,
     }),
   );
+  // The one in use, when it has options: they're set here, above the others.
+  const current = findTemplate(active.slug)?.manifest;
+  const options = current?.options ?? [];
   return (
     <AdminPage title="Templates" description={DESCRIPTION} width="wide">
-      <TemplateGallery templates={templates} active={active.slug} />
+      <div className="templates-screen">
+        {current && options.length > 0 ? (
+          <TemplateOptions
+            slug={current.slug}
+            name={current.name}
+            options={options}
+            initial={optionValues(options, active.options)}
+          />
+        ) : null}
+        <TemplateGallery templates={templates} active={active.slug} />
+      </div>
     </AdminPage>
   );
 }

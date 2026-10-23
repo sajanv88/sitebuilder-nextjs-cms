@@ -53,8 +53,8 @@ export function TemplateGallery({
       <Alert intent="info" role="note" className="template-gallery__note">
         <AlertTitle>Where templates come from</AlertTitle>
         <AlertDescription>
-          These come with Sitebuilder and update with it. Adding a template of your own arrives in a
-          later version.
+          Some come with Sitebuilder and update with it. Whoever runs the site can add others from a
+          folder (pnpm sitebuilder template add, then a rebuild); those are marked Not reviewed.
         </AlertDescription>
       </Alert>
       <ul className="template-gallery__list">

@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+// The template in use's options, then every installed template.
+.templates-screen {
+  display: grid;
+  gap: a.space(8);
+}

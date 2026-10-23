@@ -56,6 +56,8 @@ export const ACTION_EFFECTS = {
   // templates.ts: a template can bring its theme, pages, menus and home page.
   previewTemplateActivation: [],
   activateTemplate: ["template", "settings", "entries", "menu"],
+  // Its options change how every public page is drawn.
+  saveTemplateOptions: ["template", "settings"],
   // terms.ts: archives, and the categories and tags printed on posts.
   saveTerm: ["terms", "entries"],
   removeTerm: ["terms", "entries"],

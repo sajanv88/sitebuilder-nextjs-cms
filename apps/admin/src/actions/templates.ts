@@ -12,9 +12,16 @@ import {
   db,
   findTakenPaths,
   getReading,
+  getTemplateSettings,
   listImportedEntries,
+  upsertSettings,
 } from "@sitebuilder/db";
-import { MENU_LOCATIONS, TemplateSlug } from "@sitebuilder/schema";
+import {
+  MENU_LOCATIONS,
+  optionValues,
+  type TemplateOptionValues,
+  TemplateSlug,
+} from "@sitebuilder/schema";
 import { findTemplate } from "@sitebuilder/templates/admin";
 import * as v from "valibot";
 import { getViewer } from "@/auth/session";
@@ -137,5 +144,47 @@ export async function activateTemplate(input: unknown): Promise<ActivateTemplate
     ok: true,
     created: result.created.length,
     publishedTo: choices.publish && home ? "/" : null,
+  };
+}
+
+export type TemplateOptionsState =
+  | { result: "idle" }
+  | { result: "saved"; at: number; message: string; values: TemplateOptionValues }
+  | { result: "failed"; message: string };
+
+// The active template's options, from the Templates screen (design A7): checked against its
+// manifest, with an option left out or not one of its choices taking its default. A form for
+// a template that's no longer the active one is refused rather than saved onto another.
+export async function saveTemplateOptions(
+  _: TemplateOptionsState,
+  form: FormData,
+): Promise<TemplateOptionsState> {
+  const viewer = await getViewer();
+  if (!viewer) return { result: "failed", message: SIGNED_OUT };
+  if (!can(viewer, "template.activate")) return { result: "failed", message: NOT_ALLOWED };
+  const active = await getTemplateSettings(db);
+  const template = findTemplate(active.slug);
+  if (!template || form.get("slug") !== active.slug) {
+    return {
+      result: "failed",
+      message: "The site's template changed while this was open. Reload the page.",
+    };
+  }
+  const options = template.manifest.options ?? [];
+  const sent = Object.fromEntries(
+    options.map((option) => {
+      const value = form.get(option.key);
+      return [option.key, option.type === "boolean" ? value === "on" : value];
+    }),
+  );
+  const values = optionValues(options, sent);
+  const saved = await upsertSettings(db, "template", { slug: active.slug, options: values });
+  if (!saved.ok) return { result: "failed", message: "The options couldn't be saved." };
+  invalidate("saveTemplateOptions");
+  return {
+    result: "saved",
+    at: Date.now(),
+    message: `${template.manifest.name}'s options saved`,
+    values,
   };
 }

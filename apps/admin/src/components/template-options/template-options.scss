@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+// The fields one under another, each choice's options as a column of radio buttons with their
+// labels beside them.
+.template-options {
+  &__fields {
+    display: grid;
+    gap: a.space(5);
+  }
+
+  &__choice {
+    display: grid;
+    gap: a.space(2);
+  }
+
+  &__note {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  &__radio {
+    display: flex;
+    gap: a.space(2);
+    align-items: center;
+  }
+}
