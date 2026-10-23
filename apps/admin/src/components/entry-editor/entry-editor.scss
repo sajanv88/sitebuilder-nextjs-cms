@@ -68,16 +68,6 @@
     border-inline-end: var(--nuv-border-width) solid var(--color-border);
   }
 
-  // Thin, along the top of the window, over the bar that stays there.
-  &__progress {
-    --nuv-scroll-progress-size: 2px;
-
-    position: fixed;
-    z-index: 20;
-    inset-block-start: 0;
-    inset-inline: 0;
-  }
-
   // The device widths, and quick add, above the canvas.
   &__canvas-bar {
     display: flex;

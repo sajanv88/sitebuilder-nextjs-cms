@@ -9,6 +9,7 @@ import { bootstrapSite } from "./bootstrap";
 import { createEntry, type EntryWrite, setEntryStatus, trashEntry } from "./entries";
 import { getMenu, resolveMenu, saveMenu } from "./menus";
 import {
+  getEntryForCanvas,
   getEntryForPreview,
   getPublicEntry,
   listArchiveTerms,
@@ -94,6 +95,8 @@ describe("resolveRoute", () => {
     await trashEntry(db, gone.id);
     expect(await resolveRoute(db, later.path)).toEqual({ kind: "missing" });
     expect(await resolveRoute(db, gone.path)).toEqual({ kind: "missing" });
+    expect(await getEntryForCanvas(db, later.id)).toMatchObject({ status: "scheduled" });
+    expect(await getEntryForCanvas(db, gone.id)).toBeUndefined();
   });
 
   it("answers a stored redirect with its status", async () => {
@@ -192,6 +195,7 @@ describe("public reads", () => {
     const post = await entry("post", "Hello", { categoryIds: [cat.term.id] });
     expect(await getPublicEntry(db, post.id)).toBeUndefined();
     expect(await getEntryForPreview(db, post.path)).toMatchObject({ title: "Hello" });
+    expect(await getEntryForCanvas(db, post.id)).toMatchObject({ title: "Hello", status: "draft" });
     await publish(post.id);
     expect(await getPublicEntry(db, post.id)).toMatchObject({
       authorName: "Ada",

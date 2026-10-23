@@ -168,6 +168,15 @@ export async function getEntryForPreview(
   return readEntry(db, and(eq(entries.path, path), isNull(entries.deletedAt)));
 }
 
+// For the editor's canvas: an entry by id, published or not, as long as it isn't in the trash.
+// The caller checks the viewer may see it.
+export async function getEntryForCanvas(
+  db: Executor,
+  id: string,
+): Promise<PublicEntry | undefined> {
+  return readEntry(db, and(eq(entries.id, id), isNull(entries.deletedAt)));
+}
+
 // ── Post lists ───────────────────────────────────────────────────────────────────────────────
 
 export interface PublicPostCard {

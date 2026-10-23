@@ -81,6 +81,7 @@ export {
 export {
   countPublicPosts,
   DEFAULT_READING,
+  getEntryForCanvas,
   getEntryForPreview,
   getPublicEntry,
   getReading,

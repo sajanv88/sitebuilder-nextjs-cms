@@ -3,15 +3,14 @@
 
 "use client";
 
-import type { PostSummary, RenderContext, RenderMedia } from "@sitebuilder/blocks";
-import type { LinkTarget } from "@sitebuilder/schema";
+import type { PostSummary, RenderMedia } from "@sitebuilder/blocks";
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import type { LinkOption } from "@/actions/entry-editor";
-import { useDateSettings } from "@/components/date-settings/date-settings";
 
 // What the editor knows beyond the blocks: the files and entries they point at (so the canvas
 // can draw them and the inspector can name them), the latest posts, the terms, and whether the
-// viewer may upload. The server sends what the saved blocks use; picking more adds to it.
+// viewer may upload. The server sends what the saved blocks use; picking more adds to it. The
+// canvas sends the files, links and posts on to the page it frames (block-canvas.tsx).
 
 export interface EditorData {
   media: Record<string, RenderMedia>;
@@ -28,8 +27,6 @@ export interface EditorData {
 interface EditorDataValue extends EditorData {
   addMedia: (items: RenderMedia[]) => void;
   addLink: (link: LinkOption) => void;
-  // For the canvas: blocks look files and links up through this.
-  context: RenderContext;
 }
 
 const Context = createContext<EditorDataValue | null>(null);
@@ -51,21 +48,10 @@ export function EditorDataProvider({
     setLinks((now) => ({ ...now, [link.id]: link }));
   }, []);
 
-  const dates = useDateSettings();
-  const value = useMemo<EditorDataValue>(() => {
-    const context: RenderContext = {
-      media: (id) => media[id],
-      // In the editor a link to a draft still draws, to its path: it isn't live yet anyway.
-      href: (target: LinkTarget) =>
-        target.kind === "url" ? target.url : links[target.entryId]?.path,
-      posts: initial.posts,
-      editing: true,
-      dates,
-      // The canvas sets it from the blocks it draws (block-canvas.tsx).
-      headingBlockId: null,
-    };
-    return { ...initial, media, links, addMedia, addLink, context };
-  }, [initial, media, links, addMedia, addLink, dates]);
+  const value = useMemo<EditorDataValue>(
+    () => ({ ...initial, media, links, addMedia, addLink }),
+    [initial, media, links, addMedia, addLink],
+  );
 
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

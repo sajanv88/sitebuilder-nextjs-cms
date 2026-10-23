@@ -5,7 +5,7 @@ import "server-only";
 import { type LoadedTemplate, loadTemplate } from "@sitebuilder/templates/site";
 import { cache } from "react";
 import { getTemplateSettings } from "./content";
-import "./template-blocks";
+import "@/lib/template-blocks";
 
 // The template the public site is drawn with, chosen on the admin's Templates screen: its
 // layouts, stylesheets, option values and blocks. Once per request.

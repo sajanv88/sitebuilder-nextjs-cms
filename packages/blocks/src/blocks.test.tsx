@@ -22,6 +22,7 @@ const {
 } = await import("./registry");
 const { templateBlockDefinition } = await import("./template-block");
 const { BlockList } = await import("./render");
+const { canvasMessage, isEditorKey } = await import("./canvas");
 const { sanitizeRichText, validateContent } = await import("./server");
 
 const IMAGE = "11111111-1111-4111-8111-111111111111";
@@ -548,5 +549,37 @@ describe("template blocks", () => {
     } finally {
       registerTemplateBlocks([]);
     }
+  });
+});
+
+describe("the canvas's messages", () => {
+  const key = (
+    k: string,
+    mods: Partial<Record<"ctrl" | "meta" | "shift" | "alt", boolean>> = {},
+  ) => ({
+    key: k,
+    ctrlKey: mods.ctrl ?? false,
+    metaKey: mods.meta ?? false,
+    shiftKey: mods.shift ?? false,
+    altKey: mods.alt ?? false,
+  });
+
+  test("hands the editor its own shortcuts and nothing else", () => {
+    expect(isEditorKey(key("s", { ctrl: true }))).toBe(true);
+    expect(isEditorKey(key("Z", { meta: true, shift: true }))).toBe(true);
+    expect(isEditorKey(key("k", { ctrl: true }))).toBe(true);
+    expect(isEditorKey(key("ArrowUp", { alt: true }))).toBe(true);
+    expect(isEditorKey(key("Delete"))).toBe(true);
+    expect(isEditorKey(key("a", { ctrl: true }))).toBe(false);
+    expect(isEditorKey(key("ArrowUp"))).toBe(false);
+    expect(isEditorKey(key("Delete", { ctrl: true }))).toBe(false);
+    expect(isEditorKey(key("s", { ctrl: true, alt: true }))).toBe(false);
+  });
+
+  test("tags every message, so other messages a page gets are told apart", () => {
+    expect(canvasMessage({ type: "ready" })).toEqual({
+      type: "ready",
+      source: "sitebuilder-canvas",
+    });
   });
 });

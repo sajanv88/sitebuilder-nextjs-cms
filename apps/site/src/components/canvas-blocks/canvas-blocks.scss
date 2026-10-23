@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+@layer host {
+  // The editor's canvas: a frame around each block that shows on hover and when it's selected.
+  // The frame is an outline, so it takes no room and the page lays out as it does for visitors.
+  .canvas-blocks {
+    // Along the top of the canvas: how far down the page it's scrolled.
+    &__progress {
+      --nuv-scroll-progress-size: 2px;
+
+      position: fixed;
+      z-index: 20;
+      inset-block-start: 0;
+      inset-inline: 0;
+    }
+
+    &__empty {
+      padding: a.space(8) var(--block-page-gutter, #{a.space(4)});
+    }
+
+    &__block {
+      display: grid;
+      border-radius: var(--radius-sm);
+      outline: var(--nuv-border-width) dashed transparent;
+      outline-offset: a.space(1);
+      cursor: default;
+      scroll-margin-block: a.space(20);
+
+      @include a.hover {
+        outline-color: var(--color-border-strong);
+      }
+    }
+
+    &__block--selected {
+      outline: calc(var(--nuv-border-width) * 2) solid var(--color-ring);
+
+      @include a.hover {
+        outline-color: var(--color-ring);
+      }
+    }
+
+    &__block--problem {
+      outline: calc(var(--nuv-border-width) * 2) dashed var(--color-warning);
+    }
+  }
+}

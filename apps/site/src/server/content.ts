@@ -39,7 +39,7 @@ import {
 } from "@sitebuilder/schema";
 import { cacheLife, cacheTag } from "next/cache";
 import { env } from "@/env";
-import "./template-blocks";
+import "@/lib/template-blocks";
 
 // Everything the public site reads, cached across requests and tagged (design §7). The admin
 // zone invalidates the tags on every write, and the shared cache handler carries that to every

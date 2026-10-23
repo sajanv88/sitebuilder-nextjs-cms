@@ -38,7 +38,12 @@ function internalPath(route: PublicRoute, path: string, preview: boolean): strin
   }
 }
 
-function contentSecurityPolicy(nonce: string): string {
+// The editor's canvas (app/%5Fcanvas): the one page another page may frame, and then only a page
+// of the site's own (the admin's editor). It checks the session itself, and is never a public
+// path: page slugs can't start with "_".
+const CANVAS = "/_canvas/";
+
+function contentSecurityPolicy(nonce: string, framed: boolean): string {
   const isDev = process.env.NODE_ENV === "development";
   return [
     "default-src 'self'",
@@ -54,12 +59,25 @@ function contentSecurityPolicy(nonce: string): string {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-ancestors 'none'",
+    `frame-ancestors ${framed ? "'self'" : "'none'"}`,
   ].join("; ");
 }
 
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+
+  if (path.startsWith(CANVAS)) {
+    const csp = contentSecurityPolicy(nonce, true);
+    requestHeaders.set("Content-Security-Policy", csp);
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    response.headers.set("Content-Security-Policy", csp);
+    response.headers.set("X-Robots-Tag", "noindex");
+    return response;
+  }
+
   let route: PublicRoute;
   try {
     route = await resolveRoute(db, path);
@@ -75,10 +93,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(target, route.status);
   }
 
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const csp = contentSecurityPolicy(nonce);
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", nonce);
+  const csp = contentSecurityPolicy(nonce, false);
   requestHeaders.set("x-site-path", path);
   requestHeaders.set("Content-Security-Policy", csp);
 

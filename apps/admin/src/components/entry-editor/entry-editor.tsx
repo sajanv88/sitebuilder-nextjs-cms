@@ -39,7 +39,6 @@ import {
   FieldLabel,
   Input,
   Kbd,
-  ScrollProgress,
   Tabs,
   TabsContent,
   TabsList,
@@ -51,7 +50,7 @@ import {
   TooltipTrigger,
   toast,
 } from "@nuvui/react";
-import { createBlock, getBlockDefinition } from "@sitebuilder/blocks";
+import { CANVAS_PATH, createBlock, getBlockDefinition } from "@sitebuilder/blocks";
 import {
   type BlockList,
   ENTRY_LIMITS,
@@ -78,7 +77,11 @@ import {
 } from "react";
 import { saveEntry } from "@/actions/entry-editor";
 import { trashEntries } from "@/actions/entry-list";
-import { BlockCanvas, type Device } from "@/components/block-canvas/block-canvas";
+import {
+  BlockCanvas,
+  type CanvasHandle,
+  type Device,
+} from "@/components/block-canvas/block-canvas";
 import { type EditorData, EditorDataProvider } from "@/components/block-editor/editor-data";
 import {
   applyMove,
@@ -327,12 +330,16 @@ export function EntryEditor({
   function jump(blockId: string) {
     setSelectedId(blockId);
     setView("page");
-    const frame = document.querySelector(`[data-block-id="${CSS.escape(blockId)}"]`);
-    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    frame?.scrollIntoView({ block: "center", behavior: still ? "auto" : "smooth" });
+    canvas.current?.scrollTo(blockId);
   }
 
-  // ── Pins, the device shown, quick add ────────────────────────────────────────────────────
+  // ── The canvas, pins, the device shown, quick add ────────────────────────────────────────
+  // The site zone's canvas page for this entry, or for a new one (block-canvas.tsx). Fixed when
+  // the editor opens: once autosave has created the entry, the canvas carries on as it is.
+  const [canvasSrc] = useState(() =>
+    initial.entry ? `${CANVAS_PATH}/${initial.entry.id}` : `${CANVAS_PATH}/new?type=${type}`,
+  );
+  const canvas = useRef<CanvasHandle>(null);
   const [pinned, setPinned] = usePinnedBlocks(data.userId);
   const [device, setDevice] = useState<Device>("fit");
   const [quickAdd, setQuickAdd] = useState(false);
@@ -582,8 +589,6 @@ export function EntryEditor({
 
   return (
     <EditorDataProvider initial={data}>
-      {/* How far down the page, which is the canvas, along the top of the window. */}
-      <ScrollProgress className="entry-editor__progress" />
       <form ref={form} action={action} onSubmit={onSubmit} className="entry-editor" noValidate>
         <input type="hidden" name="id" value={entryId} />
         <input type="hidden" name="type" value={type} />
@@ -791,10 +796,15 @@ export function EntryEditor({
               </Button>
             </div>
             <BlockCanvas
+              ref={canvas}
+              src={canvasSrc}
+              label={`The ${noun.one} as visitors will see it`}
               blocks={blocks}
               selectedId={selectedId}
               issueIds={issueIds}
               onSelect={select}
+              title={title}
+              featuredMediaId={featuredMediaId}
               device={device}
             />
           </section>

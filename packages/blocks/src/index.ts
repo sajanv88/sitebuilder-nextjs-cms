@@ -5,6 +5,17 @@
 // editor and the site zone's pages. Server-only checks are in "@sitebuilder/blocks/server".
 
 export {
+  CANVAS_PATH,
+  type CanvasData,
+  type CanvasKey,
+  canvasMessage,
+  type FromCanvas,
+  isEditorKey,
+  readFromCanvas,
+  readToCanvas,
+  type ToCanvas,
+} from "./canvas";
+export {
   cloneBlock,
   collectEntryIds,
   collectMediaIds,

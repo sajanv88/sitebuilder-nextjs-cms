@@ -10,10 +10,16 @@ import { activeTemplate } from "@/server/template";
 // The active template's Site layout, its header, footer and frame, around a page, with the
 // template's stylesheets. Drawn below the root layout (by the /_site layout, and by the
 // not-found page, which sits outside it), so the root error page still shows when a template's
-// layout throws (decisions #118).
-export async function SiteFrame({ children }: { children: ReactNode }) {
+// layout throws (decisions #118). The editor's canvas passes the page's own address.
+export async function SiteFrame({
+  currentPath,
+  children,
+}: {
+  currentPath?: string;
+  children: ReactNode;
+}) {
   // The address the visitor asked for, before the proxy rewrote it (src/proxy.ts).
-  const path = (await headers()).get("x-site-path") ?? "/";
+  const path = currentPath ?? (await headers()).get("x-site-path") ?? "/";
   const [site, primary, footer, template] = await Promise.all([
     getSite(),
     getSiteMenu("primary"),

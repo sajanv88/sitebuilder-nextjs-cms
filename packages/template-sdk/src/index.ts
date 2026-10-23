@@ -56,6 +56,9 @@ export interface ImageInfo {
 export type TemplateOptionValues = Readonly<Record<string, boolean | string>>;
 
 // ── Layouts ──────────────────────────────────────────────────────────────────────────────────
+// Layouts are drawn on the server for every public page, and for the editor's canvas: the page
+// being edited, in a frame beside the editor, at the width of the device it's shown as. There,
+// links and buttons don't navigate, and the blocks are drawn in the browser as they're edited.
 
 export interface EntryInfo {
   id: string;
