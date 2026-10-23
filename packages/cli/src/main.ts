@@ -23,16 +23,24 @@ import {
   type TemplateFinding,
 } from "./installed";
 import { CliError, LOCKFILE, readLockfile, writeLockfile } from "./lockfile";
+import { AddFindings, addTemplate, removeTemplate } from "./manage";
 
 // `sitebuilder`, the templates CLI (docs/templates_and_ai_design.md A6). Every command takes
 // --json. Exit codes: 0 success, 1 findings or a hash mismatch, 2 usage or I/O.
 
 const USAGE = `Usage: pnpm sitebuilder <command> [--json]
 
-  generate                 Check every installed template and write templates/generated/
-  template verify [path]   Check the installed templates, or any template folder
-  template list            The installed templates: slug, version, source, hash
-  template lock <slug>     Lock a bundled template at its current contents and version`;
+  generate                      Check every installed template and write templates/generated/
+  template add <path> [--replace]
+                                Check a template folder and install a copy of it
+  template remove <slug>        Uninstall a template (not the default one)
+  template verify [path]        Check the installed templates, or any template folder
+  template list                 The installed templates: slug, version, source, hash
+  template lock <slug>          Lock a bundled template at its current contents and version`;
+
+// What to do after installing or removing: the site picks templates up when it's built.
+const REBUILD =
+  "Build the site again to use the change: pnpm build, or restart pnpm dev, or rebuild the Docker images.";
 
 interface Output {
   json: boolean;
@@ -169,7 +177,7 @@ async function list(root: string, out: Output): Promise<void> {
 }
 
 // For maintainers of the bundled templates: after changing one on purpose, record its new
-// contents. Templates from elsewhere come in through `template add` (phase 7B).
+// contents. Templates from elsewhere come in through `template add`.
 async function lock(root: string, out: Output, slug: string | undefined): Promise<void> {
   if (!slug) throw new CliError("Name the template: pnpm sitebuilder template lock <slug>", 2);
   const dir = join(root, TEMPLATES_DIR, slug);
@@ -181,7 +189,7 @@ async function lock(root: string, out: Output, slug: string | undefined): Promis
   const existing = current.templates.find((t) => t.slug === slug);
   if (existing?.source === "local") {
     throw new CliError(
-      `${slug} came from elsewhere; replace it with \`template add --replace\` (phase 7B)`,
+      `${slug} came from elsewhere; replace it with \`template add <path> --replace\``,
       2,
     );
   }
@@ -202,9 +210,43 @@ async function lock(root: string, out: Output, slug: string | undefined): Promis
   );
 }
 
+async function add(
+  root: string,
+  out: Output,
+  path: string | undefined,
+  replace: boolean,
+): Promise<void> {
+  if (!path) throw new CliError("Name the folder: pnpm sitebuilder template add <path>", 2);
+  const { entry, findings, replaced } = await addTemplate(root, path, await context(root), {
+    replace,
+  });
+  print(
+    out,
+    { ok: true, template: entry, replaced, findings },
+    [
+      describe(findings),
+      `${replaced ? "Replaced" : "Added"} ${entry.slug} ${entry.version} (not reviewed) in ${LOCKFILE}.`,
+      REBUILD,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
+}
+
+async function remove(root: string, out: Output, slug: string | undefined): Promise<void> {
+  if (!slug) throw new CliError("Name the template: pnpm sitebuilder template remove <slug>", 2);
+  const entry = await removeTemplate(root, slug);
+  print(
+    out,
+    { ok: true, removed: entry },
+    `Removed ${entry.slug}. A site that uses it is drawn with the default template. ${REBUILD}`,
+  );
+}
+
 async function main(argv: readonly string[]): Promise<void> {
   const out: Output = { json: argv.includes("--json") };
-  const args = argv.filter((arg) => arg !== "--json");
+  const replace = argv.includes("--replace");
+  const args = argv.filter((arg) => arg !== "--json" && arg !== "--replace");
   const root = await findRoot(process.cwd());
   const [command, sub, arg] = args;
   if (command === "generate") return generate(root, out);
@@ -212,9 +254,8 @@ async function main(argv: readonly string[]): Promise<void> {
     if (sub === "verify") return verify(root, out, arg);
     if (sub === "list") return list(root, out);
     if (sub === "lock") return lock(root, out, arg);
-    if (sub === "add" || sub === "remove") {
-      throw new CliError(`\`template ${sub}\` arrives in phase 7B`, 2);
-    }
+    if (sub === "add") return add(root, out, arg, replace);
+    if (sub === "remove") return remove(root, out, arg);
   }
   throw new CliError(USAGE, 2);
 }
@@ -222,7 +263,8 @@ async function main(argv: readonly string[]): Promise<void> {
 main(process.argv.slice(2)).catch((error: unknown) => {
   const json = process.argv.includes("--json");
   if (error instanceof CliError) {
-    const findings = error instanceof FindingsError ? error.findings : [];
+    const findings =
+      error instanceof FindingsError || error instanceof AddFindings ? error.findings : [];
     if (json) {
       process.stdout.write(`${JSON.stringify({ ok: false, error: error.message, findings }, null, 2)}
 `);

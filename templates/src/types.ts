@@ -33,8 +33,8 @@ export interface GeneratedTemplate {
   screenshots: readonly { image: TemplateImage; label: string }[];
 }
 
-// What `generate` writes for the site zone (generated/site.ts): per template, loaders for its
-// code, so only the active template's is loaded, and the address of its compiled stylesheet.
+// What `generate` writes for the site zone (generated/site.ts): per template, its layouts and
+// blocks, and the address of its compiled stylesheet.
 export interface TemplateLayouts {
   site: SiteLayout;
   page: PageLayout;
@@ -48,10 +48,15 @@ export interface GeneratedSiteTemplate {
   stylesheet: string | null;
   options: readonly TemplateOption[];
   // The layouts it has; the default template's draw the rest.
-  layouts: { [Name in keyof TemplateLayouts]?: () => Promise<TemplateLayouts[Name]> };
+  layouts: Partial<TemplateLayouts>;
   // By block type, <slug>:<name>.
-  blocks: Readonly<Record<string, () => Promise<TemplateBlock<Record<string, unknown>>>>>;
+  blocks: Readonly<Record<string, TemplateBlock<Record<string, unknown>>>>;
 }
+
+// A loader for each block component a template declares, by block type (<slug>:<name>).
+export type TemplateBlockLoaders = Readonly<
+  Record<string, () => Promise<TemplateBlock<Record<string, unknown>>>>
+>;
 
 // What `generate` writes for both zones (generated/blocks.ts): each installed template's block
 // declarations, as data.

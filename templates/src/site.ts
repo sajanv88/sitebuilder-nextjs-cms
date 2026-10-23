@@ -7,7 +7,7 @@ import { templates } from "../generated/site";
 import type { TemplateLayouts } from "./types";
 
 // The installed templates' code, for the site zone only: the admin never imports template code
-// (it reads ./admin). A template's layouts are loaded when it's drawn with.
+// (it reads ./admin).
 
 export type { TemplateLayouts } from "./types";
 
@@ -32,25 +32,11 @@ export async function loadTemplate(
   const template = templates[slug] ?? fallback;
   const fromDefault = LAYOUT_NAMES.some((name) => !template.layouts[name]);
 
-  const load = async <Name extends keyof TemplateLayouts>(
-    name: Name,
-  ): Promise<TemplateLayouts[Name]> => {
-    const loader = template.layouts[name] ?? fallback.layouts[name];
-    if (!loader) throw new Error(`The default template has no ${name} layout`);
-    return loader();
+  const layout = <Name extends keyof TemplateLayouts>(name: Name): TemplateLayouts[Name] => {
+    const component = template.layouts[name] ?? fallback.layouts[name];
+    if (!component) throw new Error(`The default template has no ${name} layout`);
+    return component;
   };
-  const [site, page, post, archive, notFound, blocks] = await Promise.all([
-    load("site"),
-    load("page"),
-    load("post"),
-    load("archive"),
-    load("notFound"),
-    Promise.all(
-      Object.entries(template.blocks).map(
-        async ([type, loader]) => [type, await loader()] as const,
-      ),
-    ),
-  ]);
 
   const stylesheets = [
     ...(fromDefault && template !== fallback && fallback.stylesheet ? [fallback.stylesheet] : []),
@@ -58,9 +44,15 @@ export async function loadTemplate(
   ];
   return {
     slug: templates[slug] ? slug : "default",
-    layouts: { site, page, post, archive, notFound },
+    layouts: {
+      site: layout("site"),
+      page: layout("page"),
+      post: layout("post"),
+      archive: layout("archive"),
+      notFound: layout("notFound"),
+    },
     stylesheets,
     options: optionValues(template.options, savedOptions),
-    blocks: Object.fromEntries(blocks),
+    blocks: template.blocks,
   };
 }

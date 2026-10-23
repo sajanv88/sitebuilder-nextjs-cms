@@ -11,6 +11,7 @@ import { adminModule, writeGenerated } from "./generate";
 import { folderHash } from "./hash";
 import { checkInstalled } from "./installed";
 import { type LockEntry, readLockfile, writeLockfile } from "./lockfile";
+import { AddFindings, addTemplate, removeTemplate } from "./manage";
 
 const FIXTURES = join(import.meta.dirname, "..", "..", "template-checks", "fixtures");
 const GOOD = join(FIXTURES, "good");
@@ -150,6 +151,86 @@ describe("checkInstalled", () => {
   });
 });
 
+describe("template add and remove", () => {
+  // A template folder outside the repository, as an author would have it.
+  async function authored(): Promise<string> {
+    const dir = join(await temp(), "good");
+    await cp(GOOD, dir, { recursive: true });
+    return dir;
+  }
+
+  test("add checks a copy, installs it as local, and leaves no staging folder", async () => {
+    const { root } = await repo();
+    const source = await authored();
+    const { entry, replaced } = await addTemplate(root, source, context, { replace: false });
+    expect(entry).toMatchObject({ slug: "good", version: "1.0.0", source: "local" });
+    expect(replaced).toBe(false);
+    expect(entry.sha256).toBe(await folderHash(join(root, "templates", "good")));
+    expect((await readLockfile(root)).templates.map((t) => t.slug)).toEqual(["default", "good"]);
+    expect((await readdir(join(root, "templates"))).filter((name) => name.startsWith("."))).toEqual(
+      [],
+    );
+    // The lockfile's own checks accept it outside production.
+    const report = await checkInstalled(root, context, { allowLocal: true });
+    expect(report.findings).toEqual([]);
+  });
+
+  test("add refuses an installed slug unless --replace, and a bundled one always", async () => {
+    const { root } = await repo();
+    const source = await authored();
+    await addTemplate(root, source, context, { replace: false });
+    await writeFile(join(source, "NOTES.md"), "second version");
+    await expect(addTemplate(root, source, context, { replace: false })).rejects.toThrow(
+      "is installed already",
+    );
+    const { replaced, entry } = await addTemplate(root, source, context, { replace: true });
+    expect(replaced).toBe(true);
+    expect(await readFile(join(root, "templates", "good", "NOTES.md"), "utf8")).toBe(
+      "second version",
+    );
+    expect(entry.sha256).toBe(await folderHash(join(root, "templates", "good")));
+
+    const manifest = join(source, "template.json");
+    await writeFile(manifest, (await readFile(manifest, "utf8")).replace('"good"', '"default"'));
+    await expect(addTemplate(root, source, context, { replace: true })).rejects.toThrow(
+      "comes with Sitebuilder",
+    );
+  });
+
+  test("add installs nothing when the checks fail, and says which rule", async () => {
+    const { root } = await repo();
+    const source = await authored();
+    await rm(join(source, "LICENSE"));
+    const failed = addTemplate(root, source, context, { replace: false });
+    await expect(failed).rejects.toBeInstanceOf(AddFindings);
+    await failed.catch((error: AddFindings) => {
+      expect(rules(error.findings)).toEqual(["TPL-MANIFEST-004"]);
+    });
+    expect(await readdir(join(root, "templates"))).not.toContain("good");
+    expect((await readdir(join(root, "templates"))).filter((name) => name.startsWith("."))).toEqual(
+      [],
+    );
+    expect((await readLockfile(root)).templates.map((t) => t.slug)).toEqual(["default"]);
+  });
+
+  test("add by name says the marketplace comes later", async () => {
+    const { root } = await repo();
+    await expect(addTemplate(root, "ledger@1.0.0", context, { replace: false })).rejects.toThrow(
+      "arrives in a later version",
+    );
+  });
+
+  test("remove takes the folder and the lock entry, but never the default", async () => {
+    const { root } = await repo();
+    await addTemplate(root, await authored(), context, { replace: false });
+    await expect(removeTemplate(root, "default")).rejects.toThrow("can't be removed");
+    await expect(removeTemplate(root, "nothing")).rejects.toThrow("isn't installed");
+    expect((await removeTemplate(root, "good")).slug).toBe("good");
+    expect(await readdir(join(root, "templates"))).not.toContain("good");
+    expect((await readLockfile(root)).templates.map((t) => t.slug)).toEqual(["default"]);
+  });
+});
+
 describe("adminModule", () => {
   test("imports each screenshot and inlines the data, with no template code", async () => {
     const { root } = await repo();
@@ -187,17 +268,29 @@ describe("writeGenerated", () => {
 
     const generated = join(root, "templates", "generated");
     const site = await readFile(join(generated, "site.ts"), "utf8");
-    expect(site).toContain('notFound: () => import("../default/components/NotFound")');
-    expect(site).toContain('site: () => import("../code/components/Site")');
-    expect(site).not.toContain('archive: () => import("../code/');
-    expect(site).toContain('"code:testimonial": () =>');
+    // Imported statically, each under its own name, with no lazy import().
+    const imported = (file: string) =>
+      new RegExp(`^import (C\\d+) from "\\.\\./${file}";$`, "m").exec(site)?.[1];
+    const notFound = imported("default/components/NotFound");
+    const codeSite = imported("code/components/Site");
+    expect(site).toContain(`notFound: ${notFound},`);
+    expect(site).toContain(`site: ${codeSite},`);
+    expect(imported("code/components/Archive")).toBeUndefined();
+    expect(site).toContain(
+      `"code:testimonial": ${imported("code/components/blocks/Testimonial")} as TemplateBlock`,
+    );
     expect(site).toContain('import type { TemplateBlock } from "@sitebuilder/template-sdk";');
-    expect(site).not.toMatch(/^import (?!type)/m);
+    expect(site).not.toContain("import(");
     // Both zones register the blocks from data: the code template's, and no layout code.
     const blocks = await readFile(join(generated, "blocks.ts"), "utf8");
     expect(blocks).toContain('{ slug: "code", name: "Code", blocks: [{"name":"testimonial"');
     expect(blocks).not.toContain('slug: "default"');
     expect(blocks).not.toMatch(/import\(|^import (?!type)/m);
+    // The canvas draws blocks in the browser: their components, and no layout.
+    const canvas = await readFile(join(generated, "canvas.ts"), "utf8");
+    expect(canvas).toContain('"code:testimonial": () =>');
+    expect(canvas).toContain('"default": {\n  },');
+    expect(canvas).not.toContain("components/Site");
 
     const href =
       /"code": \{\s+stylesheet: "(\/_templates\/code\/[0-9a-f]{12}\/styles\/main\.css)"/.exec(
