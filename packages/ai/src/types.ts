@@ -62,9 +62,18 @@ export interface AiModel {
   label: string;
 }
 
+// A picture sent with a message, for a model that takes images (alt text, 8.7).
+export interface AiImage {
+  mediaType: "image/jpeg" | "image/png" | "image/webp" | "image/gif";
+  // Base64, without a data: prefix.
+  data: string;
+}
+
 export interface AiMessage {
   role: "user" | "assistant";
   content: string;
+  // Before the text. Only on a user message, and only for a model that takes images.
+  images?: readonly AiImage[];
 }
 
 // The JSON Schema the answer must follow.

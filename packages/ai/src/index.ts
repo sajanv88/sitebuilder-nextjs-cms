@@ -16,6 +16,7 @@ export type {
   AiConnection,
   AiError,
   AiErrorCode,
+  AiImage,
   AiMessage,
   AiModel,
   AiProvider,

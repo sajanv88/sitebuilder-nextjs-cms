@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-import { can } from "@sitebuilder/auth";
+import { can, canSome } from "@sitebuilder/auth";
 import { collectEntryIds, collectMediaIds } from "@sitebuilder/blocks";
 import {
   db,
@@ -84,7 +84,7 @@ export async function EditorScreen({
   const owned = { type, ownerId } as const;
   const mediaIds = collectMediaIds(content);
   if (initial.values.featuredMediaId) mediaIds.push(initial.values.featuredMediaId);
-  const [allTerms, parents, authors, links, posts, media, template, theme] = await Promise.all([
+  const [allTerms, parents, authors, links, posts, media, template, theme, ai] = await Promise.all([
     listTermOptions(db),
     type === "page" ? listParentOptions(db, id) : null,
     type === "post" && can(viewer, "post.update") ? listUserOptions(db) : null,
@@ -93,6 +93,7 @@ export async function EditorScreen({
     renderMedia(mediaIds),
     getSettings(db, "template"),
     getSettings(db, "theme"),
+    getSettings(db, "ai"),
   ]);
   const terms = type === "post" && can(viewer, "term.assign") ? allTerms : null;
   // The current parent is listed even when it's in the trash, so saving keeps it.
@@ -153,6 +154,14 @@ export async function EditorScreen({
         trash: can(viewer, `${type}.trash`, owned),
         createTerms: can(viewer, "term.create"),
         siteBackground: can(viewer, "theme.update"),
+      }}
+      assistant={{
+        // B8: help needs the assistant set up, and help on this entry: any entry, or the
+        // viewer's own.
+        available:
+          ai !== undefined &&
+          (can(viewer, "ai.assist") || (canSome(viewer, "ai.assist") && ownerId === viewer.id)),
+        images: ai?.supportsImages ?? false,
       }}
       siteBackground={theme?.pageBackground ?? ""}
       created={created}

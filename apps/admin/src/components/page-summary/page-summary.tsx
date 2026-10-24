@@ -3,15 +3,21 @@
 
 "use client";
 
-import { TableOfContents } from "@nuvui/react";
+import { Button, TableOfContents } from "@nuvui/react";
 import type { Block } from "@sitebuilder/schema";
 import { type MouseEvent, useMemo } from "react";
-import { countWords, outline, readingMinutes } from "@/components/block-editor/page-stats";
+import {
+  countWords,
+  outline,
+  readingMinutes,
+  todoMarkers,
+} from "@/components/block-editor/page-stats";
 import "./page-summary.scss";
 
-// At the top of the Page tab: how long the page is to read, and its headings as nuvui's
-// TableOfContents. A heading's link selects its block and brings it into view in the canvas;
-// the selected block's heading is the one marked.
+// At the top of the Page tab: how long the page is to read, its headings as nuvui's
+// TableOfContents, and the [TODO] markers left to fill in. A heading's link, or a marker,
+// selects its block and brings it into view in the canvas; the selected block's heading is the
+// one marked.
 export function PageSummary({
   title,
   blocks,
@@ -25,6 +31,7 @@ export function PageSummary({
 }) {
   const words = useMemo(() => countWords(title, blocks), [title, blocks]);
   const items = useMemo(() => outline(blocks), [blocks]);
+  const markers = useMemo(() => todoMarkers(blocks), [blocks]);
   const minutes = readingMinutes(words);
   const marked = items.find((item) => item.blockId === selectedId)?.id ?? null;
 
@@ -62,6 +69,28 @@ export function PageSummary({
           No headings yet. A Heading block, a hero or a heading in text adds one.
         </p>
       )}
+      {markers.length > 0 ? (
+        <>
+          <h3 className="page-summary__title">{`To fill in (${markers.length})`}</h3>
+          <p className="page-summary__empty">
+            Visitors see these as written. Publishing asks first while any are left.
+          </p>
+          <ul className="page-summary__markers">
+            {markers.map((marker) => (
+              <li key={marker.id}>
+                <Button
+                  intent="ghost"
+                  size="sm"
+                  className="page-summary__marker"
+                  onClick={() => onJump(marker.blockId)}
+                >
+                  {`${marker.label}: ${marker.text}`}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
     </section>
   );
 }

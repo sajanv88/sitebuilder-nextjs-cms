@@ -62,6 +62,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useId, useState } from "react";
 import { type LinkOption, searchLinkTargets } from "@/actions/entry-editor";
 import { BACKGROUND_PRESETS } from "@/components/appearance-form/brand";
+import { AltSuggestion } from "@/components/assistant/assistant";
 import { useEditorData } from "@/components/block-editor/editor-data";
 import { MediaPicker } from "@/components/media-picker/media-picker";
 import "./block-fields.scss";
@@ -728,13 +729,25 @@ function MediaListField({
 }
 
 // An image's alt text: the file's own, its own words here, or none (decorative, design §5.5).
+// The picture an alt field describes: its block's (or list item's) media prop.
+function pictureOf(siblings: Record<string, unknown>): string | null {
+  for (const [name, value] of Object.entries(siblings)) {
+    if ((name === "mediaId" || name.endsWith("MediaId")) && typeof value === "string" && value) {
+      return value;
+    }
+  }
+  return null;
+}
+
 function AltField({
   field,
   value,
   onChange,
   errors,
+  siblings,
 }: FieldProps & { field: Extract<BlockField, { kind: "alt" }> }) {
   const mode = value === undefined ? "file" : value === "" ? "decorative" : "own";
+  const picture = pictureOf(siblings);
   return (
     <Fieldset className="block-fields__group">
       <FieldsetLegend>{field.label}</FieldsetLegend>
@@ -770,6 +783,7 @@ function AltField({
           <FieldError>{errors[field.name]}</FieldError>
         </Field>
       ) : null}
+      {picture ? <AltSuggestion mediaId={picture} max={field.max} onUse={onChange} /> : null}
     </Fieldset>
   );
 }

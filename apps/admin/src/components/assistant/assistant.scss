@@ -1,0 +1,96 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+.assistant {
+  display: grid;
+  gap: a.space(5);
+  align-content: start;
+
+  &__about,
+  &__hint {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  &__section {
+    display: grid;
+    gap: a.space(3);
+    padding-block-start: a.space(4);
+    border-block-start: var(--nuv-border-width) solid var(--color-border);
+  }
+
+  &__heading {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &__scope {
+    display: grid;
+    gap: a.space(2);
+    justify-items: start;
+  }
+
+  &__label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  &__quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(1);
+  }
+
+  // A suggestion waiting for Use or Dismiss.
+  &__proposal {
+    display: grid;
+    gap: a.space(2);
+    padding: a.space(3);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-muted);
+  }
+
+  &__seo {
+    display: grid;
+    gap: a.space(1);
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+
+  &__term {
+    color: var(--color-muted-foreground);
+    font-size: var(--text-xs);
+  }
+
+  &__value {
+    margin: 0 0 a.space(2);
+  }
+
+  &__actions {
+    display: flex;
+    gap: a.space(2);
+    justify-content: flex-end;
+  }
+
+  &__alt {
+    display: grid;
+    gap: a.space(2);
+    justify-items: start;
+  }
+
+  &__suggested {
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+
+  &__error {
+    margin: 0;
+    color: var(--color-danger);
+    font-size: var(--text-sm);
+  }
+}

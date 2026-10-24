@@ -49,6 +49,7 @@ docker compose up --build                        # the whole stack, from the rep
 docker build -f apps/admin/Dockerfile -t admin .   # one image
 helm lint --strict charts/sitebuilder
 pnpm licence-list --check                        # dependency licences reviewed, THIRD_PARTY_LICENSES.md current
+pnpm ai:live-check                               # one small answer from each AI provider set in the shell (keys from the shell)
 pnpm sitebuilder template verify                 # every installed template passes the checks and matches its lock
 pnpm sitebuilder template lock <slug>            # after changing a bundled template on purpose
 pnpm sitebuilder template add <path> [--replace] # install a template from a folder (as local, unreviewed)

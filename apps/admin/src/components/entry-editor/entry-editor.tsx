@@ -18,6 +18,13 @@ import {
 import {
   Alert,
   AlertDescription,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
   Badge,
   Breadcrumb,
   BreadcrumbItem,
@@ -78,6 +85,13 @@ import {
 import { saveEntry } from "@/actions/entry-editor";
 import { trashEntries } from "@/actions/entry-list";
 import {
+  type AssistantAvailability,
+  AssistantPanel,
+  AssistantProvider,
+  type RewriteProposal,
+  type SeoProposal,
+} from "@/components/assistant/assistant";
+import {
   BlockCanvas,
   type CanvasHandle,
   type Device,
@@ -91,8 +105,10 @@ import {
   locate,
   moveBy,
   removeBlock,
+  replaceBlock,
   updateProps,
 } from "@/components/block-editor/editor-model";
+import { fieldMarkers, todoMarkers } from "@/components/block-editor/page-stats";
 import { snapshotOf, useAutosave } from "@/components/block-editor/use-autosave";
 import { useHistory } from "@/components/block-editor/use-history";
 import { usePinnedBlocks } from "@/components/block-editor/use-pinned-blocks";
@@ -178,6 +194,7 @@ function statusLine(entry: EditorEntry | null, formatDateTime: (date: Date) => s
 }
 
 type View = "blocks" | "page" | "settings";
+type SettingsTab = "block" | "entry" | "assistant";
 
 // Text fields keep their own keys: Ctrl+Z there undoes typing, and Delete deletes a letter.
 // Dialogs, menus, lists and the outline's tree have keys of their own too.
@@ -210,6 +227,7 @@ export function EntryEditor({
   allowed,
   created,
   siteBackground,
+  assistant,
 }: {
   type: EntryKind;
   initial: Pick<EditorState, "values" | "entry">;
@@ -220,6 +238,8 @@ export function EntryEditor({
   created: boolean;
   // Every page's and post's background, from the theme ("" for none).
   siteBackground: string;
+  // Help on this entry (8.7).
+  assistant: AssistantAvailability;
 }) {
   const router = useRouter();
   const [state, action, saving] = useActionState(saveEntry, { result: "idle", ...initial });
@@ -294,7 +314,7 @@ export function EntryEditor({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [view, setView] = useState<View>("page");
   const [sideTab, setSideTab] = useState<"add" | "outline">("add");
-  const [settingsTab, setSettingsTab] = useState<"block" | "entry">("entry");
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>("entry");
   const selected = selectedId ? findBlock(blocks, selectedId) : undefined;
   const where = selectedId ? locate(blocks, selectedId) : undefined;
   const siblings = where ? (where.parent?.children ?? blocks).length : 0;
@@ -358,6 +378,40 @@ export function EntryEditor({
   const [device, setDevice] = useState<Device>("fit");
   const [quickAdd, setQuickAdd] = useState(false);
 
+  // ── The assistant ────────────────────────────────────────────────────────────────────────
+  // A rewrite waits here, shown in the canvas, until it's accepted or discarded: the blocks
+  // themselves, and so autosave and the undo history, never hold one that wasn't accepted.
+  const [proposal, setProposal] = useState<RewriteProposal | null>(null);
+  // The block it replaces is gone (deleted, or undone away): nothing left to propose against.
+  const stale =
+    proposal !== null && proposal.replaces !== null && !findBlock(blocks, proposal.replaces);
+  useEffect(() => {
+    if (stale) setProposal(null);
+  }, [stale]);
+  const shownBlocks = useMemo(() => {
+    if (!proposal || stale) return blocks;
+    return proposal.replaces === null
+      ? proposal.blocks
+      : replaceBlock(blocks, proposal.replaces, proposal.blocks);
+  }, [blocks, proposal, stale]);
+
+  function acceptProposal() {
+    if (!proposal) return;
+    const { replaces, blocks: next } = proposal;
+    setBlocks((now) => (replaces === null ? next : replaceBlock(now, replaces, next)));
+    setProposal(null);
+    if (next[0]) select(next[0].id);
+  }
+
+  // Search text the assistant suggested, put in the fields (they keep their own state, so a new
+  // version draws them again with these values).
+  const [seoFill, setSeoFill] = useState<(SeoProposal & { version: number }) | null>(null);
+
+  // Publishing with [TODO] markers left asks first.
+  const [confirmTodos, setConfirmTodos] = useState(false);
+  const [markerCount, setMarkerCount] = useState(0);
+  const publishAnyway = useRef(false);
+
   // ── Publishing date and time ─────────────────────────────────────────────────────────────
   const [pickedDay, setPickedDay] = useState<Date | null>();
   const [pickedTime, setPickedTime] = useState<string>();
@@ -387,6 +441,25 @@ export function EntryEditor({
   // Text in the date field that isn't a date leaves no date, which would publish now. The form
   // has noValidate, so the browser doesn't stop it: stop Publish here instead.
   function onSubmit(event: SubmitEvent<HTMLFormElement>) {
+    // [TODO] markers left: publishing asks first (8.7). The search fields aren't state, so
+    // they're read from the form.
+    if (
+      event.nativeEvent.submitter?.getAttribute("value") === "publish" &&
+      !publishAnyway.current
+    ) {
+      const data = new FormData(event.currentTarget);
+      const fields = ["excerpt", "seoTitle", "seoDescription"].map((name) =>
+        String(data.get(name) ?? ""),
+      );
+      const count = todoMarkers(blocks).length + fieldMarkers([title, ...fields]).length;
+      if (count > 0) {
+        event.preventDefault();
+        setMarkerCount(count);
+        setConfirmTodos(true);
+        return;
+      }
+    }
+    publishAnyway.current = false;
     if (
       event.nativeEvent.submitter?.getAttribute("value") === "publish" &&
       dayField.current &&
@@ -603,291 +676,360 @@ export function EntryEditor({
 
   return (
     <EditorDataProvider initial={data}>
-      <form ref={form} action={action} onSubmit={onSubmit} className="entry-editor" noValidate>
-        <input type="hidden" name="id" value={entryId} />
-        <input type="hidden" name="type" value={type} />
-        <input type="hidden" name="updatedAt" value={token} />
-        <input type="hidden" name="publishAt" value={publishAt} />
-        <input type="hidden" name="content" value={JSON.stringify(blocks)} />
-        <input type="hidden" name="featuredMediaId" value={featuredMediaId} />
-        <input type="hidden" name="background" value={background} />
-        {everywhere ? <input type="hidden" name="backgroundEverywhere" value="on" /> : null}
+      <AssistantProvider
+        availability={assistant}
+        snapshot={() => ({ entryId, type, title, content: blocks })}
+      >
+        <form ref={form} action={action} onSubmit={onSubmit} className="entry-editor" noValidate>
+          <input type="hidden" name="id" value={entryId} />
+          <input type="hidden" name="type" value={type} />
+          <input type="hidden" name="updatedAt" value={token} />
+          <input type="hidden" name="publishAt" value={publishAt} />
+          <input type="hidden" name="content" value={JSON.stringify(blocks)} />
+          <input type="hidden" name="featuredMediaId" value={featuredMediaId} />
+          <input type="hidden" name="background" value={background} />
+          {everywhere ? <input type="hidden" name="backgroundEverywhere" value="on" /> : null}
 
-        <header className="entry-editor__head">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href={noun.list}>{noun.many}</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{title || `New ${noun.one}`}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <div className="entry-editor__row">
-            <div className="entry-editor__heading">
-              <h1 className="entry-editor__title">{title || `New ${noun.one}`}</h1>
-              {entry ? (
-                <Badge intent={STATUS[entry.status].intent} variant="outline">
-                  {STATUS[entry.status].label}
-                </Badge>
-              ) : null}
-              <span className="entry-editor__save-state" role="status">
-                {saveState}
-              </span>
-            </div>
-            <div className="entry-editor__actions">
-              <div className="entry-editor__history">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      intent="ghost"
-                      aria-label="Undo"
-                      aria-keyshortcuts="Control+Z"
-                      disabled={!history.canUndo}
-                      onClick={history.undo}
-                    >
-                      <UndoIcon aria-hidden="true" size={16} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      intent="ghost"
-                      aria-label="Redo"
-                      aria-keyshortcuts="Control+Shift+Z"
-                      disabled={!history.canRedo}
-                      onClick={history.redo}
-                    >
-                      <RedoIcon aria-hidden="true" size={16} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Redo (Ctrl+Shift+Z)</TooltipContent>
-                </Tooltip>
-                <EditorShortcuts />
+          <header className="entry-editor__head">
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link href={noun.list}>{noun.many}</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{title || `New ${noun.one}`}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+            <div className="entry-editor__row">
+              <div className="entry-editor__heading">
+                <h1 className="entry-editor__title">{title || `New ${noun.one}`}</h1>
+                {entry ? (
+                  <Badge intent={STATUS[entry.status].intent} variant="outline">
+                    {STATUS[entry.status].label}
+                  </Badge>
+                ) : null}
+                <span className="entry-editor__save-state" role="status">
+                  {saveState}
+                </span>
               </div>
-              {entry ? <RevisionHistory entryId={entry.id} updatedAt={token} /> : null}
-              {entry ? (
-                // The site zone's preview (design §7): the last saved version, in a new tab.
-                // A plain link: it's another zone, and it sets the draft-mode cookie there.
-                <Button asChild intent="ghost">
-                  <a href={`/api/preview/${entry.id}`} target="_blank" rel="noopener">
-                    <EyeIcon aria-hidden="true" size={16} />
-                    Preview
-                  </a>
-                </Button>
-              ) : null}
-              {entry && allowed.trash ? (
-                <Button intent="ghost" onClick={trash} disabled={busy}>
-                  <TrashIcon size={16} />
-                  Move to trash
-                </Button>
-              ) : null}
-              {allowed.publish && live ? (
-                <Button
-                  type="submit"
-                  name="intent"
-                  value="unpublish"
-                  intent="secondary"
-                  disabled={busy}
-                >
-                  Unpublish
-                </Button>
-              ) : (
-                <Button
-                  ref={saveButton}
-                  type="submit"
-                  name="intent"
-                  value="save"
-                  intent={allowed.publish ? "secondary" : "primary"}
-                  disabled={busy}
-                >
-                  {allowed.publish ? "Save draft" : "Save"}
-                </Button>
-              )}
-              {allowed.publish ? (
-                <Button
-                  ref={publishButton}
-                  type="submit"
-                  name="intent"
-                  value="publish"
-                  disabled={busy}
-                  aria-busy={saving}
-                >
-                  {publishLabel}
-                </Button>
-              ) : null}
+              <div className="entry-editor__actions">
+                <div className="entry-editor__history">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        intent="ghost"
+                        aria-label="Undo"
+                        aria-keyshortcuts="Control+Z"
+                        disabled={!history.canUndo}
+                        onClick={history.undo}
+                      >
+                        <UndoIcon aria-hidden="true" size={16} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        intent="ghost"
+                        aria-label="Redo"
+                        aria-keyshortcuts="Control+Shift+Z"
+                        disabled={!history.canRedo}
+                        onClick={history.redo}
+                      >
+                        <RedoIcon aria-hidden="true" size={16} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Redo (Ctrl+Shift+Z)</TooltipContent>
+                  </Tooltip>
+                  <EditorShortcuts />
+                </div>
+                {entry ? <RevisionHistory entryId={entry.id} updatedAt={token} /> : null}
+                {entry ? (
+                  // The site zone's preview (design §7): the last saved version, in a new tab.
+                  // A plain link: it's another zone, and it sets the draft-mode cookie there.
+                  <Button asChild intent="ghost">
+                    <a href={`/api/preview/${entry.id}`} target="_blank" rel="noopener">
+                      <EyeIcon aria-hidden="true" size={16} />
+                      Preview
+                    </a>
+                  </Button>
+                ) : null}
+                {entry && allowed.trash ? (
+                  <Button intent="ghost" onClick={trash} disabled={busy}>
+                    <TrashIcon size={16} />
+                    Move to trash
+                  </Button>
+                ) : null}
+                {allowed.publish && live ? (
+                  <Button
+                    type="submit"
+                    name="intent"
+                    value="unpublish"
+                    intent="secondary"
+                    disabled={busy}
+                  >
+                    Unpublish
+                  </Button>
+                ) : (
+                  <Button
+                    ref={saveButton}
+                    type="submit"
+                    name="intent"
+                    value="save"
+                    intent={allowed.publish ? "secondary" : "primary"}
+                    disabled={busy}
+                  >
+                    {allowed.publish ? "Save draft" : "Save"}
+                  </Button>
+                )}
+                {allowed.publish ? (
+                  <Button
+                    ref={publishButton}
+                    type="submit"
+                    name="intent"
+                    value="publish"
+                    disabled={busy}
+                    aria-busy={saving}
+                  >
+                    {publishLabel}
+                  </Button>
+                ) : null}
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {state.result === "conflict" || state.result === "failed" || state.result === "invalid" ? (
-          <Alert intent={state.result === "invalid" ? "warning" : "danger"} role="alert">
-            <AlertDescription>{state.message}</AlertDescription>
-          </Alert>
-        ) : null}
+          {state.result === "conflict" ||
+          state.result === "failed" ||
+          state.result === "invalid" ? (
+            <Alert intent={state.result === "invalid" ? "warning" : "danger"} role="alert">
+              <AlertDescription>{state.message}</AlertDescription>
+            </Alert>
+          ) : null}
 
-        {/* Below lg, one of the three at a time. Every pane stays in the form. */}
-        <ToggleGroup
-          type="single"
-          size="sm"
-          value={view}
-          onValueChange={(next) => next && setView(next as View)}
-          aria-label="Show"
-          className="entry-editor__views"
-        >
-          <ToggleGroupItem value="blocks">Add and outline</ToggleGroupItem>
-          <ToggleGroupItem value="page">{noun.title}</ToggleGroupItem>
-          <ToggleGroupItem value="settings">Settings</ToggleGroupItem>
-        </ToggleGroup>
-
-        <div className={`entry-editor__body entry-editor__body--view-${view}`}>
-          <section
-            className="entry-editor__pane entry-editor__pane--blocks"
-            aria-label="Add blocks and outline"
+          {/* Below lg, one of the three at a time. Every pane stays in the form. */}
+          <ToggleGroup
+            type="single"
+            size="sm"
+            value={view}
+            onValueChange={(next) => next && setView(next as View)}
+            aria-label="Show"
+            className="entry-editor__views"
           >
-            <Tabs value={sideTab} onValueChange={(next) => setSideTab(next as "add" | "outline")}>
-              <TabsList>
-                <TabsTrigger value="add">Add</TabsTrigger>
-                <TabsTrigger value="outline">Outline</TabsTrigger>
-              </TabsList>
-              <TabsContent value="add" className="entry-editor__tab">
-                <BlockInserter onAdd={add} pinned={pinned} onPinnedChange={setPinned} />
-              </TabsContent>
-              <TabsContent value="outline" className="entry-editor__tab">
-                <BlockOutline
-                  blocks={blocks}
-                  selectedId={selectedId}
-                  issueIds={issueIds}
-                  onSelect={select}
-                  onMove={(move) => setBlocks((now) => applyMove(now, move))}
-                />
-              </TabsContent>
-            </Tabs>
-          </section>
+            <ToggleGroupItem value="blocks">Add and outline</ToggleGroupItem>
+            <ToggleGroupItem value="page">{noun.title}</ToggleGroupItem>
+            <ToggleGroupItem value="settings">Settings</ToggleGroupItem>
+          </ToggleGroup>
 
-          <section className="entry-editor__pane entry-editor__pane--page" aria-label={noun.title}>
-            <Field required>
-              <FieldLabel>Title</FieldLabel>
-              <FieldControl>
-                <Input
-                  name="title"
-                  value={title}
-                  onChange={(event) => setTitle(event.currentTarget.value)}
-                  maxLength={ENTRY_LIMITS.title}
-                  className="entry-editor__title-input"
-                />
-              </FieldControl>
-              <FieldError>{errors.title}</FieldError>
-            </Field>
-            <div className="entry-editor__canvas-bar">
-              <ToggleGroup
-                type="single"
-                size="sm"
-                value={device}
-                onValueChange={(next) => next && setDevice(next as Device)}
-                aria-label="Show the page at the width of"
-              >
-                {DEVICES.map(({ value, label, icon: Icon }) => (
-                  <ToggleGroupItem key={value} value={value}>
-                    <Icon aria-hidden="true" size={16} />
-                    {label}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-              <Button
-                intent="ghost"
-                size="sm"
-                aria-keyshortcuts="Control+K"
-                onClick={() => setQuickAdd(true)}
-              >
-                Quick add
-                <Kbd>Ctrl</Kbd>
-                <Kbd>K</Kbd>
-              </Button>
-            </div>
-            <BlockCanvas
-              ref={canvas}
-              src={canvasSrc}
-              label={`The ${noun.one} as visitors will see it`}
-              blocks={blocks}
-              selectedId={selectedId}
-              issueIds={issueIds}
-              onSelect={select}
-              title={title}
-              featuredMediaId={featuredMediaId}
-              background={shownBackground}
-              device={device}
-            />
-          </section>
-
-          <section
-            className="entry-editor__pane entry-editor__pane--settings"
-            aria-label="Settings"
-          >
-            <Tabs
-              value={settingsTab}
-              onValueChange={(next) => setSettingsTab(next as "block" | "entry")}
+          <div className={`entry-editor__body entry-editor__body--view-${view}`}>
+            <section
+              className="entry-editor__pane entry-editor__pane--blocks"
+              aria-label="Add blocks and outline"
             >
-              <TabsList>
-                <TabsTrigger value="block">Block</TabsTrigger>
-                <TabsTrigger value="entry">{noun.title}</TabsTrigger>
-              </TabsList>
-              <TabsContent value="block" className="entry-editor__tab">
-                <BlockInspector
-                  block={selected}
-                  issues={issues}
-                  canMoveUp={canMoveUp}
-                  canMoveDown={canMoveDown}
-                  onChange={(props) =>
-                    selectedId &&
-                    // Typing in one block's fields is one undo step (use-history.ts).
-                    setBlocks((now) => updateProps(now, selectedId, props), {
-                      merge: `props:${selectedId}`,
-                    })
-                  }
-                  onMove={moveSelected}
-                  onDuplicate={duplicateSelected}
-                  onRemove={removeSelected}
-                />
-              </TabsContent>
-              {/* Mounted while hidden: its fields go with every save. */}
-              <TabsContent
-                value="entry"
-                forceMount
-                hidden={settingsTab !== "entry"}
-                className="entry-editor__tab"
+              <Tabs value={sideTab} onValueChange={(next) => setSideTab(next as "add" | "outline")}>
+                <TabsList>
+                  <TabsTrigger value="add">Add</TabsTrigger>
+                  <TabsTrigger value="outline">Outline</TabsTrigger>
+                </TabsList>
+                <TabsContent value="add" className="entry-editor__tab">
+                  <BlockInserter onAdd={add} pinned={pinned} onPinnedChange={setPinned} />
+                </TabsContent>
+                <TabsContent value="outline" className="entry-editor__tab">
+                  <BlockOutline
+                    blocks={blocks}
+                    selectedId={selectedId}
+                    issueIds={issueIds}
+                    onSelect={select}
+                    onMove={(move) => setBlocks((now) => applyMove(now, move))}
+                  />
+                </TabsContent>
+              </Tabs>
+            </section>
+
+            <section
+              className="entry-editor__pane entry-editor__pane--page"
+              aria-label={noun.title}
+            >
+              <Field required>
+                <FieldLabel>Title</FieldLabel>
+                <FieldControl>
+                  <Input
+                    name="title"
+                    value={title}
+                    onChange={(event) => setTitle(event.currentTarget.value)}
+                    maxLength={ENTRY_LIMITS.title}
+                    className="entry-editor__title-input"
+                  />
+                </FieldControl>
+                <FieldError>{errors.title}</FieldError>
+              </Field>
+              <div className="entry-editor__canvas-bar">
+                <ToggleGroup
+                  type="single"
+                  size="sm"
+                  value={device}
+                  onValueChange={(next) => next && setDevice(next as Device)}
+                  aria-label="Show the page at the width of"
+                >
+                  {DEVICES.map(({ value, label, icon: Icon }) => (
+                    <ToggleGroupItem key={value} value={value}>
+                      <Icon aria-hidden="true" size={16} />
+                      {label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+                <Button
+                  intent="ghost"
+                  size="sm"
+                  aria-keyshortcuts="Control+K"
+                  onClick={() => setQuickAdd(true)}
+                >
+                  Quick add
+                  <Kbd>Ctrl</Kbd>
+                  <Kbd>K</Kbd>
+                </Button>
+              </div>
+              {proposal ? (
+                <div className="entry-editor__proposal" role="status">
+                  <p className="entry-editor__proposal-text">
+                    {`The page shows the assistant's rewrite of ${proposal.label}. It isn't part of the ${noun.one} until you accept it.`}
+                  </p>
+                  <div className="entry-editor__proposal-actions">
+                    <Button intent="ghost" size="sm" onClick={() => setProposal(null)}>
+                      Discard
+                    </Button>
+                    <Button size="sm" onClick={acceptProposal}>
+                      Accept
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+              <BlockCanvas
+                ref={canvas}
+                src={canvasSrc}
+                label={`The ${noun.one} as visitors will see it`}
+                blocks={shownBlocks}
+                selectedId={selectedId}
+                issueIds={issueIds}
+                onSelect={select}
+                title={title}
+                featuredMediaId={featuredMediaId}
+                background={shownBackground}
+                device={device}
+              />
+            </section>
+
+            <section
+              className="entry-editor__pane entry-editor__pane--settings"
+              aria-label="Settings"
+            >
+              <Tabs
+                value={settingsTab}
+                onValueChange={(next) => setSettingsTab(next as SettingsTab)}
               >
-                <PageSummary title={title} blocks={blocks} selectedId={selectedId} onJump={jump} />
-                <EntrySettings
-                  type={type}
-                  values={state.values}
-                  errors={errors}
-                  entry={entry}
-                  options={options}
-                  createTerms={allowed.createTerms}
-                  publishing={publishing}
-                  featuredMediaId={featuredMediaId}
-                  onFeaturedChange={setFeaturedMediaId}
-                  background={{
-                    color: background,
-                    everywhere,
-                    siteColor,
-                    canSetSite: allowed.siteBackground,
-                    onColorChange: setBackground,
-                    onEverywhereChange: setEverywhere,
-                  }}
-                />
-              </TabsContent>
-            </Tabs>
-          </section>
-        </div>
-      </form>
+                <TabsList>
+                  <TabsTrigger value="block">Block</TabsTrigger>
+                  <TabsTrigger value="entry">{noun.title}</TabsTrigger>
+                  {assistant.available ? (
+                    <TabsTrigger value="assistant">Assistant</TabsTrigger>
+                  ) : null}
+                </TabsList>
+                <TabsContent value="block" className="entry-editor__tab">
+                  <BlockInspector
+                    block={selected}
+                    issues={issues}
+                    canMoveUp={canMoveUp}
+                    canMoveDown={canMoveDown}
+                    onChange={(props) =>
+                      selectedId &&
+                      // Typing in one block's fields is one undo step (use-history.ts).
+                      setBlocks((now) => updateProps(now, selectedId, props), {
+                        merge: `props:${selectedId}`,
+                      })
+                    }
+                    onMove={moveSelected}
+                    onDuplicate={duplicateSelected}
+                    onRemove={removeSelected}
+                  />
+                </TabsContent>
+                {/* Mounted while hidden: its fields go with every save. */}
+                <TabsContent
+                  value="entry"
+                  forceMount
+                  hidden={settingsTab !== "entry"}
+                  className="entry-editor__tab"
+                >
+                  <PageSummary
+                    title={title}
+                    blocks={blocks}
+                    selectedId={selectedId}
+                    onJump={jump}
+                  />
+                  <EntrySettings
+                    type={type}
+                    values={state.values}
+                    errors={errors}
+                    entry={entry}
+                    options={options}
+                    createTerms={allowed.createTerms}
+                    publishing={publishing}
+                    featuredMediaId={featuredMediaId}
+                    onFeaturedChange={setFeaturedMediaId}
+                    filled={seoFill}
+                    background={{
+                      color: background,
+                      everywhere,
+                      siteColor,
+                      canSetSite: allowed.siteBackground,
+                      onColorChange: setBackground,
+                      onEverywhereChange: setEverywhere,
+                    }}
+                  />
+                </TabsContent>
+                {assistant.available ? (
+                  <TabsContent value="assistant" className="entry-editor__tab">
+                    <AssistantPanel
+                      selected={
+                        selected?.type === "column" ? (where?.parent ?? undefined) : selected
+                      }
+                      proposing={proposal !== null}
+                      onRewrite={setProposal}
+                      onSeo={(seo) => {
+                        setSeoFill((now) => ({ ...seo, version: (now?.version ?? 0) + 1 }));
+                        setSettingsTab("entry");
+                      }}
+                    />
+                  </TabsContent>
+                ) : null}
+              </Tabs>
+            </section>
+          </div>
+        </form>
+        <AlertDialog open={confirmTodos} onOpenChange={setConfirmTodos}>
+          <AlertDialogContent size="sm">
+            <AlertDialogTitle>{`Publish with ${markerCount} ${markerCount === 1 ? "marker" : "markers"} left?`}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {`The ${noun.one} still has [TODO: ...] text to fill in, and visitors would see it as written. The ${noun.title} tab lists where.`}
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Go back</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  publishAnyway.current = true;
+                  setConfirmTodos(false);
+                  form.current?.requestSubmit(publishButton.current);
+                }}
+              >
+                Publish anyway
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </AssistantProvider>
       <QuickAdd
         open={quickAdd}
         onOpenChange={setQuickAdd}

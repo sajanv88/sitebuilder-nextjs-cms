@@ -340,6 +340,81 @@ describe("Ollama", () => {
   });
 });
 
+describe("pictures", () => {
+  const withImage: GenerateRequest = {
+    ...request,
+    messages: [
+      {
+        role: "user",
+        content: "Describe it.",
+        images: [{ mediaType: "image/png", data: "iVBORw0KGgo" }],
+      },
+    ],
+  };
+
+  it("go to each provider in its own shape, before the text", async () => {
+    const a = fake(
+      json({
+        model: "m",
+        stop_reason: "end_turn",
+        content: [{ type: "text", text: "{}" }],
+        usage: { input_tokens: 1, output_tokens: 1 },
+      }),
+    );
+    await createProvider(anthropic, a.fetch).generate(withImage);
+    expect(body(a.calls[0]).messages).toEqual([
+      {
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: { type: "base64", media_type: "image/png", data: "iVBORw0KGgo" },
+          },
+          { type: "text", text: "Describe it." },
+        ],
+      },
+    ]);
+
+    const o = fake(
+      json({
+        model: "m",
+        choices: [{ finish_reason: "stop", message: { content: "{}" } }],
+        usage: { prompt_tokens: 1, completion_tokens: 1 },
+      }),
+    );
+    await createProvider(openai, o.fetch).generate(withImage);
+    expect(body(o.calls[0]).messages[1]).toEqual({
+      role: "user",
+      content: [
+        { type: "image_url", image_url: { url: "data:image/png;base64,iVBORw0KGgo" } },
+        { type: "text", text: "Describe it." },
+      ],
+    });
+
+    const l = fake(
+      json({ model: "m", message: { content: "{}" }, done_reason: "stop", eval_count: 1 }),
+    );
+    await createProvider(ollama, l.fetch).generate(withImage);
+    expect(body(l.calls[0]).messages[1]).toEqual({
+      role: "user",
+      content: "Describe it.",
+      images: ["iVBORw0KGgo"],
+    });
+  });
+
+  it("leave a message without pictures as plain text", async () => {
+    const o = fake(
+      json({
+        model: "m",
+        choices: [{ finish_reason: "stop", message: { content: "{}" } }],
+        usage: { prompt_tokens: 1, completion_tokens: 1 },
+      }),
+    );
+    await createProvider(openai, o.fetch).generate(request);
+    expect(body(o.calls[0]).messages[1]).toEqual(request.messages[0]);
+  });
+});
+
 describe("retries", () => {
   const noWait = { sleep: async () => {} };
   const limited = () =>

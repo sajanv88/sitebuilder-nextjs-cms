@@ -67,7 +67,15 @@ export function ollamaProvider(
     async generate(request) {
       const body = {
         model: request.model,
-        messages: [{ role: "system", content: request.system }, ...request.messages],
+        messages: [
+          { role: "system", content: request.system },
+          // Pictures in the message's own images list, base64.
+          ...request.messages.map((message) => ({
+            role: message.role,
+            content: message.content,
+            ...(message.images?.length ? { images: message.images.map((i) => i.data) } : {}),
+          })),
+        ],
         format: request.output.schema,
         stream: false,
         // A thinking model (qwen3.5, deepseek-r1) would spend the output budget thinking before

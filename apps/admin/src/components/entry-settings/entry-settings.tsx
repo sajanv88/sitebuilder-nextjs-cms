@@ -216,6 +216,7 @@ export function EntrySettings({
   featuredMediaId,
   onFeaturedChange,
   background,
+  filled,
 }: {
   type: EntryKind;
   values: EditorValues;
@@ -228,7 +229,10 @@ export function EntrySettings({
   featuredMediaId: string;
   onFeaturedChange: (id: string) => void;
   background: BackgroundChoice;
+  // Search text the assistant suggested and the person took: the fields draw again with it.
+  filled?: { seoTitle: string; seoDescription: string; excerpt: string; version: number } | null;
 }) {
+  const fill = filled ?? null;
   return (
     <div className="entry-settings">
       <Section title="Publishing">{publishing}</Section>
@@ -322,10 +326,11 @@ export function EntrySettings({
 
       <Section title="Summary">
         <Counted
+          key={`excerpt-${fill?.version ?? 0}`}
           name="excerpt"
           label="Excerpt"
           limit={ENTRY_LIMITS.excerpt}
-          defaultValue={values.excerpt}
+          defaultValue={fill?.excerpt || values.excerpt}
           multiline
           error={errors.excerpt}
         />
@@ -333,17 +338,19 @@ export function EntrySettings({
 
       <Section title="Search engines">
         <Counted
+          key={`seoTitle-${fill?.version ?? 0}`}
           name="seoTitle"
           label="Title for search results"
           limit={ENTRY_LIMITS.seoTitle}
-          defaultValue={values.seoTitle}
+          defaultValue={fill?.seoTitle ?? values.seoTitle}
           error={errors.seoTitle}
         />
         <Counted
+          key={`seoDescription-${fill?.version ?? 0}`}
           name="seoDescription"
           label="Description for search results"
           limit={ENTRY_LIMITS.seoDescription}
-          defaultValue={values.seoDescription}
+          defaultValue={fill?.seoDescription ?? values.seoDescription}
           multiline
           error={errors.seoDescription}
         />

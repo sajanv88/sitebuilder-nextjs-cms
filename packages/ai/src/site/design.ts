@@ -14,7 +14,7 @@ import {
   withBlockIds,
 } from "@sitebuilder/schema";
 import * as v from "valibot";
-import type { AiError, AiMessage, AiProvider, Usage } from "../types";
+import type { AiError, AiImage, AiMessage, AiProvider, Usage } from "../types";
 import {
   type BlockSpec,
   catalogLines,
@@ -59,6 +59,9 @@ export interface DesignContext {
   signal?: AbortSignal;
 }
 
+// What `ask` needs: the design steps' context, and help on a page's (help.ts).
+export type AskContext = Pick<DesignContext, "provider" | "model" | "signal">;
+
 // `repaired`: what was wrong with the first answer, when a second was asked for.
 export type StepResult<T> =
   | { ok: true; value: T; attempts: number; usage: Usage; repaired?: ContentIssue[] }
@@ -71,12 +74,12 @@ export type StepResult<T> =
       repaired?: ContentIssue[];
     };
 
-const addUsage = (a: Usage, b: Usage): Usage => ({
+export const addUsage = (a: Usage, b: Usage): Usage => ({
   inputTokens: a.inputTokens + b.inputTokens,
   outputTokens: a.outputTokens + b.outputTokens,
 });
 
-const NONE: Usage = { inputTokens: 0, outputTokens: 0 };
+export const NONE: Usage = { inputTokens: 0, outputTokens: 0 };
 
 // The problems with an answer, as a list for the repair: at most 20 (B7).
 function problems(issues: readonly ContentIssue[]): string {
@@ -86,7 +89,7 @@ function problems(issues: readonly ContentIssue[]): string {
     .join("\n");
 }
 
-const valibotIssues = (issues: readonly v.BaseIssue<unknown>[]): ContentIssue[] =>
+export const valibotIssues = (issues: readonly v.BaseIssue<unknown>[]): ContentIssue[] =>
   issues.map((issue) => ({
     path: (issue.path ?? []).map((item) =>
       typeof item.key === "number" ? item.key : String(item.key),
@@ -96,15 +99,19 @@ const valibotIssues = (issues: readonly v.BaseIssue<unknown>[]): ContentIssue[] 
   }));
 
 // Asks, checks the answer with `check`, and asks once more with the problems if it fails.
-async function ask<T>(
-  context: DesignContext,
+// `images` go with the first question, for a model that takes them.
+export async function ask<T>(
+  context: AskContext,
   system: string,
   user: string,
   output: { name: string; schema: Record<string, unknown> },
   maxOutputTokens: number,
   check: (value: unknown) => { ok: true; value: T } | { ok: false; issues: ContentIssue[] },
+  images?: readonly AiImage[],
 ): Promise<StepResult<T>> {
-  const messages: AiMessage[] = [{ role: "user", content: user }];
+  const messages: AiMessage[] = [
+    { role: "user", content: user, ...(images?.length ? { images } : {}) },
+  ];
   let usage = NONE;
   let repaired: ContentIssue[] | undefined;
   const extra = () => (repaired ? { repaired } : {});
@@ -198,7 +205,7 @@ const templateLines = (catalog: Catalog, available: readonly string[]) =>
   catalogLines(catalog.templateBlocks, available);
 
 // The library's files, one a line: id, kind, file name and alt text.
-const mediaLines = (media: readonly MediaChoice[]) =>
+export const mediaLines = (media: readonly MediaChoice[]) =>
   media.map((m) => `${m.id} | ${m.kind} | ${m.filename}${m.alt ? ` | ${m.alt}` : ""}`).join("\n");
 
 export function planSite(
@@ -300,7 +307,7 @@ export interface PageJob {
 
 // Text cut at a word boundary to at most `max` characters: an SEO title or description a little
 // long isn't worth failing a page over.
-function clip(text: string, max: number): string {
+export function clip(text: string, max: number): string {
   const trimmed = text.trim();
   if (trimmed.length <= max) return trimmed;
   const cut = trimmed.slice(0, max + 1);
@@ -335,7 +342,7 @@ type Section = PlannedPage["sections"][number];
 // The provider's refusal of a schema it finds too big to compile (Anthropic's structured output:
 // "The compiled grammar is too large"; the spike found it on home pages, which plan the most
 // block types). The page is then written a few sections at a time (decisions #133).
-function tooLarge(step: StepResult<unknown>): boolean {
+export function tooLarge(step: StepResult<unknown>): boolean {
   if (step.ok || step.error?.code !== "bad_request") return false;
   const detail = step.error.detail ?? "";
   return /grammar|schema/i.test(detail) && /large|complex|too many/i.test(detail);

@@ -117,6 +117,30 @@
     padding-block-start: a.space(4);
   }
 
+  // The assistant's rewrite, shown in the canvas: what it is, and Accept or Discard.
+  &__proposal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2) a.space(4);
+    align-items: center;
+    justify-content: space-between;
+    padding: a.space(2) a.space(3);
+    border: var(--nuv-border-width) solid var(--color-primary);
+    border-radius: var(--radius-md);
+    background-color: color-mix(in oklab, var(--color-primary) 8%, var(--color-surface));
+  }
+
+  &__proposal-text {
+    flex: 1 1 16rem;
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+
+  &__proposal-actions {
+    display: flex;
+    gap: a.space(2);
+  }
+
   &__title-input {
     font-size: var(--text-lg);
   }

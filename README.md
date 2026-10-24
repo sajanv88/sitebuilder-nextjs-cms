@@ -110,6 +110,24 @@ pnpm build                                           # or: docker compose up --b
 
 To write a template, start from a copy of `templates/ledger` under a new name. It has its own layouts, a stylesheet, options, a block and starter pages. `pnpm sitebuilder template verify <folder>` runs the same checks as `add`. A template's code gets only plain values (`packages/template-sdk`), and may import only React, nuvui, `next/link`, `next/image` and its own files.
 
+## AI assistant
+
+Optional, and off until an admin sets it up in **Settings → AI** with a provider and their own key: Anthropic, OpenAI, or an Ollama server (yours, or Ollama's cloud). The key is stored encrypted with `AUTH_SECRET`; the admin sees only its last four characters.
+
+- **Create with AI** (Pages, admins): describe the site, answer a few questions, check the plan, and the pages are written as drafts. Apply sets the menus, the home page and the title; Discard puts back what Apply replaced.
+- **Assistant** (the editor's third tab): rewrite the selected block or the whole page from an instruction, suggest the search title, description and excerpt, and write a picture's alt text when the admin has said the model takes pictures. Every answer is a proposal to accept or discard; nothing is saved until you save. Admins and editors can use it on any page or post, authors on their own posts.
+- **`[TODO: …]` markers** are what the assistant couldn't know and left for you. The Page tab lists them, and publishing a page that still has one asks first.
+
+**What's sent to the provider:** the words you type for it (the site's description, your answers, an instruction), the page's blocks and title, the names and alt text of up to 30 pictures from the media library, and, for alt text, the picture itself. Never passwords, keys, other users' details or anything from Settings. The provider keeps what it's sent under its own terms; check its data-retention and training terms before you turn it on.
+
+**What the site keeps:** one row per request in `ai_runs`, with who asked, the kind, the model, the token counts, how long it took and any error. No prompts and no answers. Rows are removed after 180 days.
+
+**Limits:** 3 site designs a day per user, 20 assistant requests an hour per user, 3 requests at once per user, and the daily token limit an admin sets for the whole site (midnight UTC starts a new day).
+
+**Ollama on your own machine or network:** the server refuses private and local addresses unless `AI_ALLOW_PRIVATE_URLS=true` (see [Configuration](#configuration)). Link-local and cloud metadata addresses are refused either way.
+
+**Checking a provider by hand:** `pnpm ai:live-check` asks each provider set in your shell for one small answer: `ANTHROPIC_API_KEY` (and `ANTHROPIC_MODEL`), `OPENAI_API_KEY` and `OPENAI_MODEL`, `OLLAMA_URL` and `OLLAMA_MODEL`. Keys come from the shell, never from a file. It costs about a cent per provider; run it before a release that changes the assistant.
+
 ## Upgrading
 
 Your content lives in Postgres and the media storage; the images hold no state.

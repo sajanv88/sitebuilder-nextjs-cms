@@ -45,15 +45,28 @@ async function readCapped(request: Request): Promise<string | null> {
   return new TextDecoder().decode(Buffer.concat(chunks));
 }
 
+// Who may make the request: designing a site unless the handler says otherwise (help on a page
+// checks the entry itself afterwards).
+export interface AiPermit {
+  allowed: (viewer: Viewer) => boolean;
+  refusal: string;
+}
+
+const DESIGN: AiPermit = {
+  allowed: (viewer) => can(viewer, "ai.generateSite"),
+  refusal: "You can't design a site with AI.",
+};
+
 export async function aiRequest<T>(
   request: Request,
   schema: v.GenericSchema<unknown, T>,
+  permit: AiPermit = DESIGN,
 ): Promise<AiRequest<T>> {
   const guard = await guardRequest(request);
   if (!guard.ok) return guard;
   const { viewer } = guard;
-  if (!can(viewer, "ai.generateSite")) {
-    return { ok: false, response: errorResponse(403, "You can't design a site with AI.") };
+  if (!permit.allowed(viewer)) {
+    return { ok: false, response: errorResponse(403, permit.refusal) };
   }
   const text = await readCapped(request);
   if (text === null)

@@ -67,7 +67,24 @@ export function openaiProvider(key: string, fetch: FetchLike): AiProvider {
       const body = {
         model: request.model,
         max_completion_tokens: request.maxOutputTokens,
-        messages: [{ role: "system", content: request.system }, ...request.messages],
+        messages: [
+          { role: "system", content: request.system },
+          // Pictures as data: URLs in image_url parts, before the text.
+          ...request.messages.map((message) =>
+            message.images?.length
+              ? {
+                  role: message.role,
+                  content: [
+                    ...message.images.map((image) => ({
+                      type: "image_url",
+                      image_url: { url: `data:${image.mediaType};base64,${image.data}` },
+                    })),
+                    { type: "text", text: message.content },
+                  ],
+                }
+              : { role: message.role, content: message.content },
+          ),
+        ],
         response_format: {
           type: "json_schema",
           json_schema: {

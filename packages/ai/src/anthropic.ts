@@ -78,7 +78,21 @@ export function anthropicProvider(key: string, fetch: FetchLike): AiProvider {
         model: request.model,
         max_tokens: request.maxOutputTokens,
         system: [{ type: "text", text: request.system, cache_control: { type: "ephemeral" } }],
-        messages: request.messages,
+        // Pictures as image blocks before the text, as the Messages API takes them.
+        messages: request.messages.map((message) =>
+          message.images?.length
+            ? {
+                role: message.role,
+                content: [
+                  ...message.images.map((image) => ({
+                    type: "image",
+                    source: { type: "base64", media_type: image.mediaType, data: image.data },
+                  })),
+                  { type: "text", text: message.content },
+                ],
+              }
+            : { role: message.role, content: message.content },
+        ),
         output_config: { format: { type: "json_schema", schema: request.output.schema } },
       };
       const sent = await send(

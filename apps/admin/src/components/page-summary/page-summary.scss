@@ -15,6 +15,24 @@
     font-weight: var(--font-weight-semibold);
   }
 
+  &__markers {
+    display: grid;
+    gap: a.space(1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  // A marker's button: as wide as the tab, its words wrapped and from the start.
+  &__marker {
+    inline-size: 100%;
+    justify-content: flex-start;
+    block-size: auto;
+    padding-block: a.space(1);
+    text-align: start;
+    white-space: normal;
+  }
+
   &__figures,
   &__empty {
     margin: 0;

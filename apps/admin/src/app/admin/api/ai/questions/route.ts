@@ -18,7 +18,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const ready = await readyProvider();
   if (!ready.ok) return errorResponse(503, ready.message);
-  const limits = await checkLimits(viewer, ready.settings, false);
+  const limits = await checkLimits(viewer, ready.settings, "design");
   if (!limits.ok) return errorResponse(429, limits.message);
 
   const { template } = await designCatalog();

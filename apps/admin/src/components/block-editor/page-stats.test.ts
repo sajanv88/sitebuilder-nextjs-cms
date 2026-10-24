@@ -3,7 +3,7 @@
 
 import type { Block } from "@sitebuilder/schema";
 import { describe, expect, test } from "vitest";
-import { countWords, outline, readingMinutes } from "./page-stats";
+import { countWords, fieldMarkers, outline, readingMinutes, todoMarkers } from "./page-stats";
 
 const block = (id: string, type: string, props: Record<string, unknown>, children?: Block[]) => ({
   id,
@@ -45,5 +45,23 @@ describe("page stats", () => {
       { id: "text-1:0", blockId: "text-1", title: "Why it works", depth: 2 },
       { id: "heading-1:0", blockId: "heading-1", title: "Prices", depth: 3 },
     ]);
+  });
+});
+
+describe("[TODO] markers", () => {
+  test("are found in any block, however deep, and in the entry's own fields", () => {
+    const blocks: Block[] = [
+      block("text-1", "rich-text", { html: "<p>Call [TODO: phone number] or [TODO: email]</p>" }),
+      block("section-1", "section", {}, [
+        block("faq-1", "faq", { items: [{ question: "Open?", answer: "[TODO: opening hours]" }] }),
+      ]),
+    ];
+    expect(todoMarkers(blocks).map((m) => [m.id, m.label, m.text])).toEqual([
+      ["text-1:0", "Text", "[TODO: phone number]"],
+      ["text-1:1", "Text", "[TODO: email]"],
+      ["faq-1:0", "Questions and answers", "[TODO: opening hours]"],
+    ]);
+    expect(fieldMarkers(["A title", "[TODO: a description]"])).toEqual(["[TODO: a description]"]);
+    expect(todoMarkers([block("text-2", "rich-text", { html: "<p>All done</p>" })])).toEqual([]);
   });
 });

@@ -23,8 +23,10 @@ import "@/lib/template-blocks";
 // from the saved settings, the blocks and media the model may use, the limits, and the record
 // of each call. The handlers themselves check the request and the permission first.
 
-// B9: sites designed per user per day, and calls in flight per user.
+// B9: sites designed per user per day, help requests per user per hour, and calls in flight
+// per user.
 export const BATCHES_PER_DAY = 3;
+export const HELP_PER_HOUR = 20;
 const CALLS_AT_ONCE = 3;
 
 export type Ready =
@@ -107,11 +109,11 @@ export async function designMedia(): Promise<MediaChoice[]> {
 export type LimitCheck = { ok: true } | { ok: false; message: string };
 
 // The limits that apply before a call (B9): the site's tokens today, this user's sites today
-// (for a plan, which starts one), and this user's calls in flight.
+// (for a plan, which starts one) or help requests this hour, and this user's calls in flight.
 export async function checkLimits(
   viewer: Viewer,
   settings: AiSettings,
-  startsBatch: boolean,
+  call: "plan" | "design" | "help",
 ): Promise<LimitCheck> {
   const usage = await aiUsage(db, viewer.id);
   if (usage.tokensToday >= settings.dailyTokenLimit) {
@@ -121,14 +123,26 @@ export async function checkLimits(
         "The site has used today's AI token limit. It starts again at midnight UTC, or an admin can raise it in Settings, AI.",
     };
   }
-  if (startsBatch && usage.batchesToday >= BATCHES_PER_DAY) {
+  if (call === "help" && usage.helpLastHour >= HELP_PER_HOUR) {
+    return {
+      ok: false,
+      message: `You can ask the assistant ${HELP_PER_HOUR} times an hour. Try again a little later.`,
+    };
+  }
+  if (call === "plan" && usage.batchesToday >= BATCHES_PER_DAY) {
     return {
       ok: false,
       message: `You can design ${BATCHES_PER_DAY} sites a day with AI. Try again tomorrow (UTC).`,
     };
   }
   if ((inFlight.get(viewer.id) ?? 0) >= CALLS_AT_ONCE) {
-    return { ok: false, message: "Wait for the pages being written to finish." };
+    return {
+      ok: false,
+      message:
+        call === "help"
+          ? "Wait for the assistant's other answers first."
+          : "Wait for the pages being written to finish.",
+    };
   }
   return { ok: true };
 }
@@ -140,7 +154,12 @@ const inFlight = new Map<string, number>();
 // Runs a step for a user, counting it as in flight, and records it in ai_runs (metadata only).
 export async function runStep<T>(
   viewer: Viewer,
-  run: { kind: "questions" | "plan" | "page"; model: string; batchId?: string },
+  run: {
+    kind: "questions" | "plan" | "page" | "rewrite" | "seo" | "alt";
+    model: string;
+    batchId?: string;
+    entryId?: string;
+  },
   step: () => Promise<StepResult<T>>,
 ): Promise<StepResult<T>> {
   inFlight.set(viewer.id, (inFlight.get(viewer.id) ?? 0) + 1);
@@ -165,6 +184,7 @@ export async function runStep<T>(
         ? null
         : (result?.error?.code ?? (result?.issues ? "invalid_output" : "unavailable")),
       ...(run.batchId ? { batchId: run.batchId } : {}),
+      ...(run.entryId ? { entryId: run.entryId } : {}),
     });
   }
 }

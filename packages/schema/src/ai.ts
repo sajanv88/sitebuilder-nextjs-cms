@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import * as v from "valibot";
-import { SealedSecret, Uuid } from "./shared";
+import { NodeId, SealedSecret, Uuid } from "./shared";
 
 // The AI assistant's settings (design §15, templates_and_ai_design B3). An admin picks a
 // provider and brings their own key. The settings are a union by provider, so each provider has
@@ -276,3 +276,40 @@ export const AiFinishRequest = v.pipe(
 export type AiFinishRequest = v.InferOutput<typeof AiFinishRequest>;
 
 export const AiDiscardRequest = v.object({ batchId: Uuid, includeEdited: v.boolean() });
+
+// ── Help on a page (8.7) ─────────────────────────────────────────────────────────────────────
+// What the editor sends: the entry ("" for one not saved yet, with its type), its title and its
+// blocks as they are in the editor (checked with validateContent on the server, like a save).
+
+export const HELP_INSTRUCTION_MAX = 1000;
+
+const HelpEntry = {
+  entryId: v.union([v.literal(""), Uuid]),
+  type: v.picklist(["page", "post"]),
+  title: v.pipe(v.string(), v.maxLength(200)),
+  content: v.pipe(v.array(v.unknown()), v.maxLength(500)),
+};
+
+export const AiHelpRequest = v.variant("kind", [
+  // Rewrite the block with this id (a column's columns), or every block when it's absent.
+  v.object({
+    kind: v.literal("rewrite"),
+    ...HelpEntry,
+    blockId: v.optional(NodeId),
+    instruction: v.pipe(
+      v.string(),
+      v.trim(),
+      v.minLength(1, "Say what to change"),
+      v.maxLength(HELP_INSTRUCTION_MAX, `Use at most ${HELP_INSTRUCTION_MAX} characters`),
+    ),
+  }),
+  v.object({ kind: v.literal("seo"), ...HelpEntry }),
+  // The picture must be one the blocks use; `max` is the alt field's limit.
+  v.object({
+    kind: v.literal("alt"),
+    ...HelpEntry,
+    mediaId: Uuid,
+    max: v.pipe(v.number(), v.integer(), v.minValue(20), v.maxValue(1000)),
+  }),
+]);
+export type AiHelpRequest = v.InferOutput<typeof AiHelpRequest>;

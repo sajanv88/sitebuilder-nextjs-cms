@@ -110,3 +110,47 @@ export function outline(blocks: readonly Block[]): OutlineItem[] {
   });
   return items;
 }
+
+// ── [TODO] markers ───────────────────────────────────────────────────────────────────────────
+// What the assistant couldn't know and left for a person to fill in (8.7): listed on the Page
+// tab, and publishing a page that still has one asks first.
+
+const MARKER = /\[TODO\b[^\]]*\]/gi;
+
+export interface Marker {
+  // `<block id>:<n>`: a block can hold several.
+  id: string;
+  blockId: string;
+  // The block's name, as the inserter shows it.
+  label: string;
+  text: string;
+}
+
+// The markers in a value's strings, however deep: props, lists, links.
+function markersIn(value: unknown, out: string[]): void {
+  if (typeof value === "string") out.push(...(value.match(MARKER) ?? []));
+  else if (Array.isArray(value)) for (const item of value) markersIn(item, out);
+  else if (value && typeof value === "object") {
+    for (const item of Object.values(value)) markersIn(item, out);
+  }
+}
+
+export function todoMarkers(blocks: readonly Block[]): Marker[] {
+  const found: Marker[] = [];
+  each(blocks, (block) => {
+    const texts: string[] = [];
+    markersIn(block.props, texts);
+    const label = getBlockDefinition(block.type)?.label ?? block.type;
+    for (const [n, text] of texts.entries()) {
+      found.push({ id: `${block.id}:${n}`, blockId: block.id, label, text });
+    }
+  });
+  return found;
+}
+
+// Markers in the entry's own fields: its title, excerpt and search text.
+export function fieldMarkers(fields: readonly string[]): string[] {
+  const out: string[] = [];
+  markersIn(fields, out);
+  return out;
+}

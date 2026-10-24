@@ -14,6 +14,7 @@ import {
   locate,
   moveBy,
   removeBlock,
+  replaceBlock,
   updateProps,
 } from "./editor-model";
 
@@ -47,6 +48,17 @@ describe("finding blocks", () => {
 });
 
 describe("changes", () => {
+  test("a rewrite takes a block's place, inside a section too, as one block or several", () => {
+    const blocks = page();
+    const two = [block("new-1", "heading"), block("new-2", "rich-text")];
+    const next = replaceBlock(blocks, "text-b", two);
+    expect(findBlock(next, "text-b")).toBeUndefined();
+    expect(next[1]?.children?.map((b) => b.id)).toEqual(["new-1", "new-2"]);
+    expect(replaceBlock(blocks, "heading-a", [block("new-3", "heading")])[0]?.id).toBe("new-3");
+    // The original is left as it was.
+    expect(findBlock(blocks, "text-b")).toBeDefined();
+  });
+
   test("update and remove work at any depth, without changing the original", () => {
     const original = page();
     const updated = updateProps(original, "image-c", { mediaId: "x" });

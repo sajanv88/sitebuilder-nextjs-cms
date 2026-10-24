@@ -78,6 +78,21 @@ export function removeBlock(blocks: readonly Block[], id: string): Block[] {
     );
 }
 
+// The block with this id swapped for `replacement` (one block or several, in its place), as the
+// assistant's rewrite proposes (8.7).
+export function replaceBlock(
+  blocks: readonly Block[],
+  id: string,
+  replacement: readonly Block[],
+): Block[] {
+  return blocks.flatMap((block) => {
+    if (block.id === id) return [...replacement];
+    return block.children
+      ? [{ ...block, children: replaceBlock(block.children, id, replacement) }]
+      : [block];
+  });
+}
+
 // How deep a block goes: 1 for a leaf, 3 for columns > column > leaf.
 function height(block: Block): number {
   return 1 + Math.max(0, ...(block.children ?? []).map(height));
