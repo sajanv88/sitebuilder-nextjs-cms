@@ -19,7 +19,7 @@ import { LATEST_POSTS } from "@/lib/reading";
 
 export const metadata: Metadata = { title: "Settings" };
 
-// The page's sections, for its contents list and the sidebar's links (admin-nav.tsx).
+// The page's sections, its tabs. The sidebar links to each as ?section=<id> (admin-nav.tsx).
 const SECTIONS = [
   { id: "site", title: "Site" },
   { id: "reading", title: "Reading" },
@@ -29,8 +29,11 @@ const SECTIONS = [
 
 // Settings (design §5.4, §8): the site, reading, dates, and media storage (decisions #45).
 // Admins only.
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }: PageProps<"/admin/settings">) {
   await requirePermission("settings.update");
+  // The open tab: the one the address names, or the first.
+  const asked = (await searchParams).section;
+  const section = SECTIONS.find((s) => s.id === asked)?.id ?? "site";
   const config = env();
   const defaults = defaultSettings(config.SITE_URL);
   const [savedSite, savedReading, pages, saved] = await Promise.all([
@@ -80,7 +83,7 @@ export default async function SettingsPage() {
       description="How the site is named, what visitors see first, how dates are written, and where uploads are kept."
       trail={[]}
     >
-      <SettingsLayout sections={SECTIONS}>
+      <SettingsLayout sections={SECTIONS} section={section}>
         <SettingsSection
           id="site"
           title="Site"

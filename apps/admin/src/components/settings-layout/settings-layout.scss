@@ -3,64 +3,43 @@
 
 @use "abstracts" as a;
 
-// One column on a phone. From lg, the sections and the list of them beside, as nuvui's
-// article block.
+// nuvui's tabs lay out the list and the panel by their orientation (settings-layout.tsx). From
+// lg the list is a column that stays in view while a long section scrolls.
 .settings-layout {
-  display: grid;
-  gap: a.space(10);
+  inline-size: 100%;
 
   @include a.breakpoint("lg") {
-    grid-template-columns: minmax(0, 1fr) 13rem;
+    --nuv-tabs-gap: #{a.space(8)};
   }
 
-  &__main {
-    display: grid;
-    gap: a.space(10);
-    align-content: start;
+  &__tabs {
+    @include a.breakpoint("lg") {
+      position: sticky;
+      inset-block-start: a.space(20);
+      align-self: start;
+      min-inline-size: 12rem;
+    }
+  }
+
+  &__panel {
     min-inline-size: 0;
   }
 
-  // The list behind a button is for a narrow screen only.
-  &__drawer {
-    @include a.breakpoint("lg") {
-      display: none;
-    }
-  }
-
-  &__toggle {
-    justify-content: space-between;
-    inline-size: 100%;
-  }
-
-  &__contents {
-    padding-block-start: a.space(3);
-  }
-
-  // Heading and text above the card on a phone; beside it from xl.
   &__section {
     display: grid;
     gap: a.space(4);
-
-    @include a.breakpoint("xl") {
-      grid-template-columns: 16rem minmax(0, 1fr);
-      gap: a.space(8);
-      align-items: start;
-    }
   }
 
   &__intro {
     display: grid;
     gap: a.space(1);
-    align-content: start;
   }
 
-  // A heading a link jumps to stops below the sticky bar.
   &__heading {
     margin: 0;
     font-size: var(--text-lg);
     font-weight: var(--font-weight-semibold);
     letter-spacing: var(--tracking-tight);
-    scroll-margin-block-start: a.space(24);
   }
 
   &__text {
@@ -82,24 +61,10 @@
       padding: a.space(6);
     }
   }
+}
 
-  // Beside the sections, staying in view while they scroll.
-  &__side {
-    display: none;
-
-    @include a.breakpoint("lg") {
-      position: sticky;
-      inset-block-start: a.space(20);
-      display: grid;
-      gap: a.space(3);
-      align-content: start;
-      align-self: start;
-    }
-  }
-
-  &__label {
-    margin: 0;
-    font-size: var(--text-sm);
-    font-weight: var(--font-weight-semibold);
-  }
+// Hidden panels stay mounted (forceMount), so their forms keep what's typed; only the open one
+// shows.
+.settings-layout__panel[data-state="inactive"] {
+  display: none;
 }

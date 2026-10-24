@@ -111,12 +111,12 @@ const GROUPS: { label: string | null; items: Item[] }[] = [
         label: "Settings",
         href: "/admin/settings",
         Icon: SettingsIcon,
-        // One page; these are its sections (the page's own contents list marks where you are).
+        // One page; these are its tabs (the page marks the open one).
         pages: [
-          { label: "Site", href: "/admin/settings#site" as Route },
-          { label: "Reading", href: "/admin/settings#reading" as Route },
-          { label: "Dates", href: "/admin/settings#dates" as Route },
-          { label: "Media storage", href: "/admin/settings#media-storage" as Route },
+          { label: "Site", href: "/admin/settings?section=site" as Route },
+          { label: "Reading", href: "/admin/settings?section=reading" as Route },
+          { label: "Dates", href: "/admin/settings?section=dates" as Route },
+          { label: "Media storage", href: "/admin/settings?section=media-storage" as Route },
         ],
       },
     ],
@@ -124,10 +124,10 @@ const GROUPS: { label: string | null; items: Item[] }[] = [
 ];
 
 // The page a path belongs to: the longest href that starts it, so /admin/posts/categories
-// marks Categories and not All posts.
+// marks Categories and not All posts. A link to one of a page's tabs (?section=) never is.
 function isOpen(pathname: string, href: string, all: readonly string[]): boolean {
-  const path = href.split("#")[0] ?? href;
-  if (href.includes("#")) return false;
+  const path = href.split("?")[0] ?? href;
+  if (href.includes("?")) return false;
   if (path === "/admin") return pathname === "/admin";
   if (pathname !== path && !pathname.startsWith(`${path}/`)) return false;
   return !all.some((other) => other.length > path.length && pathname.startsWith(other));
@@ -140,7 +140,7 @@ export function AdminNav({ allowed }: { allowed: readonly NavKey[] }) {
   const close = () => setOpenMobile(false);
   const hrefs = GROUPS.flatMap((group) =>
     group.items.flatMap((item) => [item.href, ...(item.pages ?? []).map((page) => page.href)]),
-  ).filter((href) => !href.includes("#"));
+  ).filter((href) => !href.includes("?"));
 
   return GROUPS.map((group) => {
     const items = group.items.filter((item) => allowed.includes(item.key));

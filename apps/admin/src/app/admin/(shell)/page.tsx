@@ -118,7 +118,7 @@ async function Steps() {
       title: "Name your site",
       text: "Its title is in the header, the footer and every page's title.",
       done: Boolean(site && site.title !== "My Site"),
-      href: "/admin/settings#site" as SetupStep["href"],
+      href: "/admin/settings?section=site" as SetupStep["href"],
       action: "Open settings",
     },
     {
@@ -134,7 +134,7 @@ async function Steps() {
       title: "Choose a home page",
       text: "What visitors see first. Until then it's the latest posts.",
       done: Boolean(reading?.homepageEntryId),
-      href: "/admin/settings#reading" as SetupStep["href"],
+      href: "/admin/settings?section=reading" as SetupStep["href"],
       action: "Choose",
     },
     {
