@@ -4,29 +4,17 @@
 import { backgroundTone, HexColor, surfaceTokens } from "@sitebuilder/schema";
 import type { CSSProperties } from "react";
 import * as v from "valibot";
-import type { Field } from "../types";
-import "./surface.scss";
 
-// A block's background: the theme's muted shade, its brand colour, or a colour of the owner's
-// own. A section is the band itself; another block that offers it (`surface` on its
-// definition) is drawn on a panel by the renderer (render.tsx). A colour of its own sets the
-// panel's palette as the page background does (@sitebuilder/schema page-background.ts): nuvui's
-// light or dark tokens by data-theme, then the colour's text, muted and line colours.
+// A background for part of a block, such as a feature grid's cards: the theme's muted shade,
+// its brand colour, or a colour of the owner's own. A colour of its own sets the part's palette
+// as the page background does (@sitebuilder/schema page-background.ts): nuvui's light or dark
+// tokens by data-theme, then the colour's text, muted and line colours. The block's own styles
+// draw it, from the kind.
 
 export const SURFACES = ["none", "muted", "primary"] as const;
 
 export const SurfaceBackground = v.union([v.picklist(SURFACES), HexColor]);
 export type SurfaceBackground = v.InferOutput<typeof SurfaceBackground>;
-
-// Absent is none.
-export const surfaceProps = { background: v.optional(SurfaceBackground) };
-
-export const surfaceField: Field = {
-  kind: "background",
-  name: "background",
-  label: "Background",
-  description: "Draws the block on a panel. Text and lines are set to read on it.",
-};
 
 export interface Surface {
   kind: "none" | "muted" | "primary" | "custom";

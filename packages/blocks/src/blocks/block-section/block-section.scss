@@ -44,12 +44,6 @@
       color: var(--color-primary-foreground);
     }
 
-    // A colour of its own, with its tokens in the style attribute (surface/surface.tsx).
-    &--bg-custom {
-      background-color: var(--color-background);
-      color: var(--color-foreground);
-    }
-
     &--pad-none {
       --block-section-pad-block: calc(var(--spacing) * 0);
     }

@@ -7,7 +7,7 @@ import * as v from "valibot";
 import { CardRow, layoutField, layoutProp } from "../../card-row/card-row";
 import { FEATURE_ICONS, FeatureIcon } from "../../icons";
 import { cx, optionalText, text } from "../../shared";
-import { SurfaceBackground, surfaceField, surfaceOf, surfaceProps } from "../../surface/surface";
+import { SurfaceBackground, surfaceOf } from "../../surface/surface";
 import type { BlockDefinition } from "../../types";
 import "./block-feature-grid.scss";
 
@@ -18,7 +18,6 @@ const Item = v.strictObject({
 });
 
 const Props = v.strictObject({
-  ...surfaceProps,
   heading: optionalText(120),
   items: v.pipe(v.array(Item), v.minLength(1, "Add at least one feature"), v.maxLength(12)),
   layout: layoutProp,
@@ -42,7 +41,6 @@ export const featureGrid: BlockDefinition<Props> = {
     items: [newItem(), newItem(), newItem()] as Props["items"],
     layout: "grid",
   }),
-  surface: true,
   fields: [
     { kind: "text", name: "heading", label: "Heading", max: 120, optional: true },
     {
@@ -68,7 +66,6 @@ export const featureGrid: BlockDefinition<Props> = {
       noneLabel: "The card's",
       description: "Behind every feature card. Text, the icon and the edge are set to read on it.",
     },
-    surfaceField,
   ],
   summary: (props) => props.heading ?? `${props.items.length} features`,
   Render: ({ props }) => {

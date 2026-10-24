@@ -14,7 +14,6 @@ import {
 } from "@nuvui/react";
 import * as v from "valibot";
 import { Action, cx, optionalText, text } from "../../shared";
-import { surfaceField, surfaceProps } from "../../surface/surface";
 import type { BlockDefinition } from "../../types";
 import "./block-pricing.scss";
 
@@ -28,7 +27,6 @@ const Plan = v.strictObject({
 });
 
 const Props = v.strictObject({
-  ...surfaceProps,
   plans: v.pipe(v.array(Plan), v.minLength(1, "Add at least one plan"), v.maxLength(4)),
 });
 type Props = v.InferOutput<typeof Props>;
@@ -52,7 +50,6 @@ export const pricing: BlockDefinition<Props> = {
   icon: CreditCardIcon,
   props: Props,
   defaults: () => ({ plans: [newPlan(), { ...newPlan(), highlighted: true }] as Props["plans"] }),
-  surface: true,
   fields: [
     {
       kind: "list",
@@ -86,7 +83,6 @@ export const pricing: BlockDefinition<Props> = {
         { kind: "toggle", name: "highlighted", label: "Recommend this plan" },
       ],
     },
-    surfaceField,
   ],
   summary: (props) => props.plans.map((plan) => plan.name).join(", "),
   Render: ({ props, context }) => (

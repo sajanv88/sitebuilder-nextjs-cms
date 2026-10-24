@@ -6,7 +6,6 @@ import { Compare } from "@nuvui/react";
 import * as v from "valibot";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
 import { mediaId, optionalText, text } from "../../shared";
-import { surfaceField, surfaceProps } from "../../surface/surface";
 import type { BlockDefinition, RenderContext } from "../../types";
 import { MediaImage } from "../block-image/block-image";
 import "./block-compare.scss";
@@ -15,7 +14,6 @@ import "./block-compare.scss";
 const alt = v.optional(v.pipe(v.string(), v.trim(), v.maxLength(200)));
 
 const Props = v.strictObject({
-  ...surfaceProps,
   beforeMediaId: mediaId,
   beforeAlt: alt,
   afterMediaId: mediaId,
@@ -66,7 +64,6 @@ export const compare: BlockDefinition<Props> = {
     afterLabel: "After",
     mode: "slider",
   }),
-  surface: true,
   fields: [
     { kind: "media", name: "beforeMediaId", label: "Before", accept: "image" },
     { kind: "alt", name: "beforeAlt", label: "Before's alt text", max: 200 },
@@ -91,7 +88,6 @@ export const compare: BlockDefinition<Props> = {
       max: 200,
       optional: true,
     },
-    surfaceField,
   ],
   summary: (props) => props.caption ?? `${props.beforeLabel} and ${props.afterLabel}`,
   Render: ({ props, context }) => {

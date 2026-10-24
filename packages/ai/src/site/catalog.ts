@@ -54,7 +54,7 @@ export type FieldSpec =
     })
   | (FieldBase & { kind: "align"; inherit: boolean })
   | (FieldBase & { kind: "rows"; columnsFrom: string; max: number; maxLength: number })
-  | (FieldBase & { kind: "background"; designer?: boolean; noneLabel?: string });
+  | (FieldBase & { kind: "background"; noneLabel?: string });
 
 export interface BlockSpec {
   type: string;
@@ -230,14 +230,8 @@ function fieldSchema(field: FieldSpec, options: CatalogOptions): Schema | null {
       return field.inherit ? nullable(schema) : schema;
     }
     case "background":
-      // The theme's own colours, and only where the design guide uses them (a section's
-      // background): a choice on every block would grow the schema for little.
-      return field.designer
-        ? {
-            enum: ["none", "muted", "primary"],
-            description: describe(field, "none; muted: the theme's muted shade; primary: brand"),
-          }
-        : null;
+      // A card's colour is the owner's choice; offering it would grow the schema for little.
+      return null;
     case "rows":
       return {
         type: "array",

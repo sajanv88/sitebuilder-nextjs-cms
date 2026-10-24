@@ -6,12 +6,10 @@ import { Children } from "react";
 import * as v from "valibot";
 import { pageItemClass, pageWidthField, pageWidthOf, pageWidthProps } from "../../page/page";
 import { cx } from "../../shared";
-import { surfaceField, surfaceProps } from "../../surface/surface";
 import type { BlockDefinition } from "../../types";
 import "./block-columns.scss";
 
 const Props = v.strictObject({
-  ...surfaceProps,
   ...pageWidthProps,
   gap: v.optional(v.picklist(["sm", "md", "lg"]), "md"),
   // Below this breakpoint the columns stack, one under another.
@@ -29,7 +27,6 @@ export const columns: BlockDefinition<Props> = {
   props: Props,
   defaults: () => ({ pageWidth: "contained", gap: "md", stackBelow: "md" }),
   container: { allow: ["column"], min: 2, max: 4 },
-  surface: true,
   fields: [
     pageWidthField,
     {
@@ -51,7 +48,6 @@ export const columns: BlockDefinition<Props> = {
         { value: "md", label: "Phones and small tablets" },
       ],
     },
-    surfaceField,
   ],
   summary: () => "Columns",
   Render: ({ props, children, context }) => {

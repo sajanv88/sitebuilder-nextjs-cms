@@ -8,7 +8,6 @@ import { Backdrop, backdropFields, backdropProps } from "../../backdrop/backdrop
 import { pageItemClass, pageWidthField, pageWidthOf, pageWidthProps } from "../../page/page";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
 import { cx } from "../../shared";
-import { SurfaceBackground, surfaceOf } from "../../surface/surface";
 import type { BlockDefinition } from "../../types";
 import "./block-section.scss";
 
@@ -16,8 +15,7 @@ const Props = v.strictObject({
   ...pageWidthProps,
   // How wide the content inside the band is.
   width: v.optional(v.picklist(["narrow", "normal", "wide", "full"]), "normal"),
-  // "none", "muted", "primary", or a colour of its own (surface/surface.tsx).
-  background: v.optional(SurfaceBackground, "none"),
+  background: v.optional(v.picklist(["none", "muted", "primary"]), "none"),
   paddingY: v.optional(v.picklist(["none", "sm", "md", "lg"]), "md"),
   // For every block inside that isn't aligned itself.
   align: v.optional(v.picklist(["start", "center", "end"]), "start"),
@@ -62,7 +60,16 @@ export const section: BlockDefinition<Props> = {
         { value: "full", label: "Full width" },
       ],
     },
-    { kind: "background", name: "background", label: "Background", designer: true },
+    {
+      kind: "choice",
+      name: "background",
+      label: "Background",
+      options: [
+        { value: "none", label: "None" },
+        { value: "muted", label: "Muted" },
+        { value: "primary", label: "Brand color" },
+      ],
+    },
     {
       kind: "choice",
       name: "paddingY",
@@ -87,16 +94,14 @@ export const section: BlockDefinition<Props> = {
       </div>
     );
     const backdrop = props.backdrop === "none" ? null : props.backdrop;
-    // A backdrop is drawn in place of the background colour.
-    const surface = surfaceOf(backdrop ? "none" : props.background);
     return (
       <section
-        {...surface.attributes}
         className={cx(
           "block-section",
           pageItemClass(pageWidthOf(props.pageWidth, context)),
           `block-section--width-${props.width}`,
-          `block-section--bg-${surface.kind}`,
+          // A backdrop is drawn in place of the background color.
+          !backdrop && `block-section--bg-${props.background}`,
           `block-section--pad-${props.paddingY}`,
           backdrop && "block-section--backdrop",
         )}

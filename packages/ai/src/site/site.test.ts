@@ -55,7 +55,7 @@ const BLOCKS: BlockSpec[] = [
     label: "Section",
     description: "Groups blocks.",
     container: { allow: "leaves" },
-    fields: [{ kind: "background", name: "background", label: "Background", designer: true }],
+    fields: [],
   },
   {
     type: "quote",
@@ -63,7 +63,7 @@ const BLOCKS: BlockSpec[] = [
     description: "Words worth repeating.",
     fields: [
       { kind: "text", name: "text", label: "Quote", max: 200 },
-      { kind: "background", name: "background", label: "Background" },
+      { kind: "background", name: "cardBackground", label: "Card background" },
     ],
   },
 ];
@@ -182,13 +182,10 @@ describe("page catalog", () => {
     expect(JSON.stringify(catalog.defs.block_hero)).toContain('"$ref":"#/$defs/link"');
   });
 
-  it("offers the theme's backgrounds on a section only, and never a colour", () => {
+  it("leaves a background colour to the owner, and keeps the block", () => {
     const catalog = pageCatalog(BLOCKS, options);
-    expect(JSON.stringify(catalog.defs.block_section)).toContain(
-      '"background":{"enum":["none","muted","primary"]',
-    );
     expect(catalog.types).toContain("quote");
-    expect(JSON.stringify(catalog.defs.block_quote)).not.toContain("background");
+    expect(JSON.stringify(catalog.defs.block_quote)).not.toContain("Background");
   });
 
   it("offers only the types asked for", () => {

@@ -6,7 +6,6 @@ import { Card, CardContent, Rating } from "@nuvui/react";
 import * as v from "valibot";
 import { CardRow, layoutField, layoutProp } from "../../card-row/card-row";
 import { optionalText, text } from "../../shared";
-import { surfaceField, surfaceProps } from "../../surface/surface";
 import type { BlockDefinition } from "../../types";
 import "./block-reviews.scss";
 
@@ -18,7 +17,6 @@ const Item = v.strictObject({
 });
 
 const Props = v.strictObject({
-  ...surfaceProps,
   items: v.pipe(v.array(Item), v.minLength(1, "Add at least one review"), v.maxLength(12)),
   layout: layoutProp,
 });
@@ -36,7 +34,6 @@ export const reviews: BlockDefinition<Props> = {
   icon: StarIcon,
   props: Props,
   defaults: () => ({ items: [newItem(), newItem(), newItem()], layout: "grid" }),
-  surface: true,
   fields: [
     {
       kind: "list",
@@ -61,7 +58,6 @@ export const reviews: BlockDefinition<Props> = {
       ],
     },
     layoutField,
-    surfaceField,
   ],
   summary: (props) => `${props.items.length} reviews`,
   Render: ({ props }) => (
