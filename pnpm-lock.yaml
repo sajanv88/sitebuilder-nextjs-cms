@@ -540,7 +540,16 @@ importers:
       server-only:
         specifier: 'catalog:'
         version: 0.0.1
+      valibot:
+        specifier: 'catalog:'
+        version: 1.5.0(typescript@7.0.2)
     devDependencies:
+      '@sitebuilder/blocks':
+        specifier: workspace:*
+        version: link:../blocks
+      '@sitebuilder/db':
+        specifier: workspace:*
+        version: link:../db
       '@sitebuilder/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig

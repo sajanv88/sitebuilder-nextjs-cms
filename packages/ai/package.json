@@ -13,9 +13,12 @@
   },
   "dependencies": {
     "@sitebuilder/schema": "workspace:*",
-    "server-only": "catalog:"
+    "server-only": "catalog:",
+    "valibot": "catalog:"
   },
   "devDependencies": {
+    "@sitebuilder/blocks": "workspace:*",
+    "@sitebuilder/db": "workspace:*",
     "@sitebuilder/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "esbuild": "catalog:",

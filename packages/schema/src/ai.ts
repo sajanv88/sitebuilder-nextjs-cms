@@ -101,3 +101,118 @@ export const AiSettingsInput = v.variant("provider", [
   v.object({ provider: v.literal("ollama"), baseUrl: AiBaseUrl, ...typedKey, ...chosen }),
 ]);
 export type AiSettingsInput = v.InferOutput<typeof AiSettingsInput>;
+
+// ── Designing a site with the assistant ──────────────────────────────────────────────────────
+// The admin describes the site, the model asks a few questions, the admin answers, the model
+// plans the pages, then writes each one (phase 8 plan, 8.0). The model's answers are checked
+// against these before anything is used.
+
+export const MAX_QUESTIONS = 6;
+export const MAX_PLANNED_PAGES = 12;
+
+// The admin's own words: the description and each answer.
+export const AiBrief = v.pipe(
+  v.string(),
+  v.trim(),
+  v.minLength(20, "Describe the site in a sentence or two"),
+  v.maxLength(3000, "Use at most 3,000 characters"),
+);
+export const AiAnswerText = v.pipe(v.string(), v.trim(), v.maxLength(600));
+
+const short = (max: number) => v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(max));
+
+// What a question may not ask for: the assistant only needs to know about the website.
+const FORBIDDEN_TOPIC =
+  /\b(password|passcode|pin code|credit card|card number|cvv|cvc|iban|bank account|sort code|social security|passport|national id|tax id|api key|secret key|access token|login|log-in)\b/i;
+
+export const AiQuestion = v.object({
+  id: v.pipe(v.string(), v.regex(/^q[1-9]$/)),
+  question: v.pipe(
+    short(200),
+    v.check((s) => !FORBIDDEN_TOPIC.test(s), "A question may only ask about the website"),
+  ),
+  kind: v.picklist(["single", "multiple", "text"]),
+  // Six at most; a seventh the model adds is dropped rather than failing the questions.
+  options: v.pipe(
+    v.array(short(120)),
+    v.transform((options) => options.slice(0, 6)),
+  ),
+});
+export type AiQuestion = v.InferOutput<typeof AiQuestion>;
+
+export const AiInterview = v.pipe(
+  v.object({
+    summary: short(400),
+    questions: v.pipe(v.array(AiQuestion), v.maxLength(MAX_QUESTIONS)),
+  }),
+  v.check(
+    ({ questions }) => new Set(questions.map((q) => q.id)).size === questions.length,
+    "Each question needs an id of its own",
+  ),
+  v.check(
+    ({ questions }) =>
+      questions.every((q) => (q.kind === "text" ? q.options.length === 0 : q.options.length >= 2)),
+    "A choice question needs two to six options, and a text question none",
+  ),
+);
+export type AiInterview = v.InferOutput<typeof AiInterview>;
+
+export const AiAnswer = v.object({
+  id: v.pipe(v.string(), v.regex(/^q[1-9]$/)),
+  answer: v.union([AiAnswerText, v.pipe(v.array(AiAnswerText), v.maxLength(6))]),
+});
+export type AiAnswer = v.InferOutput<typeof AiAnswer>;
+
+const PlanRef = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9-]{0,39}$/));
+
+export const SitePlanPage = v.object({
+  ref: PlanRef,
+  title: short(120),
+  slug: v.pipe(v.string(), v.maxLength(80), v.regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/)),
+  parentRef: v.nullable(PlanRef),
+  purpose: short(400),
+  // The parts of the page in order: a block type each, and what it holds. The page is then
+  // written with only these block types offered (the spike: one schema with every block type
+  // is more than Anthropic's structured output compiles).
+  sections: v.pipe(
+    v.array(
+      v.object({ type: v.pipe(v.string(), v.minLength(1), v.maxLength(80)), about: short(200) }),
+    ),
+    v.minLength(1),
+    v.maxLength(12),
+  ),
+});
+export type SitePlanPage = v.InferOutput<typeof SitePlanPage>;
+
+// The planned site. The first page is the home page. Every ref is unique; a parent is another
+// page, planned before its children, and no page is its own ancestor; menus name planned pages.
+export const SitePlan = v.pipe(
+  v.object({
+    siteTitle: short(120),
+    tagline: v.pipe(v.string(), v.trim(), v.maxLength(200)),
+    pages: v.pipe(v.array(SitePlanPage), v.minLength(1), v.maxLength(MAX_PLANNED_PAGES)),
+    primaryMenu: v.pipe(v.array(PlanRef), v.maxLength(12)),
+    footerMenu: v.pipe(v.array(PlanRef), v.maxLength(12)),
+  }),
+  v.check(
+    ({ pages }) => new Set(pages.map((p) => p.ref)).size === pages.length,
+    "Each page needs a ref of its own",
+  ),
+  v.check(({ pages }) => {
+    const slugs = pages.map((p) => `${p.parentRef ?? ""}/${p.slug}`);
+    return new Set(slugs).size === slugs.length;
+  }, "Two pages under the same parent have the same address"),
+  v.check(({ pages }) => {
+    const before = new Set<string>();
+    for (const page of pages) {
+      if (page.parentRef !== null && !before.has(page.parentRef)) return false;
+      before.add(page.ref);
+    }
+    return true;
+  }, "A page's parent must be planned before it"),
+  v.check(({ pages, primaryMenu, footerMenu }) => {
+    const refs = new Set(pages.map((p) => p.ref));
+    return [...primaryMenu, ...footerMenu].every((ref) => refs.has(ref));
+  }, "A menu names a page that isn't planned"),
+);
+export type SitePlan = v.InferOutput<typeof SitePlan>;
