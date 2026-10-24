@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+.ai-settings-form {
+  display: grid;
+  gap: a.space(6);
+
+  &__choices {
+    display: grid;
+    gap: a.space(2);
+  }
+
+  &__label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  // Two cards a row from md: each is a sentence.
+  &__cards {
+    display: grid;
+    gap: a.space(2);
+
+    @include a.breakpoint("md") {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  &__details {
+    display: grid;
+    gap: a.space(5);
+    padding-block-start: a.space(2);
+  }
+
+  &__connect,
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+  }
+
+  &__model {
+    --nuv-combobox-width: 100%;
+  }
+
+  &__limit {
+    --nuv-number-field-width: 14rem;
+  }
+}

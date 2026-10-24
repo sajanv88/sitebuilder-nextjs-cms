@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
+import { aiSettingsView } from "@sitebuilder/ai";
 import { DEFAULT_READING, db, getSettings, listPublishedPages } from "@sitebuilder/db";
 import { describeEnvironment, openSecret } from "@sitebuilder/media";
 import { defaultSettings, timeZoneNames } from "@sitebuilder/schema";
@@ -8,6 +9,7 @@ import type { Metadata } from "next";
 import type { StorageFormValues } from "@/actions/media-storage";
 import { requirePermission } from "@/auth/session";
 import { AdminPage } from "@/components/admin-page/admin-page";
+import { AiSettingsForm } from "@/components/ai-settings-form/ai-settings-form";
 import {
   type EnvironmentSummary,
   MediaStorageForm,
@@ -25,10 +27,11 @@ const SECTIONS = [
   { id: "reading", title: "Reading" },
   { id: "dates", title: "Dates" },
   { id: "media-storage", title: "Media storage" },
+  { id: "ai", title: "AI" },
 ];
 
-// Settings (design §5.4, §8): the site, reading, dates, and media storage (decisions #45).
-// Admins only.
+// Settings (design §5.4, §8): the site, reading, dates, media storage (decisions #45) and the AI
+// assistant (design §15). Admins only.
 export default async function SettingsPage({ searchParams }: PageProps<"/admin/settings">) {
   await requirePermission("settings.update");
   // The open tab: the one the address names, or the first.
@@ -36,11 +39,12 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
   const section = SECTIONS.find((s) => s.id === asked)?.id ?? "site";
   const config = env();
   const defaults = defaultSettings(config.SITE_URL);
-  const [savedSite, savedReading, pages, saved] = await Promise.all([
+  const [savedSite, savedReading, pages, saved, savedAi] = await Promise.all([
     getSettings(db, "site"),
     getSettings(db, "reading"),
     listPublishedPages(db),
     getSettings(db, "media"),
+    getSettings(db, "ai"),
   ]);
   const site = savedSite ?? defaults.site;
   const reading = savedReading ?? DEFAULT_READING;
@@ -80,7 +84,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
   return (
     <AdminPage
       title="Settings"
-      description="How the site is named, what visitors see first, how dates are written, and where uploads are kept."
+      description="How the site is named, what visitors see first, how dates are written, where uploads are kept, and the AI assistant."
       trail={[]}
     >
       <SettingsLayout sections={SECTIONS} section={section}>
@@ -130,6 +134,18 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
           description="Where uploaded images, videos and documents are kept. Files already uploaded stay where they are when this changes."
         >
           <MediaStorageForm initial={initial} environment={environment} secret={secret} />
+        </SettingsSection>
+        <SettingsSection
+          id="ai"
+          title="AI"
+          description="An assistant that drafts pages and helps with one, using your own key. What you ask for and the page you're working on are sent to the provider you choose, under its terms."
+        >
+          {/* The view has whether a key is saved and its last four characters, never the key. */}
+          <AiSettingsForm
+            initial={aiSettingsView(savedAi, config.AUTH_SECRET)}
+            allowPrivate={config.AI_ALLOW_PRIVATE_URLS}
+            locale={site.language}
+          />
         </SettingsSection>
       </SettingsLayout>
     </AdminPage>

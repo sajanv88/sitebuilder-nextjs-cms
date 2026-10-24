@@ -72,6 +72,15 @@ describe("parseEnv", () => {
     expect(bad.ok ? "" : bad.message).toContain("CLIENT_IP_HEADER: Must be a header name");
   });
 
+  test("AI_ALLOW_PRIVATE_URLS is off unless it's true", () => {
+    const unset = parseEnv(local);
+    expect(unset.ok && unset.env.AI_ALLOW_PRIVATE_URLS).toBe(false);
+    const set = parseEnv({ ...local, AI_ALLOW_PRIVATE_URLS: "true" });
+    expect(set.ok && set.env.AI_ALLOW_PRIVATE_URLS).toBe(true);
+    const bad = parseEnv({ ...local, AI_ALLOW_PRIVATE_URLS: "yes" });
+    expect(bad.ok ? "" : bad.message).toContain('AI_ALLOW_PRIVATE_URLS: Must be "true" or "false"');
+  });
+
   test("an unknown MEDIA_STORAGE is refused", () => {
     const result = parseEnv({ ...local, MEDIA_STORAGE: "ftp" });
     expect(result.ok ? "" : result.message).toContain('MEDIA_STORAGE: Must be "local" or "s3"');

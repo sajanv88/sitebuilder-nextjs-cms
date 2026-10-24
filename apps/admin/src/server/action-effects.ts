@@ -38,6 +38,8 @@ export const ACTION_EFFECTS = {
   deleteEntries: ["entries"],
   // media-storage.ts: where files are read from; addresses stay the same.
   testStorage: [],
+  testAiConnection: [],
+  saveAiSettings: [],
   saveStorage: ["settings"],
   // media.ts
   listMediaPage: [],

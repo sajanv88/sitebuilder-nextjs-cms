@@ -45,6 +45,16 @@ const base = {
   // Where local storage keeps files. Read with S3 too: files uploaded before a switch to S3
   // stay on disk (decisions #48).
   MEDIA_LOCAL_DIR: v.optional(v.pipe(v.string(), v.minLength(1)), "/data/media"),
+  // Lets the AI assistant reach addresses on this machine or a private network, such as Ollama
+  // on the same server or the office network. Off, only https addresses on the internet are
+  // reached (the outbound guard in packages/ai). Link-local and metadata addresses never are.
+  AI_ALLOW_PRIVATE_URLS: v.optional(
+    v.pipe(
+      v.picklist(["true", "false"], 'Must be "true" or "false"'),
+      v.transform((s) => s === "true"),
+    ),
+    "false",
+  ),
 };
 
 export const EnvSchema = v.variant(

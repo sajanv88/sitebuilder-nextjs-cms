@@ -64,7 +64,7 @@ Everything is set with environment variables, read at startup. A missing or inva
 | Variable | Required | What it is |
 |---|---|---|
 | `DATABASE_URL` | yes | Postgres connection URL. Compose sets it for its own database. |
-| `AUTH_SECRET` | yes | At least 32 characters. Signs sessions and encrypts the S3 key saved in Settings; keep it secret and don't change it. |
+| `AUTH_SECRET` | yes | At least 32 characters. Signs sessions and encrypts the S3 and AI keys saved in Settings; keep it secret and don't change it. |
 | `SITE_URL` | yes | The public address, such as `https://example.com`. |
 | `MEDIA_STORAGE` | yes | Where uploads go until an admin chooses in Settings → Media storage: `local` or `s3`. |
 | `MEDIA_LOCAL_DIR` | no | Local storage's folder. Default `/data/media`, the Compose volume. |
@@ -72,6 +72,7 @@ Everything is set with environment variables, read at startup. A missing or inva
 | `MEDIA_MAX_BYTES` | no | Largest upload, in bytes. Default 25 MiB. |
 | `CRON_SECRET` | no | At least 32 characters. Turns on `/api/cron/publish` for an outside cron service (see [Scheduled posts](#scheduled-posts)). |
 | `CLIENT_IP_HEADER` | no | The header with the visitor's address, for the per-address sign-in limit (see [On a server](#on-a-server)). |
+| `AI_ALLOW_PRIVATE_URLS` | no | `true` lets the AI assistant reach an address on the same machine or a private network, such as Ollama at `http://localhost:11434`. Default `false`: only `https` addresses on the internet. Link-local and cloud metadata addresses are refused either way. |
 | `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_SERVICE_NAME`, … | no | OpenTelemetry traces and metrics, with the standard variables. |
 
 ## Media storage
@@ -257,6 +258,7 @@ They share these packages:
 | `packages/schema` | valibot schemas |
 | `packages/blocks` | The block registry and renderer |
 | `packages/media` | Media storage |
+| `packages/ai` | The AI assistant's providers (Anthropic, OpenAI, Ollama) and the guard on its outbound requests |
 | `packages/auth` | Better Auth and the permission checks |
 | `packages/template-sdk` | What a template's code receives |
 | `packages/template-checks` | The rules a template must pass |

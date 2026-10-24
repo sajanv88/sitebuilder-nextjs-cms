@@ -1,0 +1,27 @@
+{
+  "name": "@sitebuilder/ai",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "live-check": "esbuild scripts/live-check.ts --log-level=warning --bundle --platform=node --format=esm --target=node26 --outfile=dist/live-check.mjs && node dist/live-check.mjs"
+  },
+  "dependencies": {
+    "@sitebuilder/schema": "workspace:*",
+    "server-only": "catalog:"
+  },
+  "devDependencies": {
+    "@sitebuilder/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "esbuild": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "license": "GPL-2.0-or-later",
+  "author": "Sajankumar Vijayan"
+}

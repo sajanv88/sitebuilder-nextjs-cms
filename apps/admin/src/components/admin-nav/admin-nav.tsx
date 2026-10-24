@@ -117,6 +117,7 @@ const GROUPS: { label: string | null; items: Item[] }[] = [
           { label: "Reading", href: "/admin/settings?section=reading" as Route },
           { label: "Dates", href: "/admin/settings?section=dates" as Route },
           { label: "Media storage", href: "/admin/settings?section=media-storage" as Route },
+          { label: "AI", href: "/admin/settings?section=ai" as Route },
         ],
       },
     ],

@@ -24,3 +24,9 @@ export const LinkTarget = v.variant("kind", [
   v.object({ kind: v.literal("url"), url: Url }),
 ]);
 export type LinkTarget = v.InferOutput<typeof LinkTarget>;
+
+// A secret saved in settings, such as the S3 secret access key or an AI provider's key:
+// AES-256-GCM, each part base64url (packages/media and packages/ai seal them).
+const base64url = v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]+$/));
+export const SealedSecret = v.object({ iv: base64url, tag: base64url, data: base64url });
+export type SealedSecret = v.InferOutput<typeof SealedSecret>;

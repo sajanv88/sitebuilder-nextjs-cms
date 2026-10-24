@@ -1,0 +1,8 @@
+{
+  "extends": "@sitebuilder/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "types": ["node"]
+  },
+  "include": ["src", "scripts"]
+}

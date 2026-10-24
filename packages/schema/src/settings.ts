@@ -2,9 +2,10 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import * as v from "valibot";
+import { AiSettings } from "./ai";
 import { DateFormatSchema, DEFAULT_DATE_FORMAT, DEFAULT_TIME_ZONE, TimeZoneSchema } from "./dates";
 import { RESERVED_SEGMENTS } from "./entries";
-import { Uuid } from "./shared";
+import { SealedSecret, Uuid } from "./shared";
 
 // Settings rows (design §5.4). Each value is validated by its schema on every write.
 
@@ -215,11 +216,6 @@ export const S3SecretInput = v.pipe(
   v.regex(/^[!-~]{1,256}$/, "Enter the secret access key"),
 );
 
-// The secret access key as stored: AES-256-GCM, each part base64url (packages/media seals it).
-const base64url = v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]+$/));
-export const SealedSecret = v.object({ iv: base64url, tag: base64url, data: base64url });
-export type SealedSecret = v.InferOutput<typeof SealedSecret>;
-
 export const MediaStorageSettings = v.variant("driver", [
   v.object({ driver: v.literal("local") }),
   v.object({
@@ -259,12 +255,14 @@ export const SettingsSchemas = {
   theme: ThemeSettings,
   media: MediaStorageSettings,
   template: TemplateSettings,
+  ai: AiSettings,
 } as const;
 export type SettingsKey = keyof typeof SettingsSchemas;
 export type SettingsValue<K extends SettingsKey> = v.InferOutput<(typeof SettingsSchemas)[K]>;
 
-// The keys /setup writes. `media` isn't one: without a row, the environment decides.
-export type DefaultSettingsKey = Exclude<SettingsKey, "media">;
+// The keys /setup writes. Not `media` (without a row, the environment decides) nor `ai`
+// (without a row, the assistant is off).
+export type DefaultSettingsKey = Exclude<SettingsKey, "media" | "ai">;
 
 // The rows /setup writes.
 export function defaultSettings(siteUrl: string): {
