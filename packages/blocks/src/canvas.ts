@@ -30,8 +30,10 @@ export type ToCanvas =
   | { type: "selection"; selectedId: string | null; issueIds: readonly string[] }
   | { type: "scrollTo"; blockId: string }
   // What the layouts draw from the editor's fields rather than from the blocks. The canvas draws
-  // its layouts on the server again when one changes.
-  | { type: "entry"; title: string; featuredMediaId: string };
+  // its layouts on the server again when the title or the picture changes. The background is the
+  // colour the page will have ("#rrggbb", its own or the site's), "" for the theme's; the canvas
+  // draws it itself.
+  | { type: "entry"; title: string; featuredMediaId: string; background: string };
 
 // The editor's own keys, pressed while the canvas has focus (entry-editor.tsx handles them).
 export interface CanvasKey {

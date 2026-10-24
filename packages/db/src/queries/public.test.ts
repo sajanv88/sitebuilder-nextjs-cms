@@ -6,7 +6,14 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { redirects } from "../schema/site";
 import { createTestDb } from "../testing/pglite";
 import { bootstrapSite } from "./bootstrap";
-import { createEntry, type EntryWrite, setEntryStatus, trashEntry } from "./entries";
+import {
+  createEntry,
+  type EntryWrite,
+  getEntryForEdit,
+  setEntryStatus,
+  trashEntry,
+  updateEntry,
+} from "./entries";
 import { getMenu, resolveMenu, saveMenu } from "./menus";
 import {
   getEntryForCanvas,
@@ -74,6 +81,42 @@ async function publish(id: string, at: Date | null = null) {
 async function setPerPage(postsPerPage: number) {
   await upsertSettings(db, "reading", { homepageEntryId: null, postsPerPage, postsPath: "/blog" });
 }
+
+describe("page background", () => {
+  it("is stored, read for the site, and kept by a save that doesn't send it", async () => {
+    const page = await entry("page", "Cream", { background: "#fdf6e3" });
+    expect((await getEntryForCanvas(db, page.id))?.background).toBe("#fdf6e3");
+    const write = {
+      title: "Cream",
+      content: [],
+      featuredMediaId: null,
+      slug: "",
+      excerpt: null,
+      seoTitle: null,
+      seoDescription: null,
+      parentId: null,
+      categoryIds: [],
+      tagIds: [],
+      authorId: null,
+      actorId: adminId,
+    };
+    const kept = await updateEntry(db, {
+      ...write,
+      id: page.id,
+      expectedUpdatedAt: page.updatedAt,
+    });
+    if (!kept.ok) throw new Error(kept.error);
+    expect((await getEntryForEdit(db, page.id))?.background).toBe("#fdf6e3");
+    const cleared = await updateEntry(db, {
+      ...write,
+      id: page.id,
+      expectedUpdatedAt: kept.updatedAt,
+      background: null,
+    });
+    expect(cleared.ok).toBe(true);
+    expect((await getEntryForEdit(db, page.id))?.background).toBeNull();
+  });
+});
 
 describe("resolveRoute", () => {
   it("finds public entries and nothing else", async () => {

@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import * as v from "valibot";
-import { Uuid } from "./shared";
+import { HexColor, Uuid } from "./shared";
 
 // Entries: slugs, paths and the inputs the admin sends (design §4.1). The rules that need the
 // database (unique slugs, taken paths) are in packages/db; these are the ones that don't.
@@ -141,6 +141,15 @@ const OptionalUuid = v.union([
 // Better Auth's user ids are text.
 export const UserId = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
 
+// The page's own background colour, or none ("").
+export const BackgroundField = v.union([
+  v.pipe(
+    v.literal(""),
+    v.transform(() => null),
+  ),
+  HexColor,
+]);
+
 const TermIds = v.pipe(v.array(Uuid), v.maxLength(50, "Choose at most 50"));
 
 // The fields the editor sends on save. `authorId` is honoured only for someone allowed to
@@ -157,6 +166,7 @@ export const EntryFields = v.object({
   seoTitle: optionalText(ENTRY_LIMITS.seoTitle),
   seoDescription: optionalText(ENTRY_LIMITS.seoDescription),
   parentId: OptionalUuid,
+  background: BackgroundField,
   authorId: v.optional(UserId),
   categoryIds: TermIds,
   tagIds: TermIds,

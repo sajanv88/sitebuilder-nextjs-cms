@@ -115,6 +115,8 @@ export interface PublicEntry {
   featuredMediaId: string | null;
   seoTitle: string | null;
   seoDescription: string | null;
+  // Its own background colour; null for the site's.
+  background: string | null;
   publishedAt: Date | null;
   updatedAt: Date;
   authorId: string;
@@ -136,6 +138,7 @@ async function readEntry(db: Executor, where: SQL | undefined): Promise<PublicEn
       featuredMediaId: entries.featuredMediaId,
       seoTitle: entries.seoTitle,
       seoDescription: entries.seoDescription,
+      background: entries.background,
       publishedAt: entries.publishedAt,
       updatedAt: entries.updatedAt,
       authorId: entries.authorId,

@@ -42,6 +42,7 @@ import {
   toast,
 } from "@nuvui/react";
 import {
+  pageBackgroundTokens,
   type SettingsValue,
   THEME_PRESETS,
   THEME_TOKENS,
@@ -53,6 +54,7 @@ import * as v from "valibot";
 import { saveTheme } from "@/actions/appearance";
 import "./appearance-form.scss";
 import {
+  BACKGROUND_PRESETS,
   BRAND_TOKENS,
   brandOf,
   brandTokens,
@@ -144,6 +146,7 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
   const [mode, setMode] = useState<Theme["mode"]>(initial.mode);
   const [density, setDensity] = useState<Theme["density"]>(initial.density);
   const [rows, setRows] = useState<TokenRow[]>(() => rowsOf(initial.tokens));
+  const [pageBackground, setPageBackground] = useState(initial.pageBackground);
   const [previewDark, setPreviewDark] = useState(initial.mode === "dark");
   const [problem, setProblem] = useState<string | null>(null);
   const [saving, startSave] = useTransition();
@@ -153,12 +156,26 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
 
   // The overrides, as variables on the preview: the shown mode's value, else the light one,
   // which also holds in dark (nuvui's theming page).
+  // With a page background, the palette it takes (page-background.ts) instead.
+  const validRows = rows.filter((row) => !problems.get(row.key));
   const previewStyle = Object.fromEntries(
-    rows.flatMap((row) => {
-      if (problems.get(row.key)) return [];
-      const value = shownMode === "dark" ? row.dark || row.light : row.light;
-      return value ? [[row.name, value]] : [];
-    }),
+    pageBackground
+      ? pageBackgroundTokens(pageBackground, {
+          preset,
+          tokens: Object.fromEntries(
+            validRows.map((row) => [
+              row.name,
+              {
+                ...(row.light ? { light: row.light } : {}),
+                ...(row.dark ? { dark: row.dark } : {}),
+              },
+            ]),
+          ),
+        }).map(([name, value]) => [name === "color-scheme" ? "colorScheme" : name, value])
+      : validRows.flatMap((row) => {
+          const value = shownMode === "dark" ? row.dark || row.light : row.light;
+          return value ? [[row.name, value]] : [];
+        }),
   ) as CSSProperties;
 
   function update(key: number, patch: Partial<TokenRow>) {
@@ -217,7 +234,7 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
     );
     setProblem(null);
     startSave(async () => {
-      const result = await saveTheme({ preset, mode, density, tokens });
+      const result = await saveTheme({ preset, mode, density, tokens, pageBackground });
       if (result.ok)
         toast("Appearance saved. The site shows it on the next page load.", { intent: "success" });
       else setProblem(result.error);
@@ -262,7 +279,7 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
 
         <section className="appearance-form__section" aria-labelledby="appearance-brand">
           <h2 id="appearance-brand" className="appearance-form__heading">
-            Brand colour and corners
+            Colours and corners
           </h2>
           <ItemGroup variant="outline">
             <Item>
@@ -327,6 +344,44 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
                     </ToggleGroupItem>
                   ))}
                 </ToggleGroup>
+              </ItemActions>
+            </Item>
+            <Item>
+              <ItemContent>
+                <ItemTitle id="appearance-background-title">Page background</ItemTitle>
+                <ItemDescription id="appearance-background-about">
+                  Behind every page and post without a colour of its own. Text and lines are set to
+                  read on it, and a light colour shows pages light even in dark mode.
+                </ItemDescription>
+              </ItemContent>
+              <ItemActions className="appearance-form__brand-actions">
+                {pageBackground ? (
+                  <Button intent="ghost" size="sm" onClick={() => setPageBackground(null)}>
+                    Use the theme's
+                  </Button>
+                ) : null}
+                <ColorPicker value={pageBackground ?? "#ffffff"} onValueChange={setPageBackground}>
+                  <ColorPickerTrigger
+                    aria-labelledby="appearance-background-title"
+                    aria-describedby="appearance-background-about"
+                  >
+                    {pageBackground ? undefined : "The theme's"}
+                  </ColorPickerTrigger>
+                  <ColorPickerContent align="end">
+                    <ColorPickerArea />
+                    <ColorPickerHue />
+                    <ColorPickerInput />
+                    <ColorPickerSwatches aria-label="Backgrounds">
+                      {BACKGROUND_PRESETS.map((option) => (
+                        <ColorPickerSwatch
+                          key={option.value}
+                          value={option.value}
+                          aria-label={option.name}
+                        />
+                      ))}
+                    </ColorPickerSwatches>
+                  </ColorPickerContent>
+                </ColorPicker>
               </ItemActions>
             </Item>
           </ItemGroup>

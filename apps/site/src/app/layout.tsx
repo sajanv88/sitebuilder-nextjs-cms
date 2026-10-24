@@ -19,6 +19,7 @@ import { headers } from "next/headers";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { NonceProvider } from "@/components/nonce-provider/nonce-provider";
+import { PageBackground } from "@/components/page-background/page-background";
 import { getSite, getTheme } from "@/server/content";
 import { themeStylesheet } from "@/server/theme";
 
@@ -61,7 +62,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       data-density={theme.density}
       {...(theme.preset === "default" ? {} : { "data-preset": theme.preset })}
     >
-      <head>{tokens ? <style nonce={nonce}>{tokens}</style> : null}</head>
+      <head>
+        {tokens ? <style nonce={nonce}>{tokens}</style> : null}
+        {/* The site's background, for every page without one of its own (EntryView's). */}
+        {theme.pageBackground ? (
+          <PageBackground color={theme.pageBackground} theme={theme} nonce={nonce} />
+        ) : null}
+      </head>
       <body>
         <NonceProvider nonce={nonce}>
           {/* The template's frame is drawn below this, by the /_site layout and the not-found

@@ -5,7 +5,7 @@ import * as v from "valibot";
 import { AiSettings } from "./ai";
 import { DateFormatSchema, DEFAULT_DATE_FORMAT, DEFAULT_TIME_ZONE, TimeZoneSchema } from "./dates";
 import { RESERVED_SEGMENTS } from "./entries";
-import { SealedSecret, Uuid } from "./shared";
+import { HexColor, SealedSecret, Uuid } from "./shared";
 
 // Settings rows (design §5.4). Each value is validated by its schema on every write.
 
@@ -50,6 +50,9 @@ export const ThemeSettings = v.object({
     TokenName,
     v.object({ light: v.optional(TokenValue), dark: v.optional(TokenValue) }),
   ),
+  // Every page's and post's background, unless one has its own (page-background.ts). Set from
+  // a page's settings or from Appearance; none for rows saved before it existed.
+  pageBackground: v.optional(v.nullable(HexColor), null),
 });
 export type ThemeSettings = v.InferOutput<typeof ThemeSettings>;
 
@@ -283,7 +286,13 @@ export function defaultSettings(siteUrl: string): {
       postsPath: "/blog",
       showReadingProgress: true,
     },
-    theme: { preset: "default", mode: "system", density: "default", tokens: {} },
+    theme: {
+      preset: "default",
+      mode: "system",
+      density: "default",
+      tokens: {},
+      pageBackground: null,
+    },
     template: DEFAULT_TEMPLATE,
   };
 }

@@ -193,6 +193,7 @@ export interface EntryForEdit {
   deletedAt: Date | null;
   content: BlockList;
   featuredMediaId: string | null;
+  background: string | null;
   author: { id: string; name: string };
   parent: { id: string; title: string } | null;
   categoryIds: string[];
@@ -217,6 +218,7 @@ export async function getEntryForEdit(db: Executor, id: string): Promise<EntryFo
       deletedAt: true,
       content: true,
       featuredMediaId: true,
+      background: true,
     },
     with: {
       author: { columns: { id: true, name: true } },
@@ -533,6 +535,9 @@ export interface EntryWrite {
   excerpt: string | null;
   seoTitle: string | null;
   seoDescription: string | null;
+  // "#rrggbb" (HexColor) or null for the site's. Left out, a create stores none and an update
+  // keeps what's there.
+  background?: string | null;
   // Pages only; ignored for posts.
   parentId: string | null;
   // Posts only; ignored for pages.
@@ -616,6 +621,7 @@ export async function createEntry(
           excerpt: input.excerpt,
           seoTitle: input.seoTitle,
           seoDescription: input.seoDescription,
+          background: input.background ?? null,
           content: input.content,
           featuredMediaId: input.featuredMediaId,
           authorId: input.authorId,
@@ -689,6 +695,7 @@ export async function updateEntry(
           excerpt: input.excerpt,
           seoTitle: input.seoTitle,
           seoDescription: input.seoDescription,
+          ...(input.background !== undefined ? { background: input.background } : {}),
           content: input.content,
           featuredMediaId: input.featuredMediaId,
           ...(input.authorId ? { authorId: input.authorId } : {}),

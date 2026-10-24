@@ -89,6 +89,7 @@ describe("EntryFields", () => {
     seoTitle: "",
     seoDescription: "Short",
     parentId: "",
+    background: "",
     categoryIds: [uuid],
     tagIds: [],
   };
@@ -101,6 +102,7 @@ describe("EntryFields", () => {
       seoTitle: null,
       seoDescription: "Short",
       parentId: null,
+      background: null,
       categoryIds: [uuid],
       tagIds: [],
     });
@@ -111,6 +113,7 @@ describe("EntryFields", () => {
     expect(v.is(EntryFields, { ...valid, seoTitle: "x".repeat(71) })).toBe(false);
     expect(v.is(EntryFields, { ...valid, parentId: "not-a-uuid" })).toBe(false);
     expect(v.is(EntryFields, { ...valid, tagIds: ["x"] })).toBe(false);
+    expect(v.is(EntryFields, { ...valid, background: "red" })).toBe(false);
   });
 });
 

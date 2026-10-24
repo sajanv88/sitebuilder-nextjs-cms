@@ -15,7 +15,7 @@ import { getViewer } from "@/auth/session";
 import { CanvasBlocks } from "@/components/canvas-blocks/canvas-blocks";
 import { EntryView } from "@/components/entry-view/entry-view";
 import { SiteFrame } from "@/components/site-frame/site-frame";
-import { getReadingSettings, getRenderData, getSite } from "@/server/content";
+import { getReadingSettings, getRenderData, getSite, getTheme } from "@/server/content";
 import { activeTemplate } from "@/server/template";
 
 // The editor's canvas: a page or a post as visitors will see it, drawn with the active
@@ -62,6 +62,7 @@ function unsaved(type: EntryKind, authorId: string): PublicEntry {
     featuredMediaId: null,
     seoTitle: null,
     seoDescription: null,
+    background: null,
     publishedAt: null,
     updatedAt: new Date(),
     authorId,
@@ -101,11 +102,12 @@ export default async function CanvasPage({ params, searchParams }: PageProps<"/_
   const titleInContent =
     query.heading === undefined ? headingBlockId(saved.content) !== null : query.heading === "1";
 
-  const [site, reading, template, data] = await Promise.all([
+  const [site, reading, template, data, theme] = await Promise.all([
     getSite(),
     getReadingSettings(),
     activeTemplate(),
     getRenderData(saved.content, featuredMediaId ? [featuredMediaId] : []),
+    getTheme(),
   ]);
   return (
     <>
@@ -136,6 +138,7 @@ export default async function CanvasPage({ params, searchParams }: PageProps<"/_
                 featuredMediaId: featuredMediaId ?? "",
                 titleInContent,
               }}
+              theme={{ preset: theme.preset, tokens: theme.tokens }}
             />
           </Suspense>
         </EntryView>

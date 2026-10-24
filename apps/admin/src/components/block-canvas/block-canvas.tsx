@@ -84,6 +84,7 @@ export function BlockCanvas({
   onSelect,
   title,
   featuredMediaId,
+  background,
   device = "fit",
 }: {
   ref?: Ref<CanvasHandle>;
@@ -97,6 +98,8 @@ export function BlockCanvas({
   onSelect: (id: string | null) => void;
   title: string;
   featuredMediaId: string;
+  // "#rrggbb", or "" for the theme's.
+  background: string;
   device?: Device;
 }) {
   const { media, links, posts } = useEditorData();
@@ -156,7 +159,7 @@ export function BlockCanvas({
   const entryLoad = useRef(0);
   useEffect(() => {
     if (loads === 0) return;
-    const message: ToCanvas = { type: "entry", title, featuredMediaId };
+    const message: ToCanvas = { type: "entry", title, featuredMediaId, background };
     if (entryLoad.current !== loads) {
       entryLoad.current = loads;
       send(message);
@@ -164,7 +167,7 @@ export function BlockCanvas({
     }
     const timer = setTimeout(() => send(message), ENTRY_DELAY);
     return () => clearTimeout(timer);
-  }, [loads, send, title, featuredMediaId]);
+  }, [loads, send, title, featuredMediaId, background]);
 
   return (
     <div className="block-canvas">

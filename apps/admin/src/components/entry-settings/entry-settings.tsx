@@ -4,10 +4,19 @@
 "use client";
 
 import {
+  Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
+  ColorPicker,
+  ColorPickerArea,
+  ColorPickerContent,
+  ColorPickerHue,
+  ColorPickerInput,
+  ColorPickerSwatch,
+  ColorPickerSwatches,
+  ColorPickerTrigger,
   Field,
   FieldControl,
   FieldDescription,
@@ -15,10 +24,12 @@ import {
   FieldLabel,
   Input,
   NativeSelect,
+  Switch,
   Textarea,
 } from "@nuvui/react";
 import { ENTRY_LIMITS, type EntryKind } from "@sitebuilder/schema";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
+import { BACKGROUND_PRESETS } from "@/components/appearance-form/brand";
 import { MediaInput } from "@/components/block-fields/block-fields";
 import type {
   EditorEntry,
@@ -40,6 +51,99 @@ export interface EditorOptions {
   // Terms to pick from (posts, for someone allowed term.assign).
   categories: { id: string; name: string }[] | null;
   tags: { id: string; name: string }[] | null;
+}
+
+export interface BackgroundChoice {
+  // The page's own colour, or with `everywhere` the site's: "#rrggbb", or "" for none.
+  color: string;
+  // On: the colour is saved as every page's and post's (the theme's), not this one's alone.
+  everywhere: boolean;
+  // The site's colour as saved ("" for none).
+  siteColor: string;
+  // Whether the viewer may change the site's (theme.update).
+  canSetSite: boolean;
+  onColorChange: (color: string) => void;
+  onEverywhereChange: (on: boolean) => void;
+}
+
+// The page's background, and whether it's every page's. The canvas shows it as it's picked.
+function BackgroundSettings({
+  type,
+  choice,
+  error,
+}: {
+  type: EntryKind;
+  choice: BackgroundChoice;
+  error: string | undefined;
+}) {
+  const id = useId();
+  const { color, everywhere, siteColor } = choice;
+  // What the trigger names when there's no colour of its own.
+  const inherited = everywhere || !siteColor ? "The theme's" : "The site's";
+
+  function setEverywhere(on: boolean) {
+    // On, an empty choice starts from the site's colour, so turning it on clears nothing. Off,
+    // the site's colour needs no copy of its own: the page shows it anyway.
+    if (on && !color && siteColor) choice.onColorChange(siteColor);
+    if (!on && color === siteColor) choice.onColorChange("");
+    choice.onEverywhereChange(on);
+  }
+
+  return (
+    <>
+      <Field>
+        <FieldLabel>Colour</FieldLabel>
+        <div className="entry-settings__color">
+          <ColorPicker value={color || siteColor || "#ffffff"} onValueChange={choice.onColorChange}>
+            <FieldControl>
+              <ColorPickerTrigger>{color ? undefined : inherited}</ColorPickerTrigger>
+            </FieldControl>
+            <ColorPickerContent>
+              <ColorPickerArea />
+              <ColorPickerHue />
+              <ColorPickerInput />
+              <ColorPickerSwatches aria-label="Backgrounds">
+                {BACKGROUND_PRESETS.map((option) => (
+                  <ColorPickerSwatch
+                    key={option.value}
+                    value={option.value}
+                    aria-label={option.name}
+                  />
+                ))}
+              </ColorPickerSwatches>
+            </ColorPickerContent>
+          </ColorPicker>
+          {color ? (
+            <Button intent="ghost" size="sm" onClick={() => choice.onColorChange("")}>
+              {`Use ${inherited.toLowerCase()}`}
+            </Button>
+          ) : null}
+        </div>
+        <FieldDescription>
+          {everywhere
+            ? "The whole page behind the blocks, on every page and post. Text, lines and muted sections are set to read on it."
+            : `The whole ${type} behind the blocks. Text, lines and muted sections are set to read on it.`}
+        </FieldDescription>
+        <FieldError>{error}</FieldError>
+      </Field>
+      {choice.canSetSite ? (
+        <Field>
+          <div className="entry-settings__switch">
+            <Switch
+              id={`${id}-everywhere`}
+              checked={everywhere}
+              onCheckedChange={setEverywhere}
+              aria-describedby={`${id}-everywhere-about`}
+            />
+            <label htmlFor={`${id}-everywhere`}>Use on every page and post</label>
+          </div>
+          <FieldDescription id={`${id}-everywhere-about`}>
+            Saved as the site&apos;s background. A page or post with a colour of its own keeps it.
+          </FieldDescription>
+        </Field>
+      ) : null}
+    </>
+  );
 }
 
 // A field with a limit, and how much of it is used.
@@ -111,6 +215,7 @@ export function EntrySettings({
   publishing,
   featuredMediaId,
   onFeaturedChange,
+  background,
 }: {
   type: EntryKind;
   values: EditorValues;
@@ -122,6 +227,7 @@ export function EntrySettings({
   publishing: ReactNode;
   featuredMediaId: string;
   onFeaturedChange: (id: string) => void;
+  background: BackgroundChoice;
 }) {
   return (
     <div className="entry-settings">
@@ -167,6 +273,10 @@ export function EntrySettings({
           onChange={(id) => onFeaturedChange(id ?? "")}
           description={`Shown with the ${type} in lists, and when it's shared.`}
         />
+      </Section>
+
+      <Section title="Background">
+        <BackgroundSettings type={type} choice={background} error={errors.background} />
       </Section>
 
       {options.authors ? (

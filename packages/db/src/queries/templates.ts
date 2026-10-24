@@ -92,7 +92,9 @@ export interface TemplateEntryWrite {
 export interface TemplateActivation {
   actorId: string;
   template: TemplateSettings;
-  theme?: ThemeSettings | undefined;
+  // A template's colours and type. The site's page background, which a template doesn't set,
+  // goes back to none.
+  theme?: Omit<ThemeSettings, "pageBackground"> | undefined;
   // Parents before their children.
   entries: readonly TemplateEntryWrite[];
   publish: boolean;

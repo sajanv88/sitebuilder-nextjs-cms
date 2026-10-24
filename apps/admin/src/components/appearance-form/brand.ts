@@ -2,32 +2,16 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import { hexToHsv, hsvToHex, parseHex } from "@nuvui/react";
+import { contrast, textOn } from "@sitebuilder/schema";
 
 // The friendly half of Appearance: one brand colour and one corner style, each written as the
 // token overrides the advanced list shows. Pure, so the arithmetic is tested on its own.
 
-// What text sits on: the theme's white and its near-black (nuvui's gray-950).
-const WHITE = "#ffffff";
+// The contrast arithmetic is shared with the page background (@sitebuilder/schema).
+export { contrast, textOn };
+
+// The theme's near-black (nuvui's gray-950), which dark pages' text is.
 const INK = "#030712";
-
-function luminance(hex: string): number {
-  const [r = 0, g = 0, b = 0] = [1, 3, 5].map((at) => {
-    const channel = Number.parseInt(hex.slice(at, at + 2), 16) / 255;
-    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-// WCAG's contrast ratio: 1 for a colour on itself, 21 for black on white.
-export function contrast(a: string, b: string): number {
-  const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
-  return (light + 0.05) / (dark + 0.05);
-}
-
-// The text colour that reads best on `hex`. One of the two always reaches 4.5:1.
-export function textOn(hex: string): string {
-  return contrast(WHITE, hex) >= contrast(INK, hex) ? WHITE : INK;
-}
 
 // The brand colour for dark pages: the same hue, lighter until it reads as a link on the
 // theme's dark background (4.5:1), as nuvui's own dark primaries do.
@@ -46,10 +30,23 @@ export function darkShade(hex: string): string {
 // Links and outlines are drawn in the brand colour too: below 4.5:1 on a white page, link
 // text is hard to read.
 export function readsOnLight(hex: string): boolean {
-  return contrast(hex, WHITE) >= 4.5;
+  return contrast(hex, "#ffffff") >= 4.5;
 }
 
 export type TokenValues = Record<string, { light: string; dark: string }>;
+
+// Page backgrounds most sites start from: light ones and two dark. Offered here and in a page's
+// settings.
+export const BACKGROUND_PRESETS = [
+  { value: "#ffffff", name: "White" },
+  { value: "#faf7f2", name: "Paper" },
+  { value: "#f3ead8", name: "Sand" },
+  { value: "#eef2f7", name: "Mist" },
+  { value: "#ecf5ee", name: "Mint" },
+  { value: "#fbeff0", name: "Blush" },
+  { value: "#1e293b", name: "Slate" },
+  { value: "#0b1120", name: "Night" },
+];
 
 export const BRAND_TOKENS = [
   "--color-primary",

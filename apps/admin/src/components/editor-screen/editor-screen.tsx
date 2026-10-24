@@ -41,6 +41,7 @@ const EMPTY: EditorState["values"] = {
   categoryIds: [],
   tagIds: [],
   featuredMediaId: "",
+  background: "",
 };
 
 // The editor's page: loads the entry, its blocks and what they point at, and the options, and
@@ -83,7 +84,7 @@ export async function EditorScreen({
   const owned = { type, ownerId } as const;
   const mediaIds = collectMediaIds(content);
   if (initial.values.featuredMediaId) mediaIds.push(initial.values.featuredMediaId);
-  const [allTerms, parents, authors, links, posts, media, template] = await Promise.all([
+  const [allTerms, parents, authors, links, posts, media, template, theme] = await Promise.all([
     listTermOptions(db),
     type === "page" ? listParentOptions(db, id) : null,
     type === "post" && can(viewer, "post.update") ? listUserOptions(db) : null,
@@ -91,6 +92,7 @@ export async function EditorScreen({
     listLatestPosts(db),
     renderMedia(mediaIds),
     getSettings(db, "template"),
+    getSettings(db, "theme"),
   ]);
   const terms = type === "post" && can(viewer, "term.assign") ? allTerms : null;
   // The current parent is listed even when it's in the trash, so saving keeps it.
@@ -150,7 +152,9 @@ export async function EditorScreen({
         publish: can(viewer, `${type}.publish`, owned),
         trash: can(viewer, `${type}.trash`, owned),
         createTerms: can(viewer, "term.create"),
+        siteBackground: can(viewer, "theme.update"),
       }}
+      siteBackground={theme?.pageBackground ?? ""}
       created={created}
     />
   );

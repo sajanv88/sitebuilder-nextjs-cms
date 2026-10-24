@@ -18,7 +18,8 @@ export type EditorField =
   | "categoryIds"
   | "tagIds"
   | "publishAt"
-  | "featuredMediaId";
+  | "featuredMediaId"
+  | "background";
 
 // What the form shows. Strings, as typed: a failed save gives them back so nothing is lost.
 export interface EditorValues {
@@ -33,6 +34,8 @@ export interface EditorValues {
   tagIds: string[];
   // "" for none.
   featuredMediaId: string;
+  // The page's own background, "#rrggbb", or "" for the site's.
+  background: string;
 }
 
 // The stored entry, with dates as ISO strings for the browser.
@@ -63,6 +66,8 @@ export interface EditorState {
   content?: BlockList;
   // Changes on every save, so the editor can say "Saved" once per save.
   savedAt?: number;
+  // The site's background after a save that set it ("" for none).
+  siteBackground?: string;
 }
 
 export function toEditorEntry(entry: EntryForEdit): EditorEntry {
@@ -87,5 +92,6 @@ export function toEditorValues(entry: EntryForEdit): EditorValues {
     categoryIds: entry.categoryIds,
     tagIds: entry.tagIds,
     featuredMediaId: entry.featuredMediaId ?? "",
+    background: entry.background ?? "",
   };
 }

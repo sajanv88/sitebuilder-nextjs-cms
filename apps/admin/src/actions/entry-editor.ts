@@ -13,12 +13,14 @@ import {
   type EntryForEdit,
   type EntryWriteError,
   getEntryForEdit,
+  getSettings,
   getUserSummary,
   listRevisions,
   restoreRevision,
   searchEntryLinks,
   setEntryStatus,
   updateEntry,
+  upsertSettings,
 } from "@sitebuilder/db";
 import {
   type BlockList,
@@ -118,6 +120,7 @@ function typedValues(form: FormData): EditorValues {
     categoryIds: list(form, "categoryIds"),
     tagIds: list(form, "tagIds"),
     featuredMediaId: text(form, "featuredMediaId"),
+    background: text(form, "background"),
   };
 }
 
@@ -201,6 +204,13 @@ export async function saveEntry(prev: EditorState, form: FormData): Promise<Edit
       authorId: "Choose a user from the list.",
     });
   }
+  // "On every page and post": the colour is the site's (the theme's pageBackground), which
+  // needs theme.update, and the entry keeps none of its own, so it follows the site's.
+  const everywhere = form.get("backgroundEverywhere") === "on";
+  if (everywhere && !can(viewer, "theme.update")) {
+    return fail("failed", "You can't change the site's background. Turn off the switch to save.");
+  }
+
   // Without term.assign the links stay as they are: the form's lists are ignored.
   const existing = id ? await getEntryForEdit(db, id) : undefined;
   const assign = can(viewer, "term.assign");
@@ -208,6 +218,7 @@ export async function saveEntry(prev: EditorState, form: FormData): Promise<Edit
     ...fields.output,
     content: content.value,
     featuredMediaId: featured.output || null,
+    background: everywhere ? null : fields.output.background,
     categoryIds: assign ? fields.output.categoryIds : (existing?.categoryIds ?? []),
     tagIds: assign ? fields.output.tagIds : (existing?.tagIds ?? []),
   };
@@ -236,6 +247,9 @@ export async function saveEntry(prev: EditorState, form: FormData): Promise<Edit
   }
   invalidate("saveEntry", { entryIds: [saved.id] });
 
+  // After the entry: it's saved either way, and the editor needs its new conflict token.
+  const siteBackground = everywhere ? await setSiteBackground(fields.output.background) : undefined;
+
   if (intent !== "save") {
     const status = await setEntryStatus(db, {
       id: saved.id,
@@ -255,11 +269,15 @@ export async function saveEntry(prev: EditorState, form: FormData): Promise<Edit
   if (!fresh) return fail("failed", WRITE_ERRORS["not-found"].message);
   return {
     result: "saved",
-    message: savedMessage(intent, fresh.status),
+    message:
+      siteBackground === null
+        ? `${savedMessage(intent, fresh.status)} The site's background couldn't be changed; try again.`
+        : savedMessage(intent, fresh.status),
     values: toEditorValues(fresh),
     entry: toEditorEntry(fresh),
     content: fresh.content,
     savedAt: Date.now(),
+    ...(typeof siteBackground === "string" ? { siteBackground } : {}),
   };
 }
 
@@ -398,6 +416,19 @@ function writeFailure(
   return known.field
     ? fail("invalid", "Check the fields marked below.", { [known.field]: known.message })
     : fail("failed", known.message);
+}
+
+// The theme's pageBackground: every page's and post's that has none of its own. The colour
+// ("" for none), or null when it couldn't be written. The caller checked theme.update.
+async function setSiteBackground(color: string | null): Promise<string | null> {
+  const theme = await getSettings(db, "theme");
+  if (!theme) return null;
+  if (theme.pageBackground !== color) {
+    const result = await upsertSettings(db, "theme", { ...theme, pageBackground: color });
+    if (!result.ok) return null;
+    invalidate("saveTheme");
+  }
+  return color ?? "";
 }
 
 function savedMessage(intent: SaveIntent, status: EntryForEdit["status"]): string {

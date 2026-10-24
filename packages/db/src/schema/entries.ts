@@ -43,6 +43,8 @@ export const entries = snakeCase.table(
       .references(() => user.id, { onDelete: "restrict" }),
     seoTitle: text(),
     seoDescription: text(),
+    // The page's own background, "#rrggbb", or null for the site's (HexColor checks it).
+    background: text(),
     // "wp:123" for imported content, null otherwise.
     sourceRef: text(),
     publishedAt: optionalTimestamp(),

@@ -209,14 +209,17 @@ export function EntryEditor({
   options,
   allowed,
   created,
+  siteBackground,
 }: {
   type: EntryKind;
   initial: Pick<EditorState, "values" | "entry">;
   content: BlockList;
   data: EditorData;
   options: EditorOptions;
-  allowed: { publish: boolean; trash: boolean; createTerms: boolean };
+  allowed: { publish: boolean; trash: boolean; createTerms: boolean; siteBackground: boolean };
   created: boolean;
+  // Every page's and post's background, from the theme ("" for none).
+  siteBackground: string;
 }) {
   const router = useRouter();
   const [state, action, saving] = useActionState(saveEntry, { result: "idle", ...initial });
@@ -236,6 +239,17 @@ export function EntryEditor({
   const blocks = history.value;
   const setBlocks = history.set;
   const [featuredMediaId, setFeaturedMediaId] = useState(initial.values.featuredMediaId);
+  // The background: the page's own, or, with "everywhere" on, the site's. An entry without its
+  // own starts on the site's, for someone who may change it.
+  const siteColor = state.siteBackground ?? siteBackground;
+  const [everywhere, setEverywhere] = useState(
+    allowed.siteBackground && !initial.values.background && siteBackground !== "",
+  );
+  const [background, setBackground] = useState(
+    initial.values.background || (everywhere ? siteBackground : ""),
+  );
+  // What the page will show once saved: its own colour, else the site's, else the theme's.
+  const shownBackground = everywhere ? background : background || siteColor;
   // The id and the conflict token, which an autosave can change between saves.
   const [entryId, setEntryId] = useState(initial.entry?.id ?? "");
   const [token, setToken] = useState(initial.entry?.updatedAt ?? "");
@@ -596,6 +610,8 @@ export function EntryEditor({
         <input type="hidden" name="publishAt" value={publishAt} />
         <input type="hidden" name="content" value={JSON.stringify(blocks)} />
         <input type="hidden" name="featuredMediaId" value={featuredMediaId} />
+        <input type="hidden" name="background" value={background} />
+        {everywhere ? <input type="hidden" name="backgroundEverywhere" value="on" /> : null}
 
         <header className="entry-editor__head">
           <Breadcrumb>
@@ -805,6 +821,7 @@ export function EntryEditor({
               onSelect={select}
               title={title}
               featuredMediaId={featuredMediaId}
+              background={shownBackground}
               device={device}
             />
           </section>
@@ -857,6 +874,14 @@ export function EntryEditor({
                   publishing={publishing}
                   featuredMediaId={featuredMediaId}
                   onFeaturedChange={setFeaturedMediaId}
+                  background={{
+                    color: background,
+                    everywhere,
+                    siteColor,
+                    canSetSite: allowed.siteBackground,
+                    onColorChange: setBackground,
+                    onEverywhereChange: setEverywhere,
+                  }}
                 />
               </TabsContent>
             </Tabs>

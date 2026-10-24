@@ -16,11 +16,17 @@ import {
   type RenderContext,
   readToCanvas,
 } from "@sitebuilder/blocks";
-import type { BlockList, DateSettings } from "@sitebuilder/schema";
+import {
+  type BlockList,
+  type DateSettings,
+  pageBackgroundCss,
+  type SettingsValue,
+} from "@sitebuilder/schema";
 import { loadCanvasBlocks } from "@sitebuilder/templates/canvas";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { createContext, use, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
+import { useNonce } from "@/components/nonce-provider/nonce-provider";
 import { SiteBlocks } from "@/components/site-blocks/site-blocks";
 import { SiteImage } from "@/components/site-image/site-image";
 import "@/lib/template-blocks";
@@ -42,6 +48,8 @@ interface CanvasState {
   // The title and featured picture the editor has, which the layouts draw on the server.
   title: string;
   featuredMediaId: string;
+  // The background the editor has: null until it says, then "#rrggbb" or "" for the theme's.
+  background: string | null;
 }
 
 let state: CanvasState | null = null;
@@ -107,6 +115,7 @@ export function CanvasBlocks({
   blocks,
   data,
   rendered,
+  theme,
 }: {
   templateSlug: string;
   dates: DateSettings & { language: string };
@@ -115,6 +124,8 @@ export function CanvasBlocks({
   data: CanvasData;
   // What the server drew the layouts with.
   rendered: CanvasRendered;
+  // For the background colour's palette.
+  theme: Pick<SettingsValue<"theme">, "preset" | "tokens">;
 }) {
   const initial = useMemo<CanvasState>(
     () => ({
@@ -124,6 +135,7 @@ export function CanvasBlocks({
       issueIds: new Set(),
       title: rendered.title,
       featuredMediaId: rendered.featuredMediaId,
+      background: null,
     }),
     [blocks, data, rendered.title, rendered.featuredMediaId],
   );
@@ -135,6 +147,21 @@ export function CanvasBlocks({
   );
   const templateBlocks = use(loadCanvasBlocks(templateSlug));
   const router = useRouter();
+  const nonce = useNonce();
+
+  // Once the editor has said which background, the saved ones the server drew (the site's and
+  // the page's) are off, and the editor's is drawn below. After every render: drawing the
+  // layouts again can bring them back.
+  useEffect(() => {
+    if (now.background === null) return;
+    for (const style of document.querySelectorAll<HTMLStyleElement>(
+      "style[data-page-background]",
+    )) {
+      style.disabled = true;
+    }
+  });
+  const backgroundCss = now.background ? pageBackgroundCss(now.background, theme) : "";
+  const background = backgroundCss ? <style nonce={nonce}>{backgroundCss}</style> : null;
 
   // The editor's messages.
   useEffect(() => {
@@ -152,7 +179,11 @@ export function CanvasBlocks({
           update({ selectedId: message.selectedId, issueIds: new Set(message.issueIds) });
           break;
         case "entry":
-          update({ title: message.title, featuredMediaId: message.featuredMediaId });
+          update({
+            title: message.title,
+            featuredMediaId: message.featuredMediaId,
+            background: message.background,
+          });
           break;
         case "scrollTo": {
           const frame = document.querySelector(`[data-block-id="${CSS.escape(message.blockId)}"]`);
@@ -243,6 +274,7 @@ export function CanvasBlocks({
   if (now.blocks.length === 0) {
     return (
       <div className="canvas-blocks__empty">
+        {background}
         <Empty>
           <EmptyMedia>
             <ColumnsIcon size={24} />
@@ -257,6 +289,7 @@ export function CanvasBlocks({
   }
   return (
     <Selection.Provider value={{ selectedId: now.selectedId, issueIds: now.issueIds }}>
+      {background}
       <SiteBlocks blocks={now.blocks} context={context} frame={Frame} />
     </Selection.Provider>
   );

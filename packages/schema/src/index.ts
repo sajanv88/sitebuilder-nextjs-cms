@@ -135,6 +135,14 @@ export {
   MenuSchema,
 } from "./menu";
 export {
+  backgroundTone,
+  contrast,
+  pageBackgroundCss,
+  pageBackgroundTokens,
+  surfaceTokens,
+  textOn,
+} from "./page-background";
+export {
   DateSettingsInput,
   DEFAULT_TEMPLATE,
   type DefaultSettingsKey,
@@ -162,7 +170,7 @@ export {
   TokenName,
   TokenValue,
 } from "./settings";
-export { LinkTarget, NodeId, SealedSecret, Url, Uuid } from "./shared";
+export { HexColor, LinkTarget, NodeId, SealedSecret, Url, Uuid } from "./shared";
 export {
   LAYOUT_NAMES,
   type LayoutName,

@@ -30,3 +30,12 @@ export type LinkTarget = v.InferOutput<typeof LinkTarget>;
 const base64url = v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]+$/));
 export const SealedSecret = v.object({ iv: base64url, tag: base64url, data: base64url });
 export type SealedSecret = v.InferOutput<typeof SealedSecret>;
+
+// A colour as the colour picker gives it: #rrggbb, lower case. It goes into the page's CSS, so
+// nothing else is accepted.
+export const HexColor = v.pipe(
+  v.string(),
+  v.trim(),
+  v.toLowerCase(),
+  v.regex(/^#[0-9a-f]{6}$/, "Choose a colour, such as #f5f0e8"),
+);
