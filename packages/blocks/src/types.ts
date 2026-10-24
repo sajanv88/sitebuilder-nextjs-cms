@@ -136,8 +136,9 @@ export type Field =
       title: (item: Record<string, unknown>) => string;
     })
   // A background (surface/surface.tsx): "none", "muted", "primary" or "#rrggbb". `designer`:
-  // offered to the AI page writer, the named ones only.
-  | (FieldBase & { kind: "background"; designer?: boolean })
+  // offered to the AI page writer, the named ones only. `noneLabel`: what "none" is called, such
+  // as "The card's" where none means the thing's own look.
+  | (FieldBase & { kind: "background"; designer?: boolean; noneLabel?: string })
   // Horizontal alignment (align/align.ts). `inherit`: none pressed means "as the section".
   | (FieldBase & { kind: "align"; inherit: boolean })
   // A table's rows: one text cell per column, as many columns as the `columns` field holds.

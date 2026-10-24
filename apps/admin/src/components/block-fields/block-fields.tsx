@@ -246,7 +246,11 @@ const BACKGROUND_OPTIONS = [
   { value: "custom", label: "Colour" },
 ] as const;
 
-function BackgroundField({ field, value, onChange }: FieldProps) {
+function BackgroundField({
+  field,
+  value,
+  onChange,
+}: FieldProps & { field: Extract<BlockField, { kind: "background" }> }) {
   const id = useId();
   const custom = typeof value === "string" && value.startsWith("#") ? value : null;
   const choice = custom ? "custom" : value === "muted" || value === "primary" ? value : "none";
@@ -276,7 +280,7 @@ function BackgroundField({ field, value, onChange }: FieldProps) {
         >
           {BACKGROUND_OPTIONS.map((option) => (
             <ToggleGroupItem key={option.value} value={option.value}>
-              {option.label}
+              {option.value === "none" ? (field.noneLabel ?? option.label) : option.label}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
@@ -1113,6 +1117,6 @@ export function BlockFieldControl(props: FieldProps) {
     case "align":
       return <AlignField {...props} field={field} />;
     case "background":
-      return <BackgroundField {...props} />;
+      return <BackgroundField {...props} field={field} />;
   }
 }

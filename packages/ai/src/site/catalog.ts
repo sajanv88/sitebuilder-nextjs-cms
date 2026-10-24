@@ -54,7 +54,7 @@ export type FieldSpec =
     })
   | (FieldBase & { kind: "align"; inherit: boolean })
   | (FieldBase & { kind: "rows"; columnsFrom: string; max: number; maxLength: number })
-  | (FieldBase & { kind: "background"; designer?: boolean });
+  | (FieldBase & { kind: "background"; designer?: boolean; noneLabel?: string });
 
 export interface BlockSpec {
   type: string;

@@ -441,6 +441,19 @@ describe("backgrounds", () => {
     expect(html).toContain("--color-foreground:#ffffff");
   });
 
+  test("a feature grid's cards take a background of their own", () => {
+    expect(draw([features({})])).not.toContain("block-feature-grid__card--");
+    expect(draw([features({ cardBackground: "primary" })])).toContain(
+      "block-feature-grid__card--primary",
+    );
+    const html = draw([features({ cardBackground: "#FDF6E3" })]);
+    // On the card itself, not a panel around the block.
+    expect(html).not.toContain("block-surface");
+    expect(html).toMatch(/block-feature-grid__card--custom[^>]*data-theme="light"/);
+    expect(html).toContain("--color-background:#fdf6e3");
+    expect(validateContent([features({ cardBackground: "blue" })]).ok).toBe(false);
+  });
+
   test("a section takes a colour of its own as its band", () => {
     const html = draw([
       block("section", { background: "#fdf6e3" }, [block("heading", { text: "Hi", level: 2 })]),

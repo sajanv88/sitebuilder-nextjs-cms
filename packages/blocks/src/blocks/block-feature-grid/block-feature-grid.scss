@@ -32,8 +32,43 @@
       }
     }
 
+    // The icon's colours, which a card's background changes.
     &__card {
+      --block-feature-grid-icon-fg: var(--color-surface-foreground);
+      --block-feature-grid-icon-tint: var(--color-primary);
+      --block-feature-grid-icon-edge: var(--color-border);
+
       block-size: 100%;
+    }
+
+    // A card background (surface/surface.tsx), through nuvui's card variables.
+    &__card--muted {
+      --nuv-card-bg: var(--color-muted);
+      --nuv-card-fg: var(--color-foreground);
+      --block-feature-grid-icon-fg: var(--color-foreground);
+    }
+
+    &__card--primary {
+      --nuv-card-bg: var(--color-primary);
+      --nuv-card-fg: var(--color-primary-foreground);
+      --nuv-card-muted-fg: var(--color-primary-foreground);
+      --nuv-card-border: transparent;
+      --block-feature-grid-icon-fg: var(--color-primary-foreground);
+      --block-feature-grid-icon-tint: var(--color-primary-foreground);
+      --block-feature-grid-icon-edge: color-mix(
+        in oklab,
+        var(--color-primary-foreground) 30%,
+        transparent
+      );
+    }
+
+    // Its tokens come in the style attribute, worked out from the colour.
+    &__card--custom {
+      --nuv-card-bg: var(--color-background);
+      --nuv-card-fg: var(--color-foreground);
+      --nuv-card-muted-fg: var(--color-muted-foreground);
+      --nuv-card-border: var(--color-border);
+      --block-feature-grid-icon-fg: var(--color-foreground);
     }
 
     // The tint is mixed from the brand color, so a theme changes it. The icon is the text color,
@@ -44,10 +79,10 @@
       inline-size: calc(var(--spacing) * 10);
       block-size: calc(var(--spacing) * 10);
       margin-block-end: calc(var(--spacing) * 3);
-      border: var(--nuv-border-width) solid var(--color-border);
+      border: var(--nuv-border-width) solid var(--block-feature-grid-icon-edge);
       border-radius: var(--radius-md);
-      background-color: color-mix(in oklab, var(--color-primary) 10%, transparent);
-      color: var(--color-surface-foreground);
+      background-color: color-mix(in oklab, var(--block-feature-grid-icon-tint) 10%, transparent);
+      color: var(--block-feature-grid-icon-fg);
     }
   }
 }

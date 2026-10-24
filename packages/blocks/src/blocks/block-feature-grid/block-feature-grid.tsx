@@ -6,8 +6,8 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@nuvui/react";
 import * as v from "valibot";
 import { CardRow, layoutField, layoutProp } from "../../card-row/card-row";
 import { FEATURE_ICONS, FeatureIcon } from "../../icons";
-import { optionalText, text } from "../../shared";
-import { surfaceField, surfaceProps } from "../../surface/surface";
+import { cx, optionalText, text } from "../../shared";
+import { SurfaceBackground, surfaceField, surfaceOf, surfaceProps } from "../../surface/surface";
 import type { BlockDefinition } from "../../types";
 import "./block-feature-grid.scss";
 
@@ -22,6 +22,8 @@ const Props = v.strictObject({
   heading: optionalText(120),
   items: v.pipe(v.array(Item), v.minLength(1, "Add at least one feature"), v.maxLength(12)),
   layout: layoutProp,
+  // Every card's background; absent is the card's own (surface/surface.tsx).
+  cardBackground: v.optional(SurfaceBackground),
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -59,38 +61,54 @@ export const featureGrid: BlockDefinition<Props> = {
       ],
     },
     layoutField,
+    {
+      kind: "background",
+      name: "cardBackground",
+      label: "Card background",
+      noneLabel: "The card's",
+      description: "Behind every feature card. Text, the icon and the edge are set to read on it.",
+    },
     surfaceField,
   ],
   summary: (props) => props.heading ?? `${props.items.length} features`,
-  Render: ({ props }) => (
-    <div className="block-feature-grid">
-      {props.heading ? <h2 className="block-feature-grid__title">{props.heading}</h2> : null}
-      <CardRow
-        layout={props.layout}
-        label={props.heading ?? "Features"}
-        className="block-feature-grid__list"
-        cards={props.items.map((item, index) => {
-          const Icon = FEATURE_ICONS[item.icon];
-          return {
-            // Items have no ids; their order is their identity, and the list is drawn whole
-            // from stored props.
-            key: String(index),
-            card: (
-              <Card className="block-feature-grid__card">
-                <CardHeader>
-                  <span className="block-feature-grid__icon">
-                    <Icon aria-hidden="true" size={20} />
-                  </span>
-                  <CardTitle asChild>
-                    <h3>{item.title}</h3>
-                  </CardTitle>
-                  <CardDescription>{item.text}</CardDescription>
-                </CardHeader>
-              </Card>
-            ),
-          };
-        })}
-      />
-    </div>
-  ),
+  Render: ({ props }) => {
+    const cards = surfaceOf(props.cardBackground);
+    return (
+      <div className="block-feature-grid">
+        {props.heading ? <h2 className="block-feature-grid__title">{props.heading}</h2> : null}
+        <CardRow
+          layout={props.layout}
+          label={props.heading ?? "Features"}
+          className="block-feature-grid__list"
+          cards={props.items.map((item, index) => {
+            const Icon = FEATURE_ICONS[item.icon];
+            return {
+              // Items have no ids; their order is their identity, and the list is drawn whole
+              // from stored props.
+              key: String(index),
+              card: (
+                <Card
+                  className={cx(
+                    "block-feature-grid__card",
+                    cards.kind !== "none" && `block-feature-grid__card--${cards.kind}`,
+                  )}
+                  {...cards.attributes}
+                >
+                  <CardHeader>
+                    <span className="block-feature-grid__icon">
+                      <Icon aria-hidden="true" size={20} />
+                    </span>
+                    <CardTitle asChild>
+                      <h3>{item.title}</h3>
+                    </CardTitle>
+                    <CardDescription>{item.text}</CardDescription>
+                  </CardHeader>
+                </Card>
+              ),
+            };
+          })}
+        />
+      </div>
+    );
+  },
 };
