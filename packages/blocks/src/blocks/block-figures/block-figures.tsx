@@ -6,6 +6,7 @@ import { FormattedNumber, Stat, StatDescription, StatLabel, StatValue } from "@n
 import * as v from "valibot";
 import { alignClass, alignField, alignProp } from "../../align/align";
 import { cx, optionalText, text } from "../../shared";
+import { surfaceField, surfaceProps } from "../../surface/surface";
 import type { BlockDefinition } from "../../types";
 import { RollingNumber } from "./rolling-number";
 import "./block-figures.scss";
@@ -20,6 +21,7 @@ const Item = v.strictObject({
 });
 
 const Props = v.strictObject({
+  ...surfaceProps,
   heading: optionalText(120),
   items: v.pipe(v.array(Item), v.minLength(1, "Add at least one figure"), v.maxLength(4)),
   animate: v.optional(v.boolean(), true),
@@ -49,6 +51,7 @@ export const figures: BlockDefinition<Props> = {
     ],
     animate: true,
   }),
+  surface: true,
   fields: [
     alignField(true),
     { kind: "text", name: "heading", label: "Heading", max: 120, optional: true },
@@ -82,6 +85,7 @@ export const figures: BlockDefinition<Props> = {
       label: "Roll the numbers into place",
       description: "Once, as they come into view. Never for anyone who asked for less motion.",
     },
+    surfaceField,
   ],
   summary: (props) => props.heading ?? props.items.map((item) => item.label).join(", "),
   Render: ({ props, context }) => (

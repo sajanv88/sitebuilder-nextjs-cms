@@ -135,6 +135,9 @@ export type Field =
       // A line naming an item in the list, from its props.
       title: (item: Record<string, unknown>) => string;
     })
+  // A background (surface/surface.tsx): "none", "muted", "primary" or "#rrggbb". `designer`:
+  // offered to the AI page writer, the named ones only.
+  | (FieldBase & { kind: "background"; designer?: boolean })
   // Horizontal alignment (align/align.ts). `inherit`: none pressed means "as the section".
   | (FieldBase & { kind: "align"; inherit: boolean })
   // A table's rows: one text cell per column, as many columns as the `columns` field holds.
@@ -157,6 +160,8 @@ export interface BlockDefinition<P extends Record<string, unknown> = Record<stri
   // Containers only. "leaves" is every block type that isn't a container (design §5.2).
   container?: { allow: "leaves" | readonly string[]; min?: number; max?: number };
   fields: readonly Field[];
+  // The renderer draws the block on a panel in its `background` prop (surface/surface.tsx).
+  surface?: boolean;
   // A short name for the block in the outline, from its props.
   summary: (props: P) => string;
   Render: ComponentType<BlockRenderProps<P>>;

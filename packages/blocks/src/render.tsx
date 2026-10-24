@@ -5,9 +5,11 @@ import { AlertTriangleIcon } from "@nuvui/icons";
 import type { Block } from "@sitebuilder/schema";
 import type { ComponentType, ReactNode } from "react";
 import * as v from "valibot";
-import { PAGE_WIDTHS, type PageWidth } from "./page/page";
+import { PAGE_WIDTHS, type PageWidth, pageItemClass } from "./page/page";
 import { BlockPlaceholder } from "./placeholder/block-placeholder";
 import { getBlockDefinition } from "./registry";
+import { cx } from "./shared";
+import { surfaceOf } from "./surface/surface";
 import type { AnyBlockDefinition, RenderContext } from "./types";
 
 // Draws a list of blocks. The same code runs on the server for the public site and in the
@@ -65,16 +67,34 @@ function OneBlock({
         ))
       : undefined;
   const { Render } = definition;
-  const drawn = (
-    <Render id={block.id} props={props} context={context}>
-      {children}
-    </Render>
-  );
   const width = props.pageWidth;
   const pageWidth: PageWidth =
     !context.nested && PAGE_WIDTHS.includes(width as PageWidth)
       ? (width as PageWidth)
       : "contained";
+  const rendered = (
+    <Render id={block.id} props={props} context={context}>
+      {children}
+    </Render>
+  );
+  // A block with a background is drawn on a panel, which takes its place on the page.
+  const surface = definition.surface ? surfaceOf(props.background) : null;
+  const drawn =
+    surface && surface.kind !== "none" ? (
+      <div
+        className={cx(
+          "block-surface",
+          `block-surface--${surface.kind}`,
+          pageItemClass(pageWidth),
+          pageWidth === "full" && "block-surface--edge",
+        )}
+        {...surface.attributes}
+      >
+        {rendered}
+      </div>
+    ) : (
+      rendered
+    );
   return Frame ? (
     <Frame block={block} definition={definition} pageWidth={pageWidth}>
       {drawn}

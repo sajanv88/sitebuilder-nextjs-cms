@@ -53,7 +53,8 @@ export type FieldSpec =
       fields: readonly FieldSpec[];
     })
   | (FieldBase & { kind: "align"; inherit: boolean })
-  | (FieldBase & { kind: "rows"; columnsFrom: string; max: number; maxLength: number });
+  | (FieldBase & { kind: "rows"; columnsFrom: string; max: number; maxLength: number })
+  | (FieldBase & { kind: "background"; designer?: boolean });
 
 export interface BlockSpec {
   type: string;
@@ -228,6 +229,15 @@ function fieldSchema(field: FieldSpec, options: CatalogOptions): Schema | null {
       const schema = { enum: ALIGNS, description: describe(field) };
       return field.inherit ? nullable(schema) : schema;
     }
+    case "background":
+      // The theme's own colours, and only where the design guide uses them (a section's
+      // background): a choice on every block would grow the schema for little.
+      return field.designer
+        ? {
+            enum: ["none", "muted", "primary"],
+            description: describe(field, "none; muted: the theme's muted shade; primary: brand"),
+          }
+        : null;
     case "rows":
       return {
         type: "array",
@@ -247,7 +257,8 @@ function propsSchema(fields: readonly FieldSpec[], options: CatalogOptions): Sch
   for (const field of fields) {
     const schema = fieldSchema(field, options);
     if (schema === null) {
-      if (field.kind === "terms") continue;
+      // Optional props the model leaves to the owner.
+      if (field.kind === "terms" || field.kind === "background") continue;
       return null;
     }
     properties[field.name] = schema;

@@ -13,6 +13,7 @@ import {
 } from "@nuvui/react";
 import * as v from "valibot";
 import { optionalText, text } from "../../shared";
+import { surfaceField, surfaceProps } from "../../surface/surface";
 import type { BlockDefinition } from "../../types";
 import "./block-timeline.scss";
 
@@ -24,6 +25,7 @@ const Item = v.strictObject({
 });
 
 const Props = v.strictObject({
+  ...surfaceProps,
   heading: optionalText(120),
   items: v.pipe(v.array(Item), v.minLength(1, "Add at least one event"), v.maxLength(20)),
 });
@@ -55,6 +57,7 @@ export const timeline: BlockDefinition<Props> = {
       { date: "2026", title: "Where we are now" },
     ],
   }),
+  surface: true,
   fields: [
     { kind: "text", name: "heading", label: "Heading", max: 120, optional: true },
     {
@@ -85,6 +88,7 @@ export const timeline: BlockDefinition<Props> = {
         },
       ],
     },
+    surfaceField,
   ],
   summary: (props) => props.heading ?? `${props.items.length} events`,
   Render: ({ id, props }) => {

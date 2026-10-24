@@ -419,6 +419,46 @@ describe("the blocks added with nuvui 0.8", () => {
   });
 });
 
+describe("backgrounds", () => {
+  const draw = (blocks: Blocks) => {
+    const result = validateContent(blocks);
+    if (!result.ok) throw new Error(JSON.stringify(result.issues));
+    return renderToStaticMarkup(<BlockList blocks={result.value} context={context} />);
+  };
+  const features = (props: Record<string, unknown>) =>
+    block("feature-grid", { items: [{ icon: "zap", title: "Fast", text: "Cached." }], ...props });
+
+  test("a block that offers one is drawn on a panel; without one, as before", () => {
+    expect(draw([features({})])).not.toContain("block-surface");
+    expect(draw([features({ background: "muted" })])).toContain(
+      'class="block-surface block-surface--muted"',
+    );
+    const html = draw([features({ background: "#0F172A" })]);
+    expect(html).toContain("block-surface--custom");
+    // A dark colour draws its panel with nuvui's dark tokens, and light text on it.
+    expect(html).toContain('data-theme="dark"');
+    expect(html).toContain("--color-background:#0f172a");
+    expect(html).toContain("--color-foreground:#ffffff");
+  });
+
+  test("a section takes a colour of its own as its band", () => {
+    const html = draw([
+      block("section", { background: "#fdf6e3" }, [block("heading", { text: "Hi", level: 2 })]),
+    ]);
+    expect(html).toContain("block-section--bg-custom");
+    expect(html).toContain('data-theme="light"');
+    expect(html).not.toContain("block-surface");
+  });
+
+  test("only #rrggbb and the theme's names are stored; blocks without the field refuse it", () => {
+    expect(validateContent([features({ background: "red" })]).ok).toBe(false);
+    expect(validateContent([features({ background: "url(x)" })]).ok).toBe(false);
+    expect(
+      validateContent([block("heading", { text: "x", level: 2, background: "muted" })]).ok,
+    ).toBe(false);
+  });
+});
+
 describe("alignment", () => {
   const draw = (blocks: Blocks) => {
     const result = validateContent(blocks);

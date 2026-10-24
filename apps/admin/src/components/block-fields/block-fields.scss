@@ -35,6 +35,14 @@
     justify-self: start;
   }
 
+  // The background's choices, and the colour picker beside them when it's a colour.
+  &__background {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+    align-items: center;
+  }
+
   &__group {
     --nuv-fieldset-gap: #{a.space(3)};
   }

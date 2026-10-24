@@ -5,6 +5,7 @@ import { HelpCircleIcon } from "@nuvui/icons";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@nuvui/react";
 import * as v from "valibot";
 import { text } from "../../shared";
+import { surfaceField, surfaceProps } from "../../surface/surface";
 import type { BlockDefinition } from "../../types";
 import "./block-faq.scss";
 
@@ -14,6 +15,7 @@ const Item = v.strictObject({
 });
 
 const Props = v.strictObject({
+  ...surfaceProps,
   items: v.pipe(v.array(Item), v.minLength(1, "Add at least one question"), v.maxLength(20)),
 });
 type Props = v.InferOutput<typeof Props>;
@@ -29,6 +31,7 @@ export const faq: BlockDefinition<Props> = {
   icon: HelpCircleIcon,
   props: Props,
   defaults: () => ({ items: [newItem(), newItem()] }),
+  surface: true,
   fields: [
     {
       kind: "list",
@@ -44,6 +47,7 @@ export const faq: BlockDefinition<Props> = {
         { kind: "text", name: "answer", label: "Answer", max: 1000, multiline: true },
       ],
     },
+    surfaceField,
   ],
   summary: (props) => `${props.items.length} questions`,
   Render: ({ id, props }) => (

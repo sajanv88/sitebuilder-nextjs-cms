@@ -6,10 +6,12 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@nuvui/react";
 import { formatDate, Uuid } from "@sitebuilder/schema";
 import * as v from "valibot";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
+import { surfaceField, surfaceProps } from "../../surface/surface";
 import type { BlockDefinition, PostSummary, RenderContext } from "../../types";
 import "./block-latest-posts.scss";
 
 const Props = v.strictObject({
+  ...surfaceProps,
   count: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(24)), 3),
   // Only posts with one of these categories or tags; none means every post.
   termIds: v.optional(v.pipe(v.array(Uuid), v.maxLength(50))),
@@ -45,6 +47,7 @@ export const latestPosts: BlockDefinition<Props> = {
   icon: FileTextIcon,
   props: Props,
   defaults: () => ({ count: 3, layout: "cards", showExcerpt: true }),
+  surface: true,
   fields: [
     { kind: "number", name: "count", label: "How many", min: 1, max: 24 },
     {
@@ -63,6 +66,7 @@ export const latestPosts: BlockDefinition<Props> = {
       ],
     },
     { kind: "toggle", name: "showExcerpt", label: "Show each post's excerpt" },
+    surfaceField,
   ],
   summary: (props) => `Latest ${props.count} posts`,
   Render: ({ props, context }) => {

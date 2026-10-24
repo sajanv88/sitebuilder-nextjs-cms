@@ -20,6 +20,14 @@ import {
   AccordionItem,
   AccordionTrigger,
   Button,
+  ColorPicker,
+  ColorPickerArea,
+  ColorPickerContent,
+  ColorPickerHue,
+  ColorPickerInput,
+  ColorPickerSwatch,
+  ColorPickerSwatches,
+  ColorPickerTrigger,
   Combobox,
   ComboboxContent,
   ComboboxEmpty,
@@ -53,6 +61,7 @@ import type { LinkTarget, MediaKind } from "@sitebuilder/schema";
 import dynamic from "next/dynamic";
 import { useEffect, useId, useState } from "react";
 import { type LinkOption, searchLinkTargets } from "@/actions/entry-editor";
+import { BACKGROUND_PRESETS } from "@/components/appearance-form/brand";
 import { useEditorData } from "@/components/block-editor/editor-data";
 import { MediaPicker } from "@/components/media-picker/media-picker";
 import "./block-fields.scss";
@@ -219,6 +228,78 @@ function AlignField({
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
+      {field.description ? (
+        <p id={`${id}-hint`} className="block-fields__hint">
+          {field.description}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+// A background (packages/blocks surface.tsx): none, the theme's muted shade or brand colour, or
+// a colour of the owner's own, picked beside the choices. None takes the prop away.
+const BACKGROUND_OPTIONS = [
+  { value: "none", label: "None" },
+  { value: "muted", label: "Muted" },
+  { value: "primary", label: "Brand" },
+  { value: "custom", label: "Colour" },
+] as const;
+
+function BackgroundField({ field, value, onChange }: FieldProps) {
+  const id = useId();
+  const custom = typeof value === "string" && value.startsWith("#") ? value : null;
+  const choice = custom ? "custom" : value === "muted" || value === "primary" ? value : "none";
+  // The last colour picked, so Colour after Muted brings it back.
+  const [lastCustom, setLastCustom] = useState(custom ?? "#f3ead8");
+  const pick = (color: string) => {
+    setLastCustom(color);
+    onChange(color);
+  };
+  return (
+    <div className="block-fields__rich">
+      <span id={`${id}-label`} className="block-fields__label">
+        {field.label}
+      </span>
+      <div className="block-fields__background">
+        <ToggleGroup
+          type="single"
+          size="sm"
+          aria-labelledby={`${id}-label`}
+          {...(field.description ? { "aria-describedby": `${id}-hint` } : {})}
+          value={choice}
+          onValueChange={(next) => {
+            if (next === "custom") onChange(lastCustom);
+            else if (next === "muted" || next === "primary") onChange(next);
+            else if (next === "none") onChange(undefined);
+          }}
+        >
+          {BACKGROUND_OPTIONS.map((option) => (
+            <ToggleGroupItem key={option.value} value={option.value}>
+              {option.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+        {custom ? (
+          <ColorPicker value={custom} onValueChange={pick}>
+            <ColorPickerTrigger aria-label={`${field.label} colour`} />
+            <ColorPickerContent>
+              <ColorPickerArea />
+              <ColorPickerHue />
+              <ColorPickerInput />
+              <ColorPickerSwatches aria-label="Backgrounds">
+                {BACKGROUND_PRESETS.map((option) => (
+                  <ColorPickerSwatch
+                    key={option.value}
+                    value={option.value}
+                    aria-label={option.name}
+                  />
+                ))}
+              </ColorPickerSwatches>
+            </ColorPickerContent>
+          </ColorPicker>
+        ) : null}
+      </div>
       {field.description ? (
         <p id={`${id}-hint`} className="block-fields__hint">
           {field.description}
@@ -1031,5 +1112,7 @@ export function BlockFieldControl(props: FieldProps) {
       return <RowsField {...props} field={field} />;
     case "align":
       return <AlignField {...props} field={field} />;
+    case "background":
+      return <BackgroundField {...props} />;
   }
 }
