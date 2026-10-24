@@ -22,6 +22,7 @@
     "check:licence": "node scripts/check-licence.ts",
     "licence-list": "node scripts/licences.ts",
     "ai:live-check": "pnpm --silent --filter @sitebuilder/ai live-check",
+    "ai:spike": "pnpm --silent --filter @sitebuilder/ai spike",
     "sitebuilder": "pnpm --silent --filter @sitebuilder/cli build && node packages/cli/dist/sitebuilder.mjs"
   },
   "devDependencies": {

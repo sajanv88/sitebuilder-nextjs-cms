@@ -7,9 +7,10 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p scripts",
     "test": "vitest run",
-    "live-check": "esbuild scripts/live-check.ts --log-level=warning --bundle --platform=node --format=esm --target=node26 --outfile=dist/live-check.mjs && node dist/live-check.mjs"
+    "live-check": "esbuild scripts/live-check.ts --log-level=warning --bundle --platform=node --format=esm --target=node26 --outfile=dist/live-check.mjs && node dist/live-check.mjs",
+    "spike": "esbuild scripts/spike.ts --log-level=warning --bundle --platform=node --format=esm --target=node26 --outfile=dist/spike.mjs --alias:server-only=./scripts/server-only.ts --loader:.scss=empty --loader:.css=empty --external:pg-native --log-override:module-level-directive=silent --banner:js=\"import { createRequire as bannerRequire } from 'node:module'; const require = bannerRequire(import.meta.url);\" && node dist/spike.mjs"
   },
   "dependencies": {
     "@sitebuilder/schema": "workspace:*",
