@@ -20,20 +20,22 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { NonceProvider } from "@/components/nonce-provider/nonce-provider";
 import { PageBackground } from "@/components/page-background/page-background";
-import { getSite, getTheme } from "@/server/content";
+import { getAnalytics, getSite, getTheme } from "@/server/content";
 import { themeStylesheet } from "@/server/theme";
 
 // Every page renders per request (below), and the settings live in the database, which the
 // build doesn't have: nothing here is prerendered. RequestTime below says so to Next.
 export async function generateMetadata(): Promise<Metadata> {
   await connection();
-  const site = await getSite();
+  const [site, analytics] = await Promise.all([getSite(), getAnalytics()]);
   return {
     metadataBase: new URL(site.siteUrl),
     title: { default: site.title, template: `%s · ${site.title}` },
     ...(site.tagline ? { description: site.tagline } : {}),
     openGraph: { siteName: site.title, locale: site.language },
     alternates: { types: { "application/rss+xml": [{ url: "/feed.xml", title: site.title }] } },
+    // Search Console's site verification: a meta tag, no script, no consent needed.
+    ...(analytics?.searchConsole ? { verification: { google: analytics.searchConsole } } : {}),
   };
 }
 

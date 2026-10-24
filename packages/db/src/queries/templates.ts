@@ -93,8 +93,8 @@ export interface TemplateActivation {
   actorId: string;
   template: TemplateSettings;
   // A template's colours and type. The site's page background, which a template doesn't set,
-  // goes back to none.
-  theme?: Omit<ThemeSettings, "pageBackground"> | undefined;
+  // goes back to none; the site's custom CSS stays.
+  theme?: Omit<ThemeSettings, "pageBackground" | "customCss"> | undefined;
   // Parents before their children.
   entries: readonly TemplateEntryWrite[];
   publish: boolean;
@@ -134,8 +134,12 @@ export async function activateTemplate(
       if (!(await upsertSettings(tx, "template", input.template)).ok) {
         fail({ ok: false, error: "invalid-settings" });
       }
-      if (input.theme && !(await upsertSettings(tx, "theme", input.theme)).ok) {
-        fail({ ok: false, error: "invalid-settings" });
+      if (input.theme) {
+        const before = await getSettings(tx, "theme");
+        const theme = { ...input.theme, customCss: before?.customCss ?? "" };
+        if (!(await upsertSettings(tx, "theme", theme)).ok) {
+          fail({ ok: false, error: "invalid-settings" });
+        }
       }
 
       const created: CreatedEntry[] = [];

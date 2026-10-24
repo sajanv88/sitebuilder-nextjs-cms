@@ -7,6 +7,7 @@
     "build": "node scripts/template-files.ts && next build",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
     "analyze": "next analyze"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
     "@sitebuilder/blocks": "workspace:*",
     "@sitebuilder/db": "workspace:*",
     "@sitebuilder/media": "workspace:*",
+    "posthog-js": "catalog:",
     "@sitebuilder/schema": "workspace:*",
     "@sitebuilder/template-sdk": "workspace:*",
     "@sitebuilder/templates": "workspace:*",
@@ -42,7 +44,8 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "sass": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "license": "GPL-2.0-or-later",
   "author": "Sajankumar Vijayan"

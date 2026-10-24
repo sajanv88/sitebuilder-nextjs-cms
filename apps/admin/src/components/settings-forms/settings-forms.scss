@@ -17,9 +17,23 @@
     }
   }
 
+  // A service's fields, one under the other (inside a wrapper that's hidden when another is
+  // chosen: a display here would override the hidden attribute).
+  &__group {
+    display: grid;
+    gap: a.space(5);
+  }
+
   &__choices {
     display: grid;
     gap: a.space(2);
+  }
+
+  // A group of fields within a section, such as Google or PostHog.
+  &__heading {
+    margin: a.space(2) 0 0;
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-semibold);
   }
 
   &__label {

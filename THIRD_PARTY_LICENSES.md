@@ -12,12 +12,14 @@ machine; their licences are checked all the same.
 
 | Licence | Packages | Shipped | Review |
 |---|---|---|---|
-| MIT | 357 | 212 | Permissive, GPL-compatible. |
-| Apache-2.0 | 22 | 15 | Compatible with GPL-3.0 only, which Sitebuilder's “or later” allows: a build that includes Apache-2.0 code is distributed under GPL-3.0. |
+| MIT | 365 | 219 | Permissive, GPL-compatible. |
+| Apache-2.0 | 24 | 17 | Compatible with GPL-3.0 only, which Sitebuilder's “or later” allows: a build that includes Apache-2.0 code is distributed under GPL-3.0. |
 | ISC | 13 | 3 | Permissive, GPL-compatible. |
 | BSD-2-Clause | 4 | 4 | Permissive, GPL-compatible. |
 | BSD-3-Clause | 3 | 1 | Permissive, GPL-compatible. |
 | MIT-0 | 3 | 0 | Permissive, no attribution needed. |
+| (Apache-2.0 AND MIT) | 1 | 1 | posthog-js, reviewed 2026-10-24: parts under each; see Apache-2.0 for the GPL-3.0 condition. |
+| (MPL-2.0 OR Apache-2.0) | 1 | 1 | DOMPurify (through posthog-js), used under MPL-2.0. |
 | 0BSD | 1 | 1 | Permissive, no attribution needed. |
 | CC-BY-4.0 | 1 | 1 | Browser support data, not code (caniuse-lite). Attribution: this file names it. |
 | CC0-1.0 | 1 | 0 | Public domain dedication. |
@@ -72,6 +74,7 @@ Licences that only appear in platform packages:
 | color-convert | 2.0.1 | MIT | no |
 | color-name | 1.1.4 | MIT | no |
 | colord | 2.10.0 | MIT | no |
+| core-js | 3.51.0 | MIT | yes |
 | cosmiconfig | 9.0.2 | MIT | no |
 | css-functions-list | 3.3.3 | MIT | no |
 | css-tree | 3.2.1 | MIT | no |
@@ -94,6 +97,7 @@ Licences that only appear in platform packages:
 | dom-serializer | 3.1.1 | MIT | yes |
 | domelementtype | 3.0.0 | BSD-2-Clause | yes |
 | domhandler | 6.0.1 | BSD-2-Clause | yes |
+| dompurify | 3.4.17 | (MPL-2.0 OR Apache-2.0) | yes |
 | domutils | 4.0.2 | BSD-2-Clause | yes |
 | drizzle-kit | 1.0.0-rc.4 | MIT | no |
 | drizzle-orm | 1.0.0-rc.4 | Apache-2.0 | yes |
@@ -120,6 +124,7 @@ Licences that only appear in platform packages:
 | fastest-levenshtein | 1.0.16 | MIT | no |
 | fastq | 1.20.3 | ISC | no |
 | fdir | 6.5.0 | MIT | no |
+| fflate | 0.4.9 | MIT | yes |
 | file-entry-cache | 11.1.5 | MIT | no |
 | fill-range | 7.1.1 | MIT | no |
 | flat-cache | 6.1.23 | MIT | no |
@@ -246,6 +251,11 @@ Licences that only appear in platform packages:
 | postgres-bytea | 1.0.1 | MIT | yes |
 | postgres-date | 1.0.7 | MIT | yes |
 | postgres-interval | 1.2.0 | MIT | yes |
+| posthog-js | 1.438.7 | (Apache-2.0 AND MIT) | yes |
+| @posthog/browser-common | 0.9.11 | MIT | yes |
+| @posthog/core | 1.60.1 | MIT | yes |
+| @posthog/types | 1.416.0 | MIT | yes |
+| preact | 10.29.8 | MIT | yes |
 | prosemirror-changeset | 2.4.4 | MIT | yes |
 | prosemirror-commands | 1.7.2 | MIT | yes |
 | prosemirror-dropcursor | 1.8.4 | MIT | yes |
@@ -260,6 +270,7 @@ Licences that only appear in platform packages:
 | prosemirror-transform | 1.12.2 | MIT | yes |
 | prosemirror-view | 1.42.6 | MIT | yes |
 | qified | 0.10.1 | MIT | no |
+| query-selector-shadow-dom | 1.0.1 | MIT | yes |
 | queue-microtask | 1.2.3 | MIT | no |
 | @radix-ui/number | 1.1.3 | MIT | yes |
 | @radix-ui/primitive | 1.1.7 | MIT | yes |
@@ -421,6 +432,7 @@ Licences that only appear in platform packages:
 | @types/react-dom | 19.3.0 | MIT | yes |
 | @types/react | 19.3.0 | MIT | yes |
 | @types/sanitize-html | 2.16.2 | MIT | no |
+| @types/trusted-types | 2.0.7 | MIT | no |
 | @types/use-sync-external-store | 0.0.6 | MIT | yes |
 | typescript | 6.0.3 | Apache-2.0 | yes |
 | typescript | 7.0.2 | Apache-2.0 | no |
@@ -437,6 +449,8 @@ Licences that only appear in platform packages:
 | @vitest/mocker | 5.0.5 | MIT | no |
 | @vitest/spy | 5.0.5 | MIT | no |
 | w3c-keyname | 2.2.8 | MIT | yes |
+| web-vitals | 6.2.1 | Apache-2.0 | yes |
+| web-vitals | 6.2.3 | Apache-2.0 | yes |
 | which | 1.3.1 | ISC | no |
 | why-is-node-running | 3.2.1 | MIT | no |
 | write-file-atomic | 7.0.1 | ISC | no |

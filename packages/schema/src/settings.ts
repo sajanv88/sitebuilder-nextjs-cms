@@ -3,6 +3,7 @@
 
 import * as v from "valibot";
 import { AiSettings } from "./ai";
+import { AnalyticsSettings } from "./analytics";
 import { DateFormatSchema, DEFAULT_DATE_FORMAT, DEFAULT_TIME_ZONE, TimeZoneSchema } from "./dates";
 import { RESERVED_SEGMENTS } from "./entries";
 import { HexColor, SealedSecret, Uuid } from "./shared";
@@ -42,6 +43,16 @@ export const TokenValue = v.pipe(
   v.check((s) => !/url\(|expression|import|javascript/i.test(s), "Unsafe value"),
 );
 
+// CSS an admin or editor writes for the whole site. It's put in a <style> element as it is, so
+// it may hold no "<": with it, it could close the element and start HTML. The site's security
+// policy already blocks what CSS could load from elsewhere (images, fonts, @import).
+export const CUSTOM_CSS_MAX = 50_000;
+export const CustomCss = v.pipe(
+  v.string(),
+  v.maxLength(CUSTOM_CSS_MAX, `Use at most ${CUSTOM_CSS_MAX.toLocaleString("en")} characters`),
+  v.check((s) => !s.includes("<"), 'Leave out "<": in a content string, write \\3c instead.'),
+);
+
 export const ThemeSettings = v.object({
   preset: v.picklist(["default", "ember", "high-contrast", "ink", "ledger", "meadow"]),
   mode: v.picklist(["light", "dark", "system"]),
@@ -53,6 +64,8 @@ export const ThemeSettings = v.object({
   // Every page's and post's background, unless one has its own (page-background.ts). Set from
   // a page's settings or from Appearance; none for rows saved before it existed.
   pageBackground: v.optional(v.nullable(HexColor), null),
+  // The site's own CSS, after the theme's and the template's (Appearance → Custom CSS).
+  customCss: v.optional(CustomCss, ""),
 });
 export type ThemeSettings = v.InferOutput<typeof ThemeSettings>;
 
@@ -259,13 +272,14 @@ export const SettingsSchemas = {
   media: MediaStorageSettings,
   template: TemplateSettings,
   ai: AiSettings,
+  analytics: AnalyticsSettings,
 } as const;
 export type SettingsKey = keyof typeof SettingsSchemas;
 export type SettingsValue<K extends SettingsKey> = v.InferOutput<(typeof SettingsSchemas)[K]>;
 
-// The keys /setup writes. Not `media` (without a row, the environment decides) nor `ai`
-// (without a row, the assistant is off).
-export type DefaultSettingsKey = Exclude<SettingsKey, "media" | "ai">;
+// The keys /setup writes. Not `media` (without a row, the environment decides), `ai` (without a
+// row, the assistant is off) nor `analytics` (without a row, there are none).
+export type DefaultSettingsKey = Exclude<SettingsKey, "media" | "ai" | "analytics">;
 
 // The rows /setup writes.
 export function defaultSettings(siteUrl: string): {
@@ -287,6 +301,7 @@ export function defaultSettings(siteUrl: string): {
       showReadingProgress: true,
     },
     theme: {
+      customCss: "",
       preset: "default",
       mode: "system",
       density: "default",

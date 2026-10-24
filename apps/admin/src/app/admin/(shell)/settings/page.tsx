@@ -4,7 +4,12 @@
 import { aiSettingsView } from "@sitebuilder/ai";
 import { DEFAULT_READING, db, getSettings, listPublishedPages } from "@sitebuilder/db";
 import { describeEnvironment, openSecret } from "@sitebuilder/media";
-import { defaultSettings, timeZoneNames } from "@sitebuilder/schema";
+import {
+  analyticsService,
+  defaultSettings,
+  POSTHOG_HOSTS,
+  timeZoneNames,
+} from "@sitebuilder/schema";
 import type { Metadata } from "next";
 import type { StorageFormValues } from "@/actions/media-storage";
 import { requirePermission } from "@/auth/session";
@@ -14,7 +19,12 @@ import {
   type EnvironmentSummary,
   MediaStorageForm,
 } from "@/components/media-storage-form/media-storage-form";
-import { DatesForm, ReadingForm, SiteForm } from "@/components/settings-forms/settings-forms";
+import {
+  AnalyticsForm,
+  DatesForm,
+  ReadingForm,
+  SiteForm,
+} from "@/components/settings-forms/settings-forms";
 import { SettingsLayout, SettingsSection } from "@/components/settings-layout/settings-layout";
 import { env } from "@/env";
 import { LATEST_POSTS } from "@/lib/reading";
@@ -28,10 +38,11 @@ const SECTIONS = [
   { id: "dates", title: "Dates" },
   { id: "media-storage", title: "Media storage" },
   { id: "ai", title: "AI" },
+  { id: "analytics", title: "Analytics" },
 ];
 
-// Settings (design §5.4, §8): the site, reading, dates, media storage (decisions #45) and the AI
-// assistant (design §15). Admins only.
+// Settings (design §5.4, §8): the site, reading, dates, media storage (decisions #45), the AI
+// assistant (design §15) and analytics. Admins only.
 export default async function SettingsPage({ searchParams }: PageProps<"/admin/settings">) {
   await requirePermission("settings.update");
   // The open tab: the one the address names, or the first.
@@ -39,13 +50,21 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
   const section = SECTIONS.find((s) => s.id === asked)?.id ?? "site";
   const config = env();
   const defaults = defaultSettings(config.SITE_URL);
-  const [savedSite, savedReading, pages, saved, savedAi] = await Promise.all([
+  const [savedSite, savedReading, pages, saved, savedAi, analytics] = await Promise.all([
     getSettings(db, "site"),
     getSettings(db, "reading"),
     listPublishedPages(db),
     getSettings(db, "media"),
     getSettings(db, "ai"),
+    getSettings(db, "analytics"),
   ]);
+  const posthogRegion = !analytics?.posthog
+    ? "eu"
+    : analytics.posthog.host === POSTHOG_HOSTS.us
+      ? "us"
+      : analytics.posthog.host === POSTHOG_HOSTS.eu
+        ? "eu"
+        : "custom";
   const site = savedSite ?? defaults.site;
   const reading = savedReading ?? DEFAULT_READING;
 
@@ -84,7 +103,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
   return (
     <AdminPage
       title="Settings"
-      description="How the site is named, what visitors see first, how dates are written, where uploads are kept, and the AI assistant."
+      description="How the site is named, what visitors see first, how dates are written, where uploads are kept, the AI assistant and analytics."
       trail={[]}
     >
       <SettingsLayout sections={SECTIONS} section={section}>
@@ -145,6 +164,25 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
             initial={aiSettingsView(savedAi, config.AUTH_SECRET)}
             allowPrivate={config.AI_ALLOW_PRIVATE_URLS}
             locale={site.language}
+          />
+        </SettingsSection>
+        <SettingsSection
+          id="analytics"
+          title="Analytics"
+          description="One service visits are counted with, behind a consent banner, and Search Console's verification."
+        >
+          <AnalyticsForm
+            initial={{
+              service: analyticsService(analytics),
+              ga4: analytics?.ga4 ?? "",
+              gtm: analytics?.gtm ?? "",
+              searchConsole: analytics?.searchConsole ?? "",
+              posthogKey: analytics?.posthog?.key ?? "",
+              posthogRegion,
+              posthogHost: posthogRegion === "custom" ? (analytics?.posthog?.host ?? "") : "",
+              privacyEntryId: analytics?.privacyEntryId ?? "",
+            }}
+            pages={pages}
           />
         </SettingsSection>
       </SettingsLayout>

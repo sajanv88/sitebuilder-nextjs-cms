@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-import { db, type PublicRoute, resolveRoute } from "@sitebuilder/db";
+import { db, getSettings, type PublicRoute, resolveRoute } from "@sitebuilder/db";
+import type { AnalyticsSettings } from "@sitebuilder/schema";
 import { type NextRequest, NextResponse } from "next/server";
+import { type AnalyticsSources, analyticsSources } from "@/lib/analytics-csp";
 
 // Two jobs, before anything renders (decisions #65):
 //
@@ -43,18 +45,42 @@ function internalPath(route: PublicRoute, path: string, preview: boolean): strin
 // path: page slugs can't start with "_".
 const CANVAS = "/_canvas/";
 
-function contentSecurityPolicy(nonce: string, framed: boolean): string {
+// The analytics in Settings, for the policy: read at most every 30 seconds per process, so a
+// change reaches every page within half a minute without a query on each request. A database
+// that can't be read keeps what was last read.
+const ANALYTICS_TTL_MS = 30_000;
+let analytics: { at: number; value: AnalyticsSettings | null } | null = null;
+
+async function readAnalytics(): Promise<AnalyticsSettings | null> {
+  if (analytics && Date.now() - analytics.at < ANALYTICS_TTL_MS) return analytics.value;
+  try {
+    analytics = { at: Date.now(), value: (await getSettings(db, "analytics")) ?? null };
+  } catch (error) {
+    console.error("proxy: reading the analytics settings failed", error);
+    analytics = { at: Date.now(), value: analytics?.value ?? null };
+  }
+  return analytics.value;
+}
+
+const NONE: AnalyticsSources = { connect: [], img: [] };
+
+function contentSecurityPolicy(
+  nonce: string,
+  framed: boolean,
+  extra: AnalyticsSources = NONE,
+): string {
   const isDev = process.env.NODE_ENV === "development";
+  const more = (sources: string[]) => (sources.length ? ` ${sources.join(" ")}` : "");
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
     // The theme's <style> and nuvui's ScrollArea take the nonce; components set style attributes.
     `style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`}`,
     "style-src-attr 'unsafe-inline'",
-    "img-src 'self' blob: data:",
+    `img-src 'self' blob: data:${more(extra.img)}`,
     "media-src 'self'",
     "font-src 'self'",
-    "connect-src 'self'",
+    `connect-src 'self'${more(extra.connect)}`,
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
@@ -93,7 +119,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(target, route.status);
   }
 
-  const csp = contentSecurityPolicy(nonce, false);
+  // The consent banner loads the analytics a visitor accepts; the policy lets them send.
+  const csp = contentSecurityPolicy(nonce, false, analyticsSources(await readAnalytics()));
   requestHeaders.set("x-site-path", path);
   requestHeaders.set("Content-Security-Policy", csp);
 

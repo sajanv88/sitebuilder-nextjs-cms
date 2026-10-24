@@ -66,6 +66,14 @@ export async function getTheme(): Promise<SettingsValue<"theme">> {
   return (await getSettings(db, "theme")) ?? defaultSettings(env().SITE_URL).theme;
 }
 
+// Google's ids, Search Console's verification and PostHog: null when none are set.
+export async function getAnalytics(): Promise<SettingsValue<"analytics"> | null> {
+  "use cache";
+  life();
+  cacheTag(CacheTags.settings);
+  return (await getSettings(db, "analytics")) ?? null;
+}
+
 // Which template is active, and its options' saved values.
 export async function getTemplateSettings(): Promise<SettingsValue<"template">> {
   "use cache";

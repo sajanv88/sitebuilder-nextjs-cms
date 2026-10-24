@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "@nuvui/react/scss/mixins" as nuv;
+
+@layer host {
+  // Along the bottom of the window, over the page, until a choice is made. Not a dialog: the
+  // page stays usable behind it, and nothing loads while it waits.
+  .consent-banner {
+    position: fixed;
+    z-index: 50;
+    inset-block-end: calc(var(--spacing) * 4);
+    inset-inline: calc(var(--spacing) * 4);
+    display: grid;
+    gap: calc(var(--spacing) * 3);
+    max-inline-size: 40rem;
+    margin-inline: auto;
+    padding: calc(var(--spacing) * 5);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+    color: var(--color-surface-foreground);
+    box-shadow: var(--shadow-lg);
+
+    &__title {
+      margin: 0;
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    &__text {
+      margin: 0;
+      font-size: var(--text-sm);
+      line-height: 1.5;
+    }
+
+    &__link {
+      color: var(--color-primary);
+    }
+
+    // Both the same: declining is as easy as accepting.
+    &__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: calc(var(--spacing) * 2);
+      justify-content: flex-end;
+    }
+
+    // After a choice: a quiet way back to it, at the foot of the page.
+    &__reopen {
+      display: flex;
+      justify-content: center;
+      padding-block: calc(var(--spacing) * 2);
+    }
+
+    @include nuv.breakpoint("md") {
+      padding: calc(var(--spacing) * 6);
+    }
+  }
+}

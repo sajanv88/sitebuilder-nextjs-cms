@@ -170,4 +170,11 @@
     gap: a.space(2);
     align-items: center;
   }
+
+  // Code, so a monospaced face, and long lines scroll rather than wrap.
+  &__css {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    white-space: pre;
+  }
 }

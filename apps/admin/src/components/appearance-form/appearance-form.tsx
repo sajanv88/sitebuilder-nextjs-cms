@@ -26,6 +26,8 @@ import {
   ComboboxValue,
   Field,
   FieldControl,
+  FieldDescription,
+  FieldError,
   FieldLabel,
   Input,
   Item,
@@ -37,11 +39,14 @@ import {
   RadioCard,
   RadioGroup,
   Switch,
+  Textarea,
   ToggleGroup,
   ToggleGroupItem,
   toast,
 } from "@nuvui/react";
 import {
+  CUSTOM_CSS_MAX,
+  CustomCss,
   pageBackgroundTokens,
   type SettingsValue,
   THEME_PRESETS,
@@ -147,6 +152,9 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
   const [density, setDensity] = useState<Theme["density"]>(initial.density);
   const [rows, setRows] = useState<TokenRow[]>(() => rowsOf(initial.tokens));
   const [pageBackground, setPageBackground] = useState(initial.pageBackground);
+  const [customCss, setCustomCss] = useState(initial.customCss);
+  const cssCheck = v.safeParse(CustomCss, customCss);
+  const cssProblem = cssCheck.success ? undefined : cssCheck.issues[0].message;
   const [previewDark, setPreviewDark] = useState(initial.mode === "dark");
   const [problem, setProblem] = useState<string | null>(null);
   const [saving, startSave] = useTransition();
@@ -217,6 +225,10 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
   }, [brand, preset, shownMode]);
 
   function save() {
+    if (cssProblem) {
+      setProblem(`Custom CSS: ${cssProblem}`);
+      return;
+    }
     if ([...problems.values()].some(Boolean)) {
       setProblem("A token row isn't complete. Check the marked rows.");
       return;
@@ -234,7 +246,14 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
     );
     setProblem(null);
     startSave(async () => {
-      const result = await saveTheme({ preset, mode, density, tokens, pageBackground });
+      const result = await saveTheme({
+        preset,
+        mode,
+        density,
+        tokens,
+        pageBackground,
+        customCss,
+      });
       if (result.ok)
         toast("Appearance saved. The site shows it on the next page load.", { intent: "success" });
       else setProblem(result.error);
@@ -517,6 +536,36 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
             <PlusIcon aria-hidden="true" size={16} />
             Add a token
           </Button>
+        </section>
+
+        <section className="appearance-form__section" aria-labelledby="appearance-css">
+          <h2 id="appearance-css" className="appearance-form__heading">
+            Custom CSS
+          </h2>
+          <Field>
+            <FieldLabel>Stylesheet</FieldLabel>
+            <FieldControl>
+              <Textarea
+                value={customCss}
+                rows={10}
+                autoResize
+                spellCheck={false}
+                maxLength={CUSTOM_CSS_MAX}
+                className="appearance-form__css"
+                placeholder={
+                  ".site-header {\n  border-block-end: 2px solid var(--color-primary);\n}"
+                }
+                onChange={(event) => setCustomCss(event.currentTarget.value)}
+              />
+            </FieldControl>
+            <FieldDescription>
+              Added to every page of the site after the theme and the template, and in the editor's
+              canvas. Use the theme's variables, such as var(--color-primary), so it follows light
+              and dark. Images, fonts and imports from other sites are blocked by the site's
+              security policy.
+            </FieldDescription>
+            <FieldError>{cssProblem}</FieldError>
+          </Field>
         </section>
 
         <Button

@@ -43,6 +43,10 @@ const ALLOWED: Record<string, Rule> = {
     note: "Compatible with GPL-3.0 only, which Sitebuilder's “or later” allows: a build that includes Apache-2.0 code is distributed under GPL-3.0.",
   },
   "MIT OR Apache-2.0": { note: "Used under MIT." },
+  "(Apache-2.0 AND MIT)": {
+    note: "posthog-js, reviewed 2026-10-24: parts under each; see Apache-2.0 for the GPL-3.0 condition.",
+  },
+  "(MPL-2.0 OR Apache-2.0)": { note: "DOMPurify (through posthog-js), used under MPL-2.0." },
   "MPL-2.0": {
     note: "File-level copyleft; MPL-2.0 §3.3 allows combining with the GPL. Changes to MPL files would stay MPL.",
   },

@@ -86,6 +86,15 @@ describe("settings", () => {
     expect(v.is(ThemeSettings, theme({ "--color-bg": { light: "red;}body{x" } }))).toBe(false);
   });
 
+  test("custom CSS is empty for older rows, and can't close its <style>", () => {
+    const { customCss: _, ...older } = defaultSettings("https://example.com").theme;
+    expect(v.parse(ThemeSettings, older).customCss).toBe("");
+    const theme = (customCss: string) => ({ ...older, customCss });
+    expect(v.is(ThemeSettings, theme(".site-header { color: var(--color-primary); }"))).toBe(true);
+    expect(v.is(ThemeSettings, theme("a{}</style><script>alert(1)</script>"))).toBe(false);
+    expect(v.is(ThemeSettings, theme("x".repeat(50_001)))).toBe(false);
+  });
+
   test("reading progress is on for older rows, and follows the checkbox in the form", () => {
     const older = { homepageEntryId: null, postsPerPage: 10, postsPath: "/blog" };
     expect(v.parse(ReadingSettings, older).showReadingProgress).toBe(true);

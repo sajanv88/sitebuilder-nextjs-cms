@@ -31,6 +31,8 @@ catalog:
   image-size: 2.0.4
   next: 16.4.2
   postcss: 8.5.30
+  # Loaded on the public site only after a visitor accepts analytics (the consent banner).
+  posthog-js: 1.438.7
   react: 19.3.1
   react-dom: 19.3.1
   sanitize-html: 2.18.1
@@ -59,6 +61,8 @@ catalog:
 # Review a package's script before setting it to true.
 allowBuilds:
   "@parcel/watcher": false
+  # Its install script only prints a funding message (through posthog-js).
+  core-js: false
   esbuild: true
 
 # Supply chain: a version must be a day old before it can be installed, and a package

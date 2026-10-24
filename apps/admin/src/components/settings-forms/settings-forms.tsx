@@ -29,6 +29,7 @@ import {
   FieldError,
   FieldLabel,
   Input,
+  NativeSelect,
   NumberField,
   RadioCard,
   RadioGroup,
@@ -37,10 +38,12 @@ import {
 import { DATE_FORMATS, type DateFormat, formatDate } from "@sitebuilder/schema";
 import { useActionState, useEffect, useRef, useState } from "react";
 import {
+  type AnalyticsFormValues,
   type DateFormValues,
   type ReadingFormValues,
   type SettingsFormState,
   type SiteFormValues,
+  saveAnalytics,
   saveDateSettings,
   saveReading,
   saveSiteSettings,
@@ -48,8 +51,8 @@ import {
 import { LATEST_POSTS } from "@/lib/reading";
 import "./settings-forms.scss";
 
-// The Site, Reading and Dates sections of Settings (design §5.4). Each is its own form with its
-// own Save; what's typed stays when a save is refused.
+// The Site, Reading, Dates and Analytics sections of Settings (design §5.4). Each is its own
+// form with its own Save; what's typed stays when a save is refused.
 
 function useSavedToast(state: SettingsFormState<Record<string, string>>, key: string) {
   useEffect(() => {
@@ -339,6 +342,232 @@ export function DatesForm({
       </Field>
       <Button type="submit" className="settings-forms__submit" disabled={saving} aria-busy={saving}>
         Save date settings
+      </Button>
+    </form>
+  );
+}
+
+// ── Analytics ────────────────────────────────────────────────────────────────────────────────
+
+const NO_PAGE = "none";
+
+const SERVICES = [
+  { value: "none", title: "None", description: "No analytics, and no consent banner." },
+  {
+    value: "ga4",
+    title: "Google Analytics 4",
+    description: "Visits and how pages are used, in Google Analytics.",
+  },
+  {
+    value: "gtm",
+    title: "Google Tag Manager",
+    description: "Loads the tags you set up in Tag Manager, Google Analytics among them.",
+  },
+  {
+    value: "posthog",
+    title: "PostHog",
+    description: "Product analytics, in PostHog's EU or US cloud or behind your own address.",
+  },
+] as const;
+
+export function AnalyticsForm({
+  initial,
+  pages,
+}: {
+  initial: AnalyticsFormValues;
+  // Published pages, one of which can be the privacy page.
+  pages: { id: string; title: string; path: string }[];
+}) {
+  const [state, save, saving] = useActionState(saveAnalytics, { result: "idle", values: initial });
+  useSavedToast(state, "analytics");
+  const { values, errors = {} } = state;
+  const [service, setService] = useState(values.service);
+  const [region, setRegion] = useState(values.posthogRegion);
+  const [privacy, setPrivacy] = useState(values.privacyEntryId || NO_PAGE);
+  const chosen = pages.find((page) => page.id === privacy);
+
+  useEffect(() => {
+    // After the form's reset, as in DatesForm.
+    if (state.result === "saved") {
+      setService(state.values.service);
+      setRegion(state.values.posthogRegion);
+      setPrivacy(state.values.privacyEntryId || NO_PAGE);
+    }
+  }, [state]);
+
+  return (
+    <form action={save} className="settings-forms" noValidate>
+      <Problem state={state} />
+
+      <div className="settings-forms__choices">
+        <span id="analytics-service" className="settings-forms__label">
+          Analytics
+        </span>
+        <RadioGroup
+          name="service"
+          value={service}
+          onValueChange={setService}
+          aria-labelledby="analytics-service"
+          className="settings-forms__cards"
+        >
+          {SERVICES.map((item) => (
+            <RadioCard key={item.value} value={item.value}>
+              <ChoiceCardTitle>{item.title}</ChoiceCardTitle>
+              <ChoiceCardDescription>{item.description}</ChoiceCardDescription>
+            </RadioCard>
+          ))}
+        </RadioGroup>
+      </div>
+
+      {/* Every service's fields stay in the form while another is chosen, so switching back
+          keeps what was typed; only the chosen one is saved. */}
+      <div hidden={service !== "ga4"}>
+        <Field>
+          <FieldLabel>Measurement ID</FieldLabel>
+          <FieldControl>
+            <Input
+              name="ga4"
+              defaultValue={values.ga4}
+              placeholder="G-XXXXXXXXXX"
+              spellCheck={false}
+            />
+          </FieldControl>
+          <FieldDescription>
+            In Google Analytics: Admin, Data streams, your web stream.
+          </FieldDescription>
+          <FieldError>{errors.ga4}</FieldError>
+        </Field>
+      </div>
+      <div hidden={service !== "gtm"}>
+        <Field>
+          <FieldLabel>Container ID</FieldLabel>
+          <FieldControl>
+            <Input
+              name="gtm"
+              defaultValue={values.gtm}
+              placeholder="GTM-XXXXXXX"
+              spellCheck={false}
+            />
+          </FieldControl>
+          <FieldDescription>
+            Tags you add in Tag Manager may need addresses the site's security policy doesn't allow;
+            scripts written into a tag don't run.
+          </FieldDescription>
+          <FieldError>{errors.gtm}</FieldError>
+        </Field>
+      </div>
+      <div hidden={service !== "posthog"}>
+        <div className="settings-forms__group">
+          <Field>
+            <FieldLabel>Project API key</FieldLabel>
+            <FieldControl>
+              <Input
+                name="posthogKey"
+                defaultValue={values.posthogKey}
+                placeholder="phc_…"
+                spellCheck={false}
+              />
+            </FieldControl>
+            <FieldDescription>
+              Project settings in PostHog. It's public by design: it can only send events.
+            </FieldDescription>
+            <FieldError>{errors.posthogKey}</FieldError>
+          </Field>
+          <div className="settings-forms__pair">
+            <Field>
+              <FieldLabel>Where it's hosted</FieldLabel>
+              <FieldControl>
+                <NativeSelect
+                  name="posthogRegion"
+                  value={region}
+                  onChange={(event) => setRegion(event.currentTarget.value)}
+                >
+                  <option value="eu">PostHog Cloud EU</option>
+                  <option value="us">PostHog Cloud US</option>
+                  <option value="custom">An address of your own</option>
+                </NativeSelect>
+              </FieldControl>
+            </Field>
+            {region === "custom" ? (
+              <Field>
+                <FieldLabel>Address</FieldLabel>
+                <FieldControl>
+                  <Input
+                    name="posthogHost"
+                    defaultValue={values.posthogHost}
+                    placeholder="https://ph.example.com"
+                    spellCheck={false}
+                  />
+                </FieldControl>
+                <FieldDescription>
+                  A proxy of your own that passes requests to PostHog.
+                </FieldDescription>
+                <FieldError>{errors.posthogHost}</FieldError>
+              </Field>
+            ) : (
+              <input type="hidden" name="posthogHost" value="" />
+            )}
+          </div>
+        </div>
+      </div>
+      {service !== "none" ? (
+        <Alert intent="info">
+          <AlertDescription>
+            It loads only after a visitor accepts it in the banner the site then shows; declining
+            keeps it off.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      <h3 className="settings-forms__heading">Search Console</h3>
+      <Field>
+        <FieldLabel>Site verification</FieldLabel>
+        <FieldControl>
+          <Input
+            name="searchConsole"
+            defaultValue={values.searchConsole}
+            placeholder='<meta name="google-site-verification" content="…" />'
+            spellCheck={false}
+          />
+        </FieldControl>
+        <FieldDescription>
+          Paste the HTML tag Search Console offers for verifying the site, or the code in it. It's a
+          tag in the page, so it needs no consent.
+        </FieldDescription>
+        <FieldError>{errors.searchConsole}</FieldError>
+      </Field>
+
+      <h3 className="settings-forms__heading">The consent banner</h3>
+      <Field>
+        <FieldLabel>Privacy page</FieldLabel>
+        <Combobox
+          name="privacyEntryId"
+          value={privacy}
+          onValueChange={(next) => setPrivacy(next || NO_PAGE)}
+        >
+          <FieldControl>
+            <ComboboxTrigger>
+              <ComboboxValue>{chosen ? `${chosen.title} (${chosen.path})` : "None"}</ComboboxValue>
+            </ComboboxTrigger>
+          </FieldControl>
+          <ComboboxContent label="Search pages" searchPlaceholder="Search published pages">
+            <ComboboxEmpty>No published page found.</ComboboxEmpty>
+            <ComboboxItem value={NO_PAGE}>None</ComboboxItem>
+            {pages.map((page) => (
+              <ComboboxItem key={page.id} value={page.id} keywords={[page.path]}>
+                {`${page.title} (${page.path})`}
+              </ComboboxItem>
+            ))}
+          </ComboboxContent>
+        </Combobox>
+        <FieldDescription>
+          The banner links to it, so visitors can read what's collected before they choose.
+        </FieldDescription>
+        <FieldError>{errors.privacyEntryId}</FieldError>
+      </Field>
+
+      <Button type="submit" className="settings-forms__submit" disabled={saving} aria-busy={saving}>
+        Save analytics settings
       </Button>
     </form>
   );

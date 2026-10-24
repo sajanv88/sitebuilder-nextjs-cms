@@ -6,6 +6,7 @@
 import { can } from "@sitebuilder/auth";
 import { countPosts, db, getSettings, saveReadingSettings, upsertSettings } from "@sitebuilder/db";
 import {
+  AnalyticsInput,
   DateSettingsInput,
   defaultSettings,
   ReadingSettingsInput,
@@ -18,8 +19,8 @@ import { env } from "@/env";
 import { LATEST_POSTS } from "@/lib/reading";
 import { invalidate } from "@/server/invalidate";
 
-// Settings → Site, Reading and Dates (design §5.4). Admins only (§6.2: settings.update). Each
-// form saves its own part; the rest of the row is kept.
+// Settings → Site, Reading, Dates and Analytics (design §5.4). Admins only (§6.2:
+// settings.update). Each form saves its own part; the rest of the row is kept.
 
 export interface SettingsFormState<V extends Record<string, string>> {
   result: "idle" | "saved" | "invalid" | "failed" | "confirm";
@@ -40,6 +41,18 @@ export type ReadingFormValues = {
   showReadingProgress: string;
 };
 export type DateFormValues = { dateFormat: string; timeZone: string };
+export type AnalyticsFormValues = {
+  // "none", "ga4", "gtm" or "posthog": the one service visits go to.
+  service: string;
+  ga4: string;
+  gtm: string;
+  searchConsole: string;
+  posthogKey: string;
+  // "us", "eu" or "custom".
+  posthogRegion: string;
+  posthogHost: string;
+  privacyEntryId: string;
+};
 
 const SESSION_ENDED = "Your session has ended. Sign in again.";
 const NOT_ALLOWED = "Only an admin can change the settings.";
@@ -188,4 +201,39 @@ export async function saveDateSettings(
   if (!saved.ok) return { result: "failed", message: "The settings couldn't be saved.", values };
   invalidate("saveDateSettings");
   return { result: "saved", message: "Date settings saved.", values, at: Date.now() };
+}
+
+// Analytics: Google's ids, Search Console's verification, PostHog's key and where it lives, and
+// the privacy page the consent banner links to. Every field empty is no analytics. The site's
+// security policy follows the saved row (apps/site proxy.ts).
+export async function saveAnalytics(
+  _: SettingsFormState<AnalyticsFormValues>,
+  form: FormData,
+): Promise<SettingsFormState<AnalyticsFormValues>> {
+  const values: AnalyticsFormValues = {
+    service: text(form, "service") || "none",
+    ga4: text(form, "ga4"),
+    gtm: text(form, "gtm"),
+    searchConsole: text(form, "searchConsole"),
+    posthogKey: text(form, "posthogKey"),
+    posthogRegion: text(form, "posthogRegion") || "eu",
+    posthogHost: text(form, "posthogHost"),
+    // The picker's "None" is "none".
+    privacyEntryId: text(form, "privacyEntryId").replace(/^none$/, ""),
+  };
+  const refused = await allowed();
+  if (refused) return { result: "failed", message: refused, values };
+  const input = v.safeParse(AnalyticsInput, values);
+  if (!input.success) {
+    return {
+      result: "invalid",
+      message: "Check the fields marked below.",
+      errors: fieldErrors<AnalyticsFormValues>(input.issues),
+      values,
+    };
+  }
+  const saved = await upsertSettings(db, "analytics", input.output);
+  if (!saved.ok) return { result: "failed", message: "The settings couldn't be saved.", values };
+  invalidate("saveAnalytics");
+  return { result: "saved", message: "Analytics settings saved.", values, at: Date.now() };
 }
