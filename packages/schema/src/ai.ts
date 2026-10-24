@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import * as v from "valibot";
-import { SealedSecret } from "./shared";
+import { SealedSecret, Uuid } from "./shared";
 
 // The AI assistant's settings (design §15, templates_and_ai_design B3). An admin picks a
 // provider and brings their own key. The settings are a union by provider, so each provider has
@@ -176,7 +176,7 @@ export const SitePlanPage = v.object({
   // is more than Anthropic's structured output compiles).
   sections: v.pipe(
     v.array(
-      v.object({ type: v.pipe(v.string(), v.minLength(1), v.maxLength(80)), about: short(200) }),
+      v.object({ type: v.pipe(v.string(), v.minLength(1), v.maxLength(80)), about: short(300) }),
     ),
     v.minLength(1),
     v.maxLength(12),
@@ -216,3 +216,63 @@ export const SitePlan = v.pipe(
   }, "A menu names a page that isn't planned"),
 );
 export type SitePlan = v.InferOutput<typeof SitePlan>;
+
+// ── What the "Create with AI" screen sends (/admin/api/ai/*) ─────────────────────────────────
+// The client holds the description, the answers and the plan, and sends them with each call;
+// the server checks them again every time (B5.2), so a changed plan can't do more than an admin
+// could.
+
+export const AiAnswered = v.object({
+  question: short(200),
+  answer: v.union([AiAnswerText, v.pipe(v.array(AiAnswerText), v.maxLength(6))]),
+});
+export type AiAnswered = v.InferOutput<typeof AiAnswered>;
+
+const Answers = v.pipe(v.array(AiAnswered), v.maxLength(MAX_QUESTIONS));
+
+export const AiQuestionsRequest = v.object({ brief: AiBrief });
+
+export const AiPlanRequest = v.object({ brief: AiBrief, answers: Answers });
+
+// The entry id each planned page gets (B5.2: chosen when the plan is made), by ref: one for
+// every page in the plan, each different.
+const EntryIds = v.record(PlanRef, Uuid);
+const idsMatchPlan = (plan: SitePlan, ids: Record<string, string>) => {
+  const refs = plan.pages.map((p) => p.ref).sort();
+  const keys = Object.keys(ids).sort();
+  return (
+    refs.length === keys.length &&
+    refs.every((ref, i) => ref === keys[i]) &&
+    new Set(Object.values(ids)).size === keys.length
+  );
+};
+
+export const AiPageRequest = v.pipe(
+  v.object({
+    batchId: Uuid,
+    brief: AiBrief,
+    answers: Answers,
+    plan: SitePlan,
+    ids: EntryIds,
+    ref: PlanRef,
+  }),
+  v.check(({ plan, ids }) => idsMatchPlan(plan, ids), "Every planned page needs its own id"),
+  v.check(({ plan, ref }) => plan.pages.some((p) => p.ref === ref), "That page isn't planned"),
+);
+export type AiPageRequest = v.InferOutput<typeof AiPageRequest>;
+
+export const AiFinishRequest = v.pipe(
+  v.object({
+    batchId: Uuid,
+    plan: SitePlan,
+    ids: EntryIds,
+    // What to apply, each ticked by the admin.
+    menus: v.boolean(),
+    homepage: v.boolean(),
+    siteTitle: v.boolean(),
+  }),
+  v.check(({ plan, ids }) => idsMatchPlan(plan, ids), "Every planned page needs its own id"),
+);
+export type AiFinishRequest = v.InferOutput<typeof AiFinishRequest>;
+
+export const AiDiscardRequest = v.object({ batchId: Uuid, includeEdited: v.boolean() });

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-import { PlusIcon } from "@nuvui/icons";
+import { PlusIcon, SparklesIcon } from "@nuvui/icons";
 import { Button } from "@nuvui/react";
 import { can, canSome } from "@sitebuilder/auth";
 import { type EntryKind, EntryListQuery } from "@sitebuilder/schema";
@@ -81,6 +81,14 @@ export async function EntryListScreen({
       description={screen.description}
       actions={
         <>
+          {type === "page" && can(viewer, "ai.generateSite") ? (
+            <Button asChild intent="secondary">
+              <Link href="/admin/pages/create-with-ai">
+                <SparklesIcon aria-hidden="true" size={16} />
+                Create with AI
+              </Link>
+            </Button>
+          ) : null}
           {can(viewer, `${type}.create`) ? (
             <Button asChild>
               <Link href={screen.path}>

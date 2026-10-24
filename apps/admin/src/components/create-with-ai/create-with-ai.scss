@@ -1,0 +1,104 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+.create-with-ai {
+  display: grid;
+  gap: a.space(6);
+
+  &__steps {
+    inline-size: 100%;
+  }
+
+  &__questions,
+  &__plan,
+  &__results,
+  &__finish {
+    display: grid;
+    gap: a.space(5);
+  }
+
+  &__question {
+    display: grid;
+    gap: a.space(3);
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    gap: a.space(2);
+    font-size: var(--text-sm);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+  }
+
+  &__pages,
+  &__list {
+    display: grid;
+    gap: a.space(3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__page {
+    display: grid;
+    gap: a.space(1);
+    padding: a.space(3);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  // A page under another sits indented under it.
+  &__page--child {
+    margin-inline-start: a.space(6);
+  }
+
+  &__page-head {
+    display: flex;
+    align-items: center;
+    gap: a.space(2);
+  }
+
+  &__title {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  &__purpose {
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+
+  &__sections {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-xs);
+  }
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: a.space(2);
+    padding-block: a.space(2);
+    border-block-end: var(--nuv-border-width) solid var(--color-border);
+  }
+
+  &__row-title {
+    flex: 1;
+    min-inline-size: 12rem;
+    font-weight: var(--font-weight-medium);
+  }
+
+  &__row-error {
+    inline-size: 100%;
+    color: var(--color-danger);
+    font-size: var(--text-sm);
+  }
+}

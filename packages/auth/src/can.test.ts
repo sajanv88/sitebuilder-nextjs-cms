@@ -37,6 +37,8 @@ const matrix: Row[] = [
   ["theme: update", "theme.update", null, true, true, false],
   ["template: activate", "template.activate", null, true, false, false],
   ["settings: update", "settings.update", null, true, false, false],
+  ["ai: design a site", "ai.generateSite", null, true, false, false],
+  ["ai: help on any page", "ai.assist", null, true, true, false],
   ["user: create", "user.create", null, true, false, false],
   ["user: read", "user.read", null, true, false, false],
   ["user: update", "user.update", null, true, false, false],
@@ -84,6 +86,12 @@ describe("own items", () => {
   test("a resource of another type is refused", () => {
     expect(can(admin, "post.update", mine("media"))).toBe(false);
   });
+});
+
+test("an author may have help on their own posts only, which canSome tells", () => {
+  const author = { id: "a", role: "author" } as const;
+  expect(can(author, "ai.assist")).toBe(false);
+  expect(canSome(author, "ai.assist")).toBe(true);
 });
 
 test("canSome shows a screen when the actor has the action on at least their own items", () => {

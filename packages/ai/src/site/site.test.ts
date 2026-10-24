@@ -8,6 +8,7 @@ import { type BlockSpec, pageCatalog, withoutNulls } from "./catalog";
 import { askQuestions, planSite, writePage } from "./design";
 import { countTodos, inventedFacts, knownFacts } from "./facts";
 import { cleanText, fence } from "./fence";
+import { designIssues } from "./lint";
 
 // The design steps against a fake provider (B12: no test calls a real model).
 
@@ -265,7 +266,7 @@ const PLAN = {
       slug: "about",
       parentRef: null,
       purpose: "Who we are.",
-      sections: [{ type: "rich-text", about: "our story" }],
+      sections: [{ type: "section", about: "our story, in text" }],
     },
   ],
   primaryMenu: ["home", "about"],
@@ -276,6 +277,20 @@ describe("the plan", () => {
   it("accepts a valid plan", async () => {
     const { provider } = fakeProvider(PLAN);
     expect(await planSite(context(provider), [], CATALOG, [])).toMatchObject({ ok: true });
+  });
+
+  it("refuses a page of headings and text only", async () => {
+    const plain = {
+      ...PLAN,
+      pages: [
+        PLAN.pages[0],
+        { ...PLAN.pages[1], sections: [{ type: "rich-text", about: "story" }] },
+      ],
+    };
+    const { provider, requests } = fakeProvider(plain, PLAN);
+    const result = await planSite(context(provider), [], CATALOG, []);
+    expect(result).toMatchObject({ ok: true, attempts: 2 });
+    expect(requests[1]?.messages.at(-1)?.content).toContain("only headings, text and buttons");
   });
 
   it("refuses a block type that doesn't exist, a dangling parent and a menu to nowhere", async () => {
@@ -464,5 +479,52 @@ describe("a page too big for one schema", () => {
       "<p>Part 2</p>",
       "<p>Part 3</p>",
     ]);
+  });
+});
+
+describe("how a page reads", () => {
+  it("passes a page laid out as asked", () => {
+    expect(
+      designIssues([
+        { type: "hero", props: { headline: "Bread every morning", imageMediaId: "m1" } },
+        { type: "heading", props: { text: "What we bake" } },
+        { type: "rich-text", props: { html: "<p>Call [TODO: phone number]</p>" } },
+        { type: "image", props: { mediaId: "m2" } },
+      ]),
+    ).toEqual([]);
+  });
+
+  it("refuses markers in headlines, alt text and headings, and more than three", () => {
+    const codes = designIssues([
+      { type: "hero", props: { headline: "[TODO: name]" } },
+      { type: "image", props: { mediaId: "m1", alt: "[TODO: describe]" } },
+      { type: "heading", props: { text: "[TODO: heading]" } },
+      { type: "rich-text", props: { html: "<p>[TODO: bio]</p>" } },
+    ]).map((i) => i.code);
+    expect(codes).toEqual([
+      "marker-placement",
+      "marker-placement",
+      "marker-placement",
+      "too-many-markers",
+    ]);
+  });
+
+  it("refuses one picture twice, inside a section too", () => {
+    const issues = designIssues([
+      { type: "hero", props: { headline: "Hi", imageMediaId: "m1" } },
+      { type: "section", props: {}, children: [{ type: "image", props: { mediaId: "m1" } }] },
+    ]);
+    expect(issues.map((i) => [i.code, i.path.join(".")])).toEqual([
+      ["picture-twice", "blocks.1.children.0.props.mediaId"],
+    ]);
+  });
+
+  it("refuses text after text and a heading with nothing after it", () => {
+    const codes = designIssues([
+      { type: "rich-text", props: { html: "<p>a</p>" } },
+      { type: "rich-text", props: { html: "<p>b</p>" } },
+      { type: "heading", props: { text: "Contact" } },
+    ]).map((i) => i.code);
+    expect(codes).toEqual(["text-after-text", "empty-heading"]);
   });
 });

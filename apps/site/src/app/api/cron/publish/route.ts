@@ -2,14 +2,15 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import { createHash, timingSafeEqual } from "node:crypto";
-import { db, publishDueEntries } from "@sitebuilder/db";
+import { db, deleteOldAiRuns, publishDueEntries } from "@sitebuilder/db";
 import { connection } from "next/server";
 import { env } from "@/env";
 
 const noStore = { "Cache-Control": "no-store" };
 const digest = (value: string) => createHash("sha256").update(value).digest();
 
-// Publishes scheduled entries whose time has come (design §7), for a cron service: Vercel Cron,
+// Publishes scheduled entries whose time has come (design §7), and removes old AI records, for a
+// cron service: Vercel Cron,
 // or system cron where the admin's own timer doesn't run (decisions #75). Answers 404 unless
 // CRON_SECRET is set, and 401 unless the request carries `Authorization: Bearer <CRON_SECRET>`,
 // the form Vercel Cron sends. GET writes here because Vercel Cron only sends GET; the secret,
@@ -24,7 +25,10 @@ async function publish(request: Request): Promise<Response> {
     return Response.json({ error: "unauthorized" }, { status: 401, headers: noStore });
   }
   const ids = await publishDueEntries(db);
-  return Response.json({ published: ids.length }, { headers: noStore });
+  // The AI assistant's call records older than 180 days (templates_and_ai_design B10), for hosts
+  // where the admin's own timer doesn't run.
+  const removed = await deleteOldAiRuns(db, new Date(Date.now() - 180 * 24 * 60 * 60_000));
+  return Response.json({ published: ids.length, aiRunsRemoved: removed }, { headers: noStore });
 }
 
 export const GET = publish;

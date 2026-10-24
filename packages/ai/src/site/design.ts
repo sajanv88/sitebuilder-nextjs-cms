@@ -25,6 +25,7 @@ import {
 } from "./catalog";
 import { countTodos, inventedFacts, knownFacts } from "./facts";
 import { fence } from "./fence";
+import { designIssues } from "./lint";
 import {
   INTERVIEW_SCHEMA,
   interviewSystem,
@@ -179,6 +180,9 @@ export function answersText(answers: readonly Answered[]): string {
     .join("\n\n");
 }
 
+// Block types that alone make a page read as a wall of text.
+const PLAIN = new Set(["heading", "rich-text", "button", "spacer", "separator", "quote"]);
+
 // ── 2. The plan ──────────────────────────────────────────────────────────────────────────────
 
 export interface Catalog {
@@ -241,6 +245,20 @@ export function planSite(
         ),
       );
       if (unknown.length > 0) return { ok: false, issues: unknown };
+      // A page of headings, text and buttons only reads as a wall (DESIGN in prompts.ts).
+      const plain = parsed.output.pages.flatMap((page, p) =>
+        page.sections.every((s) => PLAIN.has(s.type))
+          ? [
+              {
+                path: ["pages", p, "sections"],
+                code: "plain-page",
+                message:
+                  "This page is only headings, text and buttons: group its topics in sections, and use columns, a feature-grid, faq, timeline, callout or gallery where they fit",
+              },
+            ]
+          : [],
+      );
+      if (plain.length > 0) return { ok: false, issues: plain };
       if (parsed.output.pages[0]?.parentRef !== null) {
         return {
           ok: false,
@@ -503,6 +521,7 @@ function writeSections(
         issues.push(...validated.issues.map((i) => ({ ...i, path: ["blocks", ...i.path] })));
       }
       issues.push(...inventedFacts(envelope.output, known));
+      issues.push(...designIssues(withoutNulls(envelope.output.blocks) as unknown[]));
       if (issues.length > 0 || !validated.ok) return { ok: false, issues };
       return { ok: true, value: { envelope: envelope.output, blocks: validated.value } };
     },

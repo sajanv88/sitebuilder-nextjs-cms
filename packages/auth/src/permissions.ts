@@ -31,6 +31,10 @@ export const statements = {
   template: ["activate"],
   settings: ["update"],
   user: ["create", "read", "update", "delete", "setRole"],
+  // The AI assistant (design §15, templates_and_ai_design B8): designing a site, and help on a
+  // page. `assistOwn` is help on one's own posts: `ai` isn't an owned resource, so it's checked
+  // with canSome() and the entry's own update check (B8: every help action needs both).
+  ai: ["generateSite", "assist", "assistOwn"],
 } as const;
 
 export type ResourceType = keyof typeof statements;
@@ -52,11 +56,13 @@ export const permissions = {
     template: statements.template,
     settings: statements.settings,
     user: statements.user,
+    ai: ["generateSite", "assist"],
   },
-  editor: content,
+  editor: { ...content, ai: ["assist"] },
   author: {
     post: ["create", "readOwn", "updateOwn", "publishOwn", "trashOwn"],
     term: ["assign"],
     media: ["upload", "readOwn", "updateOwn", "deleteOwn"],
+    ai: ["assistOwn"],
   },
 } as const satisfies Record<Role, RolePermissions>;

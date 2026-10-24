@@ -171,6 +171,8 @@ const failure = <T>(step: StepResult<T> & { ok: false }) =>
 
 interface PageReport {
   ref: string;
+  // The page's top-level block types, in order, to see how it's put together.
+  layout?: string;
   attempts: number;
   ok: boolean;
   todos: number;
@@ -292,7 +294,17 @@ async function runBrief(
     if (result.repaired) report.repairs.push(`${ref}: ${issueLine(result.repaired)}`);
     if (result.ok) {
       written.push(result.value);
-      report.pages.push({ ref, attempts: result.attempts, ok: true, todos: result.value.todos });
+      report.pages.push({
+        ref,
+        attempts: result.attempts,
+        ok: true,
+        todos: result.value.todos,
+        layout: result.value.blocks
+          .map((b) =>
+            b.children?.length ? `${b.type}(${b.children.map((c) => c.type).join(",")})` : b.type,
+          )
+          .join(" "),
+      });
     } else {
       report.pages.push({
         ref,
@@ -363,7 +375,12 @@ async function main() {
     }
     for (const page of pages) {
       say(
-        `  page      ${page.ref}: ${page.ok ? (page.attempts === 1 ? "valid" : "valid after a repair") : `FAILED ${page.problem}`}${page.ok ? `, ${page.todos} TODO` : ""}`,
+        `  page      ${page.ref}: ${page.ok ? (page.attempts === 1 ? "valid" : "valid after a repair") : `FAILED ${page.problem}`}${page.ok ? `, ${page.todos} TODO` : ""}${
+          page.layout
+            ? `
+            ${page.layout}`
+            : ""
+        }`,
       );
     }
     for (const repair of report.repairs) say(`  repaired  ${repair}`);

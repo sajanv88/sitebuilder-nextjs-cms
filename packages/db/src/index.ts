@@ -8,6 +8,23 @@
 export { authDatabase } from "./auth-adapter";
 export { type Db, db } from "./client";
 export type { Executor } from "./executor";
+export {
+  type AiBatchEntry,
+  type AiUsage,
+  aiSourceRef,
+  aiUsage,
+  createAiBatch,
+  type DiscardAiBatchResult,
+  deleteOldAiRuns,
+  discardAiBatch,
+  type FinishAiBatch,
+  type FinishAiBatchResult,
+  finishAiBatch,
+  getAiBatch,
+  listAiBatchEntries,
+  recordAiRun,
+  startOfUtcDay,
+} from "./queries/ai";
 export { type BootstrapInput, type BootstrapResult, bootstrapSite } from "./queries/bootstrap";
 export {
   type DashboardCounts,
@@ -151,6 +168,7 @@ export {
   setUserRole,
   type UserRow,
 } from "./queries/users";
+export type { AiBatch, AiRun } from "./schema/ai";
 export type { Entry, EntryStatus, EntryType } from "./schema/entries";
 export type { EntryRevision } from "./schema/entry-revisions";
 export type { Media } from "./schema/media";
