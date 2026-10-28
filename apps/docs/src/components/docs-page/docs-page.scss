@@ -1,0 +1,135 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+// One column on a phone. From the lg breakpoint, the text and a list of its headings beside it.
+.docs-page {
+  display: grid;
+  gap: a.space(10);
+  inline-size: 100%;
+  max-inline-size: 68rem;
+  margin-inline: auto;
+  padding: a.space(6) a.space(4) a.space(16);
+  box-sizing: border-box;
+
+  @include a.breakpoint("lg") {
+    grid-template-columns: minmax(0, 1fr) 14rem;
+    padding: a.space(10) a.space(8) a.space(20);
+  }
+
+  &__main {
+    display: grid;
+    gap: a.space(8);
+    align-content: start;
+    min-inline-size: 0;
+    max-inline-size: 46rem;
+  }
+
+  &__head {
+    display: grid;
+    gap: a.space(3);
+  }
+
+  &__title {
+    margin: 0;
+    font-size: clamp(1.75rem, 1.25rem + 2.2vw, 2.5rem);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  &__lead {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+  }
+
+  // The list behind a button is for a narrow screen only.
+  &__drawer {
+    @include a.breakpoint("lg") {
+      display: none;
+    }
+  }
+
+  &__toggle {
+    justify-content: space-between;
+    inline-size: 100%;
+  }
+
+  &__drawer-list {
+    padding-block-start: a.space(3);
+  }
+
+  &__body {
+    display: grid;
+    gap: a.space(5);
+    min-inline-size: 0;
+  }
+
+  &__pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: a.space(4);
+    padding-block-start: a.space(6);
+    border-block-start: var(--nuv-border-width) solid var(--color-border);
+  }
+
+  &__step {
+    display: grid;
+    gap: a.space(1);
+    padding: a.space(4);
+    border: var(--nuv-border-width) solid var(--color-border);
+    border-radius: var(--radius-lg);
+    color: var(--color-foreground);
+    text-decoration: none;
+
+    @include a.hover {
+      border-color: var(--color-border-strong);
+    }
+
+    @include a.focus-ring;
+  }
+
+  &__step--next {
+    grid-column: 2;
+    text-align: end;
+  }
+
+  &__step-label {
+    display: inline-flex;
+    gap: a.space(1);
+    align-items: center;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  &__step-label--end {
+    justify-content: flex-end;
+  }
+
+  &__step-title {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  // Beside the text, where it stays in view while the text scrolls.
+  &__side {
+    display: none;
+
+    @include a.breakpoint("lg") {
+      position: sticky;
+      inset-block-start: a.space(20);
+      display: grid;
+      gap: a.space(3);
+      align-content: start;
+      align-self: start;
+    }
+  }
+
+  &__side-label {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+}
