@@ -22,6 +22,7 @@
     }
 
     &__block {
+      position: relative;
       display: grid;
       border-radius: var(--radius-sm);
       outline: var(--nuv-border-width) dashed transparent;
@@ -39,6 +40,22 @@
 
       @include a.hover {
         outline-color: var(--color-ring);
+      }
+    }
+
+    // The selected block's handle to drag it by (canvas-drag), above its corner, outside the
+    // outline, so it never covers what the block shows.
+    &__grip {
+      position: absolute;
+      z-index: 10;
+      inset-block-start: calc(a.space(1) * -1);
+      inset-inline-start: calc(a.space(1) * -1);
+      translate: 0 -100%;
+      cursor: grab;
+      touch-action: none;
+
+      &:active {
+        cursor: grabbing;
       }
     }
 

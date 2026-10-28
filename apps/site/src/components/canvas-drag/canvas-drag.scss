@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+@layer host {
+  // Where a dragged block would go: a line between blocks, or a box around an empty container.
+  // Placed by the pointer, over the page, and never in the way of it.
+  .canvas-drag {
+    &__drop {
+      position: fixed;
+      z-index: 30;
+      border-radius: var(--radius-full);
+      background: var(--color-ring);
+      pointer-events: none;
+    }
+
+    &__drop--along {
+      block-size: calc(var(--nuv-border-width) * 3);
+      translate: 0 -50%;
+    }
+
+    &__drop--across {
+      inline-size: calc(var(--nuv-border-width) * 3);
+      translate: -50% 0;
+    }
+
+    &__drop--inside {
+      border-radius: var(--radius-sm);
+      outline: calc(var(--nuv-border-width) * 2) dashed var(--color-ring);
+      outline-offset: calc(a.space(1) * -1);
+      background: transparent;
+    }
+  }
+}

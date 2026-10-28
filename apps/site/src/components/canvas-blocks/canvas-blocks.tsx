@@ -3,8 +3,8 @@
 
 "use client";
 
-import { ColumnsIcon } from "@nuvui/icons";
-import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@nuvui/react";
+import { ColumnsIcon, GripVerticalIcon } from "@nuvui/icons";
+import { Button, Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@nuvui/react";
 import {
   type BlockFrameProps,
   type CanvasData,
@@ -12,6 +12,7 @@ import {
   type FromCanvas,
   headingBlockId,
   isEditorKey,
+  type Move,
   pageItemClass,
   type RenderContext,
   readToCanvas,
@@ -26,6 +27,8 @@ import { loadCanvasBlocks } from "@sitebuilder/templates/canvas";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { createContext, use, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
+import { CanvasDrag } from "@/components/canvas-drag/canvas-drag";
+import { CanvasWidths } from "@/components/canvas-widths/canvas-widths";
 import { useNonce } from "@/components/nonce-provider/nonce-provider";
 import { SiteBlocks } from "@/components/site-blocks/site-blocks";
 import { SiteImage } from "@/components/site-image/site-image";
@@ -35,7 +38,8 @@ import "./canvas-blocks.scss";
 // The blocks of the editor's canvas (app/%5Fcanvas): drawn in the browser, from what the editor
 // sends on every change, inside the active template's layouts, which the server draws. A click
 // selects the block under it, and links and buttons don't navigate or submit. The editor's
-// shortcuts pressed here go to the editor.
+// shortcuts pressed here go to the editor. The selected block can be dragged by its grip, and
+// columns' widths by the line between them (decisions #152).
 
 // What the canvas shows. In the browser it lives outside React, so it outlasts the page being
 // drawn again on the server (when the title changes, below). Never on the server, where a
@@ -45,6 +49,8 @@ interface CanvasState {
   data: CanvasData;
   selectedId: string | null;
   issueIds: ReadonlySet<string>;
+  // Whether blocks may be dragged and columns resized: not while the assistant's proposal shows.
+  editable: boolean;
   // The title and featured picture the editor has, which the layouts draw on the server.
   title: string;
   featuredMediaId: string;
@@ -75,21 +81,42 @@ function post(message: FromCanvas) {
 // Once per document: the editor answers with everything it has.
 let announced = false;
 
-const Selection = createContext<{ selectedId: string | null; issueIds: ReadonlySet<string> }>({
+const Selection = createContext<{
+  selectedId: string | null;
+  issueIds: ReadonlySet<string>;
+  editable: boolean;
+}>({
   selectedId: null,
   issueIds: new Set(),
+  editable: false,
 });
+
+const dropped = (move: Move) => post({ type: "move", move });
+const resized = (blockId: string, widths: string) => post({ type: "widths", blockId, widths });
+const preview = (blocks: BlockList) => update({ blocks });
 
 // The frame is what sits in the page's grid, so it takes the block's width on the page.
 function Frame({ block, definition, pageWidth, children }: BlockFrameProps) {
-  const { selectedId, issueIds } = useContext(Selection);
+  const { selectedId, issueIds, editable } = useContext(Selection);
+  const selected = block.id === selectedId;
   const classes = ["canvas-blocks__block"];
   const placed = pageItemClass(pageWidth);
   if (placed) classes.push(placed);
-  if (block.id === selectedId) classes.push("canvas-blocks__block--selected");
+  if (selected) classes.push("canvas-blocks__block--selected");
   if (issueIds.has(block.id)) classes.push("canvas-blocks__block--problem");
   return (
     <div className={classes.join(" ")} data-block-id={block.id} data-block-label={definition.label}>
+      {selected && editable ? (
+        <Button
+          intent="secondary"
+          size="sm"
+          className="canvas-blocks__grip"
+          aria-label={`Drag to move this ${definition.label.toLowerCase()} block`}
+          data-drag-block={block.id}
+        >
+          <GripVerticalIcon size={16} aria-hidden="true" />
+        </Button>
+      ) : null}
       {children}
     </div>
   );
@@ -133,6 +160,7 @@ export function CanvasBlocks({
       data,
       selectedId: null,
       issueIds: new Set(),
+      editable: true,
       title: rendered.title,
       featuredMediaId: rendered.featuredMediaId,
       background: null,
@@ -176,7 +204,11 @@ export function CanvasBlocks({
           update({ data: message.data });
           break;
         case "selection":
-          update({ selectedId: message.selectedId, issueIds: new Set(message.issueIds) });
+          update({
+            selectedId: message.selectedId,
+            issueIds: new Set(message.issueIds),
+            editable: message.editable,
+          });
           break;
         case "entry":
           update({
@@ -206,6 +238,8 @@ export function CanvasBlocks({
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
       if (!(event.target instanceof Element)) return;
+      // The click that ends dragging a column line (canvas-widths) keeps the selection.
+      if (event.target.closest("[data-canvas-handle]")) return;
       const link = event.target.closest("a[href]");
       const submit = event.target.closest("button[type='submit'], button:not([type])");
       if (link || submit) event.preventDefault();
@@ -288,9 +322,19 @@ export function CanvasBlocks({
     );
   }
   return (
-    <Selection.Provider value={{ selectedId: now.selectedId, issueIds: now.issueIds }}>
+    <Selection.Provider
+      value={{ selectedId: now.selectedId, issueIds: now.issueIds, editable: now.editable }}
+    >
       {background}
       <SiteBlocks blocks={now.blocks} context={context} frame={Frame} />
+      <CanvasDrag blocks={now.blocks} enabled={now.editable} onDrop={dropped} />
+      <CanvasWidths
+        blocks={now.blocks}
+        selectedId={now.selectedId}
+        enabled={now.editable}
+        onPreview={preview}
+        onWidths={resized}
+      />
     </Selection.Provider>
   );
 }

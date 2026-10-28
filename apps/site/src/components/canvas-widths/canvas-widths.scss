@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+@layer host {
+  // The line between two columns, to drag: a strip wide enough to catch with a finger, drawn as
+  // a thin line with a grip in its middle.
+  .canvas-widths {
+    &__line {
+      position: fixed;
+      z-index: 25;
+      inline-size: a.space(4);
+      translate: -50% 0;
+      cursor: col-resize;
+      touch-action: none;
+
+      &::before {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 50%;
+        inline-size: calc(var(--nuv-border-width) * 2);
+        translate: -50% 0;
+        background: var(--color-ring);
+        opacity: 0.4;
+        content: "";
+      }
+
+      &::after {
+        position: absolute;
+        inset-block-start: 50%;
+        inset-inline-start: 50%;
+        block-size: a.space(8);
+        inline-size: a.space(1.5);
+        border-radius: var(--radius-full);
+        translate: -50% -50%;
+        background: var(--color-ring);
+        content: "";
+      }
+
+      @include a.hover {
+        &::before {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
