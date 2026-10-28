@@ -141,7 +141,9 @@ export type Field =
   // Horizontal alignment (align/align.ts). `inherit`: none pressed means "as the section".
   | (FieldBase & { kind: "align"; inherit: boolean })
   // A table's rows: one text cell per column, as many columns as the `columns` field holds.
-  | (FieldBase & { kind: "rows"; columnsFrom: string; max: number; maxLength: number });
+  | (FieldBase & { kind: "rows"; columnsFrom: string; max: number; maxLength: number })
+  // Columns' widths (block-columns/widths.ts): the layouts for as many columns as it holds.
+  | (FieldBase & { kind: "widths" });
 
 export type BlockCategory = "text" | "media" | "layout" | "marketing" | "data";
 

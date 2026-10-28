@@ -53,9 +53,12 @@ import {
 } from "@nuvui/react";
 import {
   type Field as BlockField,
+  columnWidthsFor,
+  columnWidthsLabel,
   FEATURE_ICON_NAMES,
   FEATURE_ICONS,
   type RenderMedia,
+  widthsOf,
 } from "@sitebuilder/blocks";
 import type { LinkTarget, MediaKind } from "@sitebuilder/schema";
 import dynamic from "next/dynamic";
@@ -88,6 +91,8 @@ export interface FieldProps {
   errors: Record<string, string>;
   // The block's other props, for a field that reads one (a table's rows read its columns).
   siblings: Record<string, unknown>;
+  // How many blocks it holds, for a field that depends on it (columns' widths).
+  childCount?: number;
 }
 
 const asString = (value: unknown): string => (typeof value === "string" ? value : "");
@@ -188,6 +193,33 @@ function ChoiceField({
       {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
       <FieldError>{errors[field.name]}</FieldError>
     </Field>
+  );
+}
+
+// Columns' widths (decisions #152): the layouts for as many columns as the block holds. One
+// written for another number of columns draws as equal, so it shows as Equal.
+function WidthsField(props: FieldProps & { field: Extract<BlockField, { kind: "widths" }> }) {
+  const { field, value, childCount = 0 } = props;
+  const options = columnWidthsFor(childCount).map((option) => ({
+    value: option,
+    label: columnWidthsLabel(option),
+  }));
+  const current = typeof value === "string" && widthsOf(value, childCount) ? value : "equal";
+  return (
+    <ChoiceField
+      {...props}
+      value={current}
+      field={{
+        kind: "choice",
+        name: field.name,
+        label: field.label,
+        options,
+        description:
+          options.length > 1
+            ? (field.description ?? "")
+            : "Four columns always share the row equally.",
+      }}
+    />
   );
 }
 
@@ -1132,5 +1164,7 @@ export function BlockFieldControl(props: FieldProps) {
       return <AlignField {...props} field={field} />;
     case "background":
       return <BackgroundField {...props} field={field} />;
+    case "widths":
+      return <WidthsField {...props} field={field} />;
   }
 }

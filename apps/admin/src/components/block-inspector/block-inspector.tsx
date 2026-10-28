@@ -144,6 +144,7 @@ export function BlockInspector({
               value={block.props[field.name]}
               errors={errors}
               siblings={block.props}
+              childCount={block.children?.length ?? 0}
               onChange={(next) => onChange(withField(definition, block.props, field, next))}
             />
           ))}

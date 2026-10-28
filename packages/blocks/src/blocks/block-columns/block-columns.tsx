@@ -41,6 +41,12 @@ export const columns: BlockDefinition<Props> = {
   fields: [
     pageWidthField,
     {
+      kind: "widths",
+      name: "widths",
+      label: "Widths",
+      description: "Or drag the line between two columns on the page.",
+    },
+    {
       kind: "choice",
       name: "gap",
       label: "Space between",

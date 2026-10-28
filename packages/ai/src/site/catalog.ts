@@ -54,7 +54,8 @@ export type FieldSpec =
     })
   | (FieldBase & { kind: "align"; inherit: boolean })
   | (FieldBase & { kind: "rows"; columnsFrom: string; max: number; maxLength: number })
-  | (FieldBase & { kind: "background"; noneLabel?: string });
+  | (FieldBase & { kind: "background"; noneLabel?: string })
+  | (FieldBase & { kind: "widths" });
 
 export interface BlockSpec {
   type: string;
@@ -231,6 +232,9 @@ function fieldSchema(field: FieldSpec, options: CatalogOptions): Schema | null {
     }
     case "background":
       // A card's colour is the owner's choice; offering it would grow the schema for little.
+      return null;
+    case "widths":
+      // Columns start equal; the owner drags them wider or narrower.
       return null;
     case "rows":
       return {
