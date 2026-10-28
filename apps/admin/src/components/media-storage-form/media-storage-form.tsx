@@ -205,6 +205,23 @@ export function MediaStorageForm({
               either way.
             </FieldDescription>
           </Field>
+          <Field>
+            <FieldLabel>Public address for files</FieldLabel>
+            <FieldControl>
+              <Input
+                name="publicUrl"
+                defaultValue={values.publicUrl}
+                placeholder="https://files.example.com"
+                spellCheck={false}
+              />
+            </FieldControl>
+            <FieldDescription>
+              Optional. A CDN in front of the bucket, or the bucket's own public address: videos and
+              PDFs are then linked there, so they don't pass through the site. Pictures still go
+              through the site to be resized, and private files are never linked there.
+            </FieldDescription>
+            <FieldError>{errors.publicUrl}</FieldError>
+          </Field>
         </div>
       ) : null}
 

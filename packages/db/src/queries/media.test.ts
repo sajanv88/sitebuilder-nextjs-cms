@@ -26,8 +26,11 @@ import {
   getMediaForRender,
   listMedia,
   mediaFolders,
+  mediaToMove,
   mediaUsage,
   type NewMediaInput,
+  setMediaPrivate,
+  setMediaStorage,
   updateMediaAlt,
 } from "./media";
 import { listRevisions } from "./revisions";
@@ -103,6 +106,48 @@ async function page(content: BlockList, extra: Partial<EntryWrite> = {}) {
   if (!created.ok) throw new Error(created.error);
   return created;
 }
+
+describe("moving files", () => {
+  it("lists what isn't where uploads go now, oldest first, until each is moved", async () => {
+    const first = await createMedia(db, file({ filename: "first.jpg", storage: "local" }));
+    await createMedia(db, file({ filename: "there.jpg", storage: "s3" }));
+    const second = await createMedia(db, file({ filename: "second.jpg", storage: "local" }));
+    expect((await mediaToMove(db, "s3", 10)).map((r) => r.id).sort()).toEqual(
+      [first.id, second.id].sort(),
+    );
+    expect(await mediaToMove(db, "s3", 1)).toHaveLength(1);
+    await setMediaStorage(db, first.id, "s3");
+    await setMediaStorage(db, second.id, "s3");
+    expect(await mediaToMove(db, "s3", 10)).toEqual([]);
+    expect(await countMediaByStorage(db)).toEqual({ local: 0, s3: 3 });
+  });
+});
+
+describe("private files", () => {
+  it("are left out of the picker's list, and the address lookup says so", async () => {
+    const open = await createMedia(db, file({ filename: "open.jpg" }));
+    const shut = await createMedia(db, file({ filename: "shut.jpg" }));
+    expect(await setMediaPrivate(db, shut.id, true)).toEqual({ ok: true });
+    const all = await listMedia(db, { ...query(), uploadedBy: null });
+    expect(all.rows.map((r) => [r.filename, r.private])).toEqual(
+      expect.arrayContaining([
+        ["open.jpg", false],
+        ["shut.jpg", true],
+      ]),
+    );
+    const picker = await listMedia(db, { ...query(), uploadedBy: null, publicOnly: true });
+    expect(picker.rows.map((r) => r.id)).toEqual([open.id]);
+    const row = await getMedia(db, shut.id);
+    expect(await getMediaByKey(db, row?.storageKey ?? "")).toMatchObject({
+      private: true,
+      uploadedBy: adminId,
+    });
+    expect(await setMediaPrivate(db, "00000000-0000-4000-8000-000000000000", true)).toEqual({
+      ok: false,
+      error: "not-found",
+    });
+  });
+});
 
 describe("media rows", () => {
   it("lists, filters by kind and searches name and alt", async () => {
@@ -354,7 +399,8 @@ describe("media storage settings", () => {
       pathStyle: true,
     };
     expect(await upsertSettings(db, "media", s3)).toEqual({ ok: true });
-    expect(await getSettings(db, "media")).toEqual(s3);
+    // A row saved before the public files address reads as without one.
+    expect(await getSettings(db, "media")).toEqual({ ...s3, publicUrl: null });
     expect((await upsertSettings(db, "media", { ...s3, secret: "plain" })).ok).toBe(false);
     await deleteSettings(db, "media");
     expect(await getSettings(db, "media")).toBeUndefined();

@@ -2,8 +2,10 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import { db, getSettings, type PublicRoute, resolveRoute } from "@sitebuilder/db";
+import { publicFilesBase } from "@sitebuilder/media";
 import type { AnalyticsSettings } from "@sitebuilder/schema";
 import { type NextRequest, NextResponse } from "next/server";
+import { env } from "@/env";
 import { type AnalyticsSources, analyticsSources } from "@/lib/analytics-csp";
 
 // Two jobs, before anything renders (decisions #65):
@@ -47,29 +49,43 @@ function internalPath(route: PublicRoute, path: string, preview: boolean): strin
 // path: page slugs can't start with "_".
 const CANVAS = "/_canvas/";
 
-// The analytics in Settings, for the policy: read at most every 30 seconds per process, so a
-// change reaches every page within half a minute without a query on each request. A database
-// that can't be read keeps what was last read.
-const ANALYTICS_TTL_MS = 30_000;
-let analytics: { at: number; value: AnalyticsSettings | null } | null = null;
+// What the policy opens beyond the site, from Settings: the analytics (decisions #142) and the
+// public files address (decisions #151). Read at most every 30 seconds per process, so a change
+// reaches every page within half a minute without a query on each request. A database that
+// can't be read keeps what was last read.
+const SETTINGS_TTL_MS = 30_000;
+interface PolicySettings {
+  analytics: AnalyticsSettings | null;
+  // The origin videos and documents are linked to, if it isn't the site.
+  files: string | null;
+}
+let policy: { at: number; value: PolicySettings } | null = null;
 
-async function readAnalytics(): Promise<AnalyticsSettings | null> {
-  if (analytics && Date.now() - analytics.at < ANALYTICS_TTL_MS) return analytics.value;
+async function readPolicySettings(): Promise<PolicySettings> {
+  if (policy && Date.now() - policy.at < SETTINGS_TTL_MS) return policy.value;
   try {
-    analytics = { at: Date.now(), value: (await getSettings(db, "analytics")) ?? null };
+    const [analytics, media] = await Promise.all([
+      getSettings(db, "analytics"),
+      getSettings(db, "media"),
+    ]);
+    const base = publicFilesBase({ settings: media, env: env() });
+    policy = {
+      at: Date.now(),
+      value: { analytics: analytics ?? null, files: base ? new URL(base).origin : null },
+    };
   } catch (error) {
-    console.error("proxy: reading the analytics settings failed", error);
-    analytics = { at: Date.now(), value: analytics?.value ?? null };
+    console.error("proxy: reading the settings for the policy failed", error);
+    policy = { at: Date.now(), value: policy?.value ?? { analytics: null, files: null } };
   }
-  return analytics.value;
+  return policy.value;
 }
 
-const NONE: AnalyticsSources = { connect: [], img: [] };
+const NONE: AnalyticsSources & { media: string[] } = { connect: [], img: [], media: [] };
 
 function contentSecurityPolicy(
   nonce: string,
   framed: boolean,
-  extra: AnalyticsSources = NONE,
+  extra: AnalyticsSources & { media: string[] } = NONE,
 ): string {
   const isDev = process.env.NODE_ENV === "development";
   const more = (sources: string[]) => (sources.length ? ` ${sources.join(" ")}` : "");
@@ -80,7 +96,7 @@ function contentSecurityPolicy(
     `style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`}`,
     "style-src-attr 'unsafe-inline'",
     `img-src 'self' blob: data:${more(extra.img)}`,
-    "media-src 'self'",
+    `media-src 'self'${more(extra.media)}`,
     "font-src 'self'",
     `connect-src 'self'${more(extra.connect)}`,
     "worker-src 'self' blob:",
@@ -122,7 +138,11 @@ export async function proxy(request: NextRequest) {
   }
 
   // The consent banner loads the analytics a visitor accepts; the policy lets them send.
-  const csp = contentSecurityPolicy(nonce, false, analyticsSources(await readAnalytics()));
+  const settings = await readPolicySettings();
+  const csp = contentSecurityPolicy(nonce, false, {
+    ...analyticsSources(settings.analytics),
+    media: settings.files ? [settings.files] : [],
+  });
   requestHeaders.set("x-site-path", path);
   requestHeaders.set("Content-Security-Policy", csp);
 

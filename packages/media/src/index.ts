@@ -7,11 +7,20 @@ import "server-only";
 // stored. Both zones use it: the admin zone stores and deletes, the site zone serves.
 
 export { readDimensions } from "./dimensions";
-export { isStorageKey, KEY_PATTERN, mediaUrl, sanitizeFilename, storageKey } from "./keys";
+export {
+  isStorageKey,
+  KEY_PATTERN,
+  mediaUrl,
+  publicFileUrl,
+  sanitizeFilename,
+  storageKey,
+} from "./keys";
+export { isShareValid, SHARE_LINK_MAX_SECONDS, shareQuery } from "./links";
 export { parseRange } from "./range";
 export {
   describeEnvironment,
   type EnvironmentStorage,
+  publicFilesBase,
   type StorageResult,
   type StorageSources,
   storageFor,

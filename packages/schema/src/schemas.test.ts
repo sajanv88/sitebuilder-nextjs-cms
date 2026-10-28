@@ -6,6 +6,7 @@ import { describe, expect, test } from "vitest";
 import { MenuSchema } from "./menu";
 import {
   defaultSettings,
+  PublicFilesUrl,
   ReadingSettings,
   ReadingSettingsInput,
   SettingsSchemas,
@@ -113,6 +114,14 @@ describe("settings", () => {
     expect(v.is(ThemeSettings, theme([inter, { ...inter, family: "inter", use: "none" }]))).toBe(
       false,
     );
+  });
+
+  test("the public files address is https, without a query, and optional", () => {
+    expect(v.parse(PublicFilesUrl, " https://files.example.com/ ")).toBe(
+      "https://files.example.com",
+    );
+    expect(v.is(PublicFilesUrl, "http://files.example.com")).toBe(false);
+    expect(v.is(PublicFilesUrl, "https://files.example.com/?x=1")).toBe(false);
   });
 
   test("reading progress is on for older rows, and follows the checkbox in the form", () => {

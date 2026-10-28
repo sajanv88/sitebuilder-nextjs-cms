@@ -300,6 +300,16 @@ export const S3SecretInput = v.pipe(
   v.regex(/^[!-~]{1,256}$/, "Enter the secret access key"),
 );
 
+// Where public videos and documents in S3 are linked straight to (decisions #151): a CDN in
+// front of the bucket, or the bucket's own public address. An https address, without a query.
+export const PublicFilesUrl = v.pipe(
+  v.string(),
+  v.trim(),
+  v.url("Enter an address, such as https://files.example.com"),
+  v.check((s) => /^https:\/\/[^\s?#]+$/.test(s), "Use an https address without ? or #"),
+  v.transform((s) => s.replace(/\/+$/, "")),
+);
+
 export const MediaStorageSettings = v.variant("driver", [
   v.object({ driver: v.literal("local") }),
   v.object({
@@ -311,6 +321,8 @@ export const MediaStorageSettings = v.variant("driver", [
     secret: SealedSecret,
     // Path-style addressing (https://host/bucket/key), which MinIO needs.
     pathStyle: v.boolean(),
+    // Videos and documents linked here instead of through the site; none for rows saved before.
+    publicUrl: v.optional(v.nullable(PublicFilesUrl), null),
   }),
 ]);
 export type MediaStorageSettings = v.InferOutput<typeof MediaStorageSettings>;
@@ -328,6 +340,17 @@ export const MediaStorageInput = v.variant("driver", [
     accessKeyId: S3AccessKeyId,
     secret: v.optional(S3SecretInput),
     pathStyle: v.boolean(),
+    // Empty or left out: through the site.
+    publicUrl: v.optional(
+      v.union([
+        v.pipe(
+          v.literal(""),
+          v.transform(() => null),
+        ),
+        PublicFilesUrl,
+      ]),
+      "",
+    ),
   }),
 ]);
 export type MediaStorageInput = v.InferOutput<typeof MediaStorageInput>;

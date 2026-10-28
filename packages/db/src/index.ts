@@ -81,9 +81,12 @@ export {
   type MediaRow,
   type MediaUse,
   mediaFolders,
+  mediaToMove,
   mediaUsage,
   type NewMediaInput,
   type RenderMedia,
+  setMediaPrivate,
+  setMediaStorage,
   updateMediaAlt,
 } from "./queries/media";
 export {

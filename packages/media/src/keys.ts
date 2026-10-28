@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import { randomUUID } from "node:crypto";
+import type { MediaStorageKind } from "@sitebuilder/schema";
 
 // Where a file is stored (design §4.2): yyyy/mm/<uuid>-<sanitised-filename>. The uuid makes each
 // key unique and unguessable, so a file's address can be cached for good.
@@ -41,3 +42,20 @@ export function storageKey(
 // Every file is served by the site zone at /media/<key>, whichever storage holds it
 // (decisions #47), so the address is the same on both zones.
 export const mediaUrl = (storageKey: string): string => `/media/${storageKey}`;
+
+// A file's address on the public site (decisions #151): straight from the public files address
+// for a public video or document in S3, so its bytes don't pass through the site; through
+// /media for everything else. Pictures go through the site's image optimiser, whose allowed
+// hosts are fixed at build; fonts loaded from another host would need CORS there; private files
+// need /media's checks.
+export function publicFileUrl(
+  file: { storageKey: string; storage: MediaStorageKind; private: boolean; mimeType: string },
+  base: string | null,
+): string {
+  const direct =
+    base !== null &&
+    file.storage === "s3" &&
+    !file.private &&
+    (file.mimeType.startsWith("video/") || file.mimeType === "application/pdf");
+  return direct ? `${base}/${file.storageKey}` : mediaUrl(file.storageKey);
+}

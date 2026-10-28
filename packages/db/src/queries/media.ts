@@ -8,7 +8,7 @@ import {
   type MediaStorageKind,
   type MediaType,
 } from "@sitebuilder/schema";
-import { and, asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import type { Executor } from "../executor";
 import { user } from "../schema/auth-schema";
 import { type EntryStatus, entries } from "../schema/entries";
@@ -27,6 +27,7 @@ export interface MediaRow {
   alt: string | null;
   storageKey: string;
   storage: MediaStorageKind;
+  private: boolean;
   createdAt: Date;
   uploadedBy: { id: string; name: string };
 }
@@ -41,6 +42,7 @@ const ROW = {
   alt: media.alt,
   storageKey: media.storageKey,
   storage: media.storage,
+  private: media.private,
   createdAt: media.createdAt,
   uploaderId: user.id,
   uploaderName: user.name,
@@ -62,6 +64,8 @@ const escapeLike = (text: string): string => text.replace(/[\\%_]/g, (c) => `\\$
 export interface ListMediaInput extends MediaListQuery {
   // Set for someone who may only see their own (an author).
   uploadedBy: string | null;
+  // For picking a file to show on a page: a private one would be missing there.
+  publicOnly?: boolean;
 }
 
 export interface MediaList {
@@ -119,6 +123,7 @@ export async function listMedia(db: Executor, input: ListMediaInput): Promise<Me
         )
       : undefined,
     input.month ? monthWhere(input.month) : undefined,
+    input.publicOnly ? eq(media.private, false) : undefined,
   );
   const [found] = await db.select({ total: count() }).from(media).where(where);
   const total = found?.total ?? 0;
@@ -158,12 +163,21 @@ export async function getMediaByKey(
       sizeBytes: number;
       filename: string;
       storage: MediaStorageKind;
+      private: boolean;
+      uploadedBy: string;
     }
   | undefined
 > {
   return db.query.media.findFirst({
     where: { storageKey },
-    columns: { mimeType: true, sizeBytes: true, filename: true, storage: true },
+    columns: {
+      mimeType: true,
+      sizeBytes: true,
+      filename: true,
+      storage: true,
+      private: true,
+      uploadedBy: true,
+    },
   });
 }
 
@@ -177,6 +191,9 @@ export interface RenderMedia {
   alt: string | null;
   filename: string;
   sizeBytes: number;
+  // Where it is, and whether it's private: for its address on the public site.
+  storage: MediaStorageKind;
+  private: boolean;
 }
 
 export async function getMediaForRender(
@@ -194,6 +211,8 @@ export async function getMediaForRender(
       alt: media.alt,
       filename: media.filename,
       sizeBytes: media.sizeBytes,
+      storage: media.storage,
+      private: media.private,
     })
     .from(media)
     .where(inArray(media.id, [...new Set(ids)]));
@@ -218,6 +237,20 @@ export async function createMedia(db: Executor, input: NewMediaInput): Promise<{
   const [created] = await db.insert(media).values(input).returning({ id: media.id });
   if (!created) throw new Error("insert returned no row");
   return created;
+}
+
+// Private or public again (decisions #149).
+export async function setMediaPrivate(
+  db: Executor,
+  id: string,
+  isPrivate: boolean,
+): Promise<{ ok: true } | { ok: false; error: "not-found" }> {
+  const updated = await db
+    .update(media)
+    .set({ private: isPrivate })
+    .where(eq(media.id, id))
+    .returning({ id: media.id });
+  return updated.length > 0 ? { ok: true } : { ok: false, error: "not-found" };
 }
 
 export async function updateMediaAlt(
@@ -301,4 +334,43 @@ export async function countMediaByStorage(db: Executor): Promise<Record<MediaSto
   const counts: Record<MediaStorageKind, number> = { local: 0, s3: 0 };
   for (const row of rows) counts[row.storage] = row.total;
   return counts;
+}
+
+// ── Moving files between storages (decisions #150) ───────────────────────────────────────────
+
+// Files not yet where uploads now go, oldest first.
+export async function mediaToMove(
+  db: Executor,
+  target: MediaStorageKind,
+  limit: number,
+): Promise<
+  {
+    id: string;
+    storageKey: string;
+    mimeType: MediaType;
+    storage: MediaStorageKind;
+    filename: string;
+  }[]
+> {
+  return db
+    .select({
+      id: media.id,
+      storageKey: media.storageKey,
+      mimeType: media.mimeType,
+      storage: media.storage,
+      filename: media.filename,
+    })
+    .from(media)
+    .where(ne(media.storage, target))
+    .orderBy(asc(media.createdAt), asc(media.id))
+    .limit(limit);
+}
+
+// Where a file is now, once it's been copied there.
+export async function setMediaStorage(
+  db: Executor,
+  id: string,
+  storage: MediaStorageKind,
+): Promise<void> {
+  await db.update(media).set({ storage }).where(eq(media.id, id));
 }

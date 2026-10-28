@@ -62,6 +62,16 @@ function fromEnvironment(src: StorageSources): StorageResult {
   return { ok: true, storage, from: "environment" };
 }
 
+// Where public videos and documents in S3 are linked straight to (decisions #151): the saved
+// S3 storage's public address, or S3_PUBLIC_URL with the environment's. Null: through the site.
+export function publicFilesBase(src: Pick<StorageSources, "settings" | "env">): string | null {
+  if (src.settings?.driver === "s3") return src.settings.publicUrl ?? null;
+  if (!src.settings && src.env.MEDIA_STORAGE === "s3") {
+    return src.env.S3_PUBLIC_URL?.replace(/\/+$/, "") ?? null;
+  }
+  return null;
+}
+
 // Where a new upload goes.
 export function uploadStorage(src: StorageSources): StorageResult {
   return src.settings ? fromSettings(src.settings, src) : fromEnvironment(src);

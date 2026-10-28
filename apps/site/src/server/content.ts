@@ -30,7 +30,7 @@ import {
   type SitemapEntry,
   searchPublic,
 } from "@sitebuilder/db";
-import { mediaUrl } from "@sitebuilder/media";
+import { publicFilesBase, publicFileUrl } from "@sitebuilder/media";
 import {
   type BlockList,
   CacheTags,
@@ -161,13 +161,17 @@ export interface RenderData {
 }
 
 async function mediaFor(ids: readonly string[]): Promise<Record<string, RenderMedia>> {
-  const rows = await getMediaForRender(db, ids);
+  const [rows, settings] = await Promise.all([
+    getMediaForRender(db, ids),
+    getSettings(db, "media"),
+  ]);
+  const base = publicFilesBase({ settings, env: env() });
   return Object.fromEntries(
     [...rows.values()].map((row) => [
       row.id,
       {
         id: row.id,
-        url: mediaUrl(row.storageKey),
+        url: publicFileUrl(row, base),
         mimeType: row.mimeType,
         width: row.width,
         height: row.height,

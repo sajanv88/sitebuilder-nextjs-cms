@@ -2,8 +2,53 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import { describe, expect, test } from "vitest";
-import { isStorageKey, sanitizeFilename, storageKey } from "./keys";
+import { isStorageKey, publicFileUrl, sanitizeFilename, storageKey } from "./keys";
 import { parseRange } from "./range";
+import { publicFilesBase } from "./resolve";
+
+describe("public file addresses (decisions #151)", () => {
+  const KEY = "2026/10/0b8f8a8e-6c1e-4c3f-9a1d-2f6f0c1d2e3f-tour.mp4";
+  const video = { storageKey: KEY, storage: "s3" as const, private: false, mimeType: "video/mp4" };
+  const BASE = "https://files.example.com";
+
+  test("link a public video or PDF in S3 straight to the public address", () => {
+    expect(publicFileUrl(video, BASE)).toBe(`${BASE}/${KEY}`);
+    expect(publicFileUrl({ ...video, mimeType: "application/pdf" }, BASE)).toBe(`${BASE}/${KEY}`);
+  });
+
+  test("keep pictures, fonts, private files, disk files and no address on /media", () => {
+    for (const file of [
+      { ...video, mimeType: "image/jpeg" },
+      { ...video, mimeType: "font/woff2" },
+      { ...video, private: true },
+      { ...video, storage: "local" as const },
+    ]) {
+      expect(publicFileUrl(file, BASE)).toBe(`/media/${KEY}`);
+    }
+    expect(publicFileUrl(video, null)).toBe(`/media/${KEY}`);
+  });
+
+  test("come from the saved S3 storage, else the environment's S3_PUBLIC_URL", () => {
+    const env = { MEDIA_STORAGE: "s3", S3_PUBLIC_URL: "https://cdn.example.com/" } as never;
+    expect(publicFilesBase({ settings: undefined, env })).toBe("https://cdn.example.com");
+    expect(publicFilesBase({ settings: { driver: "local" }, env })).toBeNull();
+    expect(
+      publicFilesBase({
+        settings: {
+          driver: "s3",
+          endpoint: "https://s3.example.com",
+          region: "auto",
+          bucket: "b",
+          accessKeyId: "id",
+          secret: { iv: "a", tag: "b", data: "c" },
+          pathStyle: true,
+          publicUrl: "https://files.example.com",
+        },
+        env,
+      }),
+    ).toBe("https://files.example.com");
+  });
+});
 
 describe("sanitizeFilename", () => {
   test("folds accents, lowercases, and keeps one extension", () => {

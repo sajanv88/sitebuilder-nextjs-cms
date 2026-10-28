@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import type { MediaStorageKind, MediaType } from "@sitebuilder/schema";
-import { index, integer, snakeCase, text, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, index, integer, snakeCase, text, uniqueIndex } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 import { createdAt, id } from "./columns";
 
@@ -23,6 +23,9 @@ export const media = snakeCase.table(
     // Where the file went: the server's disk or S3. Switching storage doesn't move files, so
     // each one is read from where it was stored (decisions #48).
     storage: text().$type<MediaStorageKind>().notNull().default("local"),
+    // Not served at its address to anyone (decisions #149): only to people signed in who may
+    // see it, and through a share link while the link lasts.
+    private: boolean().notNull().default(false),
     // Deleting a user who uploaded files is refused until the files are reassigned or deleted.
     uploadedBy: text()
       .notNull()

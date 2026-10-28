@@ -41,10 +41,15 @@ export const ACTION_EFFECTS = {
   testAiConnection: [],
   saveAiSettings: [],
   saveStorage: ["settings"],
+  // Addresses stay the same; the media tag drops what's cached about where each file is.
+  moveMediaFiles: ["media"],
   // media.ts
   listMediaPage: [],
   getMediaDetails: [],
   saveAlt: ["media"],
+  // Private files leave pages' pictures alone: a used file can't be made private.
+  setFilePrivate: ["media"],
+  makeShareLink: [],
   deleteMediaFile: ["media"],
   // menus.ts
   saveMenuItems: ["menu"],

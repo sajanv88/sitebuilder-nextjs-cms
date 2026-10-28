@@ -93,6 +93,21 @@
     color: var(--color-muted-foreground);
     font-size: var(--text-sm);
   }
+
+  // Private: the switch and its label on one line.
+  &__switch {
+    display: flex;
+    gap: a.space(3);
+    align-items: center;
+  }
+
+  // A share link's length and its button.
+  &__share {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+    align-items: center;
+  }
 }
 
 .media-details__facts :where(dt) {

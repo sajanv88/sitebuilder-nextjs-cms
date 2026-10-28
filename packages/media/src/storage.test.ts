@@ -179,6 +179,7 @@ describe("uploadStorage and storageFor", () => {
     accessKeyId: config.accessKeyId,
     secret: sealSecret(config.secretAccessKey, authSecret),
     pathStyle: true,
+    publicUrl: null,
   };
 
   test("saved settings win; without them the environment decides", () => {

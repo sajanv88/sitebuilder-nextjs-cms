@@ -21,6 +21,7 @@ import {
   FieldError,
   FieldLabel,
   Input,
+  NativeSelect,
   Sheet,
   SheetBody,
   SheetContent,
@@ -28,26 +29,30 @@ import {
   SheetHeader,
   SheetTitle,
   Skeleton,
+  Switch,
   toast,
 } from "@nuvui/react";
 import type { MediaUse } from "@sitebuilder/db";
 import type { Route } from "next";
-import { useActionState, useEffect, useState, useTransition } from "react";
+import { useActionState, useEffect, useId, useState, useTransition } from "react";
 import {
   type AltState,
   deleteMediaFile,
   getMediaDetails,
   type MediaDetails,
   type MediaItem,
+  makeShareLink,
   saveAlt,
+  setFilePrivate,
 } from "@/actions/media";
 import { useFormatDateTime } from "@/components/date-settings/date-settings";
 import { TextLink } from "@/components/text-link/text-link";
 import { describeType, formatBytes, isImage } from "@/lib/format";
+import { SHARE_DURATIONS } from "@/lib/share";
 import "./media-details.scss";
 
-// One file's details: a preview, its alt text, what it is, where it's used, and Delete, which
-// is refused while it's used (design §4.2).
+// One file's details: a preview, its alt text, who can see it, what it is, where it's used,
+// and Delete, which is refused while it's used (design §4.2).
 
 function UsedIn({ uses }: { uses: MediaUse[] }) {
   if (uses.length === 0) return <p className="media-details__note">Not used anywhere yet.</p>;
@@ -100,6 +105,131 @@ function AltForm({ item, onSaved }: { item: MediaItem; onSaved: () => void }) {
         </Button>
       </div>
     </form>
+  );
+}
+
+// Private or public, and share links for a private file (decisions #149). The switch applies at
+// once. A link is made on the server, signed, and shown here to copy; it isn't kept anywhere.
+function Privacy({
+  item,
+  used,
+  onChanged,
+}: {
+  item: MediaItem;
+  // A page or post uses it: it can't be made private.
+  used: boolean;
+  onChanged: () => void;
+}) {
+  const id = useId();
+  const formatDateTime = useFormatDateTime();
+  const [isPrivate, setIsPrivate] = useState(item.private);
+  const [seconds, setSeconds] = useState<number>(SHARE_DURATIONS[1].seconds);
+  const [link, setLink] = useState<{ url: string; expires: string } | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function change(next: boolean) {
+    setProblem(null);
+    setIsPrivate(next);
+    startTransition(async () => {
+      const result = await setFilePrivate({ id: item.id, private: next });
+      if (!result.ok) {
+        setIsPrivate(!next);
+        setProblem(result.error);
+        return;
+      }
+      setLink(null);
+      toast(next ? "The file is private." : "The file is public again.", { intent: "success" });
+      onChanged();
+    });
+  }
+
+  function share() {
+    setProblem(null);
+    startTransition(async () => {
+      const result = await makeShareLink({ id: item.id, seconds });
+      if (result.ok) setLink({ url: result.url, expires: result.expires });
+      else setProblem(result.error);
+    });
+  }
+
+  return (
+    <section className="media-details__section" aria-labelledby={`${id}-who`}>
+      <h3 id={`${id}-who`} className="media-details__heading">
+        Who can see it
+      </h3>
+      <div className="media-details__switch">
+        <Switch
+          id={`${id}-private`}
+          checked={isPrivate}
+          disabled={pending || (used && !isPrivate)}
+          onCheckedChange={change}
+          aria-describedby={`${id}-private-about`}
+        />
+        <label htmlFor={`${id}-private`}>Private</label>
+      </div>
+      <p id={`${id}-private-about`} className="media-details__note">
+        {used && !isPrivate
+          ? "A page or post uses it, so it stays public. Take it off them to make it private."
+          : isPrivate
+            ? "Only people signed in here can open it, and anyone with a share link while it lasts."
+            : "Anyone with its address can open it, as with every file on a website."}
+      </p>
+      {isPrivate ? (
+        <div className="media-details__share">
+          <NativeSelect
+            aria-label="How long the link works"
+            value={String(seconds)}
+            onChange={(event) => setSeconds(Number(event.currentTarget.value))}
+          >
+            {SHARE_DURATIONS.map((duration) => (
+              <option key={duration.seconds} value={duration.seconds}>
+                {duration.label}
+              </option>
+            ))}
+          </NativeSelect>
+          <Button
+            intent="secondary"
+            size="sm"
+            onClick={share}
+            disabled={pending}
+            aria-busy={pending}
+          >
+            Make a share link
+          </Button>
+        </div>
+      ) : null}
+      {link ? (
+        <Field>
+          <FieldLabel>Share link</FieldLabel>
+          <FieldControl>
+            <Input readOnly value={link.url} onFocus={(event) => event.currentTarget.select()} />
+          </FieldControl>
+          <FieldDescription>
+            {`Works until ${formatDateTime(new Date(link.expires))}. Anyone with it can open the file until then; it can't be taken back sooner.`}
+          </FieldDescription>
+          <div>
+            <Button
+              intent="ghost"
+              size="sm"
+              onClick={() =>
+                navigator.clipboard
+                  .writeText(link.url)
+                  .then(() => toast("Copied.", { intent: "success" }))
+                  .catch(() => toast("Select the link and copy it.", { intent: "warning" }))
+              }
+            >
+              Copy
+            </Button>
+          </div>
+        </Field>
+      ) : null}
+      {problem ? (
+        <Alert intent="warning" role="alert">
+          <AlertDescription>{problem}</AlertDescription>
+        </Alert>
+      ) : null}
+    </section>
   );
 }
 
@@ -179,6 +309,7 @@ export function MediaFileDetails({
           {item.filename}
         </h2>
         <Badge variant="outline">{describeType(item.mimeType)}</Badge>
+        {item.private ? <Badge intent="warning">Private</Badge> : null}
       </div>
       <p className="media-details__note">
         {formatBytes(item.sizeBytes)}
@@ -200,6 +331,10 @@ export function MediaFileDetails({
 
       {details.canEdit && isImage(item.mimeType) ? (
         <AltForm key={item.id} item={item} onSaved={onChanged} />
+      ) : null}
+
+      {details.canEdit ? (
+        <Privacy key={item.id} item={item} used={details.usedIn.length > 0} onChanged={onChanged} />
       ) : null}
 
       <dl className="media-details__facts">

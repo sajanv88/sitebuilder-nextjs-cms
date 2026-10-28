@@ -187,6 +187,7 @@ export {
   MediaStorageInput,
   MediaStorageSettings,
   PostsPath,
+  PublicFilesUrl,
   ReadingSettings,
   ReadingSettingsInput,
   S3AccessKeyId,

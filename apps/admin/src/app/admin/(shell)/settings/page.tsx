@@ -2,9 +2,15 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import { aiSettingsView } from "@sitebuilder/ai";
-import { DEFAULT_READING, db, getSettings, listPublishedPages } from "@sitebuilder/db";
+import {
+  countMediaByStorage,
+  DEFAULT_READING,
+  db,
+  getSettings,
+  listPublishedPages,
+} from "@sitebuilder/db";
 import { mailConfig, openPassword } from "@sitebuilder/mail";
-import { describeEnvironment, openSecret } from "@sitebuilder/media";
+import { describeEnvironment, openSecret, uploadStorage } from "@sitebuilder/media";
 import {
   analyticsService,
   defaultSettings,
@@ -17,6 +23,7 @@ import { requirePermission } from "@/auth/session";
 import { AdminPage } from "@/components/admin-page/admin-page";
 import { AiSettingsForm } from "@/components/ai-settings-form/ai-settings-form";
 import { EmailSettingsForm } from "@/components/email-settings-form/email-settings-form";
+import { MediaMove } from "@/components/media-move/media-move";
 import {
   type EnvironmentSummary,
   MediaStorageForm,
@@ -79,6 +86,10 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
         ? "eu"
         : "custom";
   const site = savedSite ?? defaults.site;
+  // Where uploads go now, and how many files are elsewhere (decisions #150).
+  const counts = await countMediaByStorage(db);
+  const uploadsTo = uploadStorage({ settings: saved, env: config });
+  const uploadsGo = uploadsTo.ok ? uploadsTo.storage.kind : null;
   const reading = savedReading ?? DEFAULT_READING;
 
   const described = describeEnvironment(config);
@@ -97,6 +108,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
           bucket: saved.bucket,
           accessKeyId: saved.accessKeyId,
           pathStyle: saved.pathStyle,
+          publicUrl: saved.publicUrl ?? "",
         }
       : {
           driver: saved?.driver ?? "environment",
@@ -105,6 +117,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
           bucket: "",
           accessKeyId: "",
           pathStyle: true,
+          publicUrl: "",
         };
   const secret =
     saved?.driver !== "s3"
@@ -167,6 +180,11 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
           description="Where uploaded images, videos and documents are kept. Files already uploaded stay where they are when this changes."
         >
           <MediaStorageForm initial={initial} environment={environment} secret={secret} />
+          <MediaMove
+            elsewhere={uploadsGo === "s3" ? counts.local : uploadsGo === "local" ? counts.s3 : 0}
+            from={uploadsGo === "s3" ? "on the server's disk" : "in S3 storage"}
+            to={uploadsGo === "s3" ? "to S3 storage" : "to the server's disk"}
+          />
         </SettingsSection>
         <SettingsSection
           id="ai"

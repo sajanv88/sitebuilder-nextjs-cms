@@ -12,11 +12,15 @@ import {
   type MediaRow,
   type MediaUse,
   mediaUsage,
+  setMediaPrivate,
   updateMediaAlt,
 } from "@sitebuilder/db";
+import { shareQuery } from "@sitebuilder/media";
 import { MediaAlt, MediaId, MediaListQuery } from "@sitebuilder/schema";
 import * as v from "valibot";
 import { getViewer, type Viewer } from "@/auth/session";
+import { env } from "@/env";
+import { SHARE_DURATIONS } from "@/lib/share";
 import { invalidate } from "@/server/invalidate";
 import { mediaUrl, storageOfFile } from "@/server/media";
 
@@ -33,6 +37,7 @@ export interface MediaItem {
   sizeBytes: number;
   alt: string | null;
   storage: MediaRow["storage"];
+  private: boolean;
   createdAt: string;
   uploadedBy: string;
 }
@@ -47,6 +52,7 @@ const toItem = (row: MediaRow): MediaItem => ({
   sizeBytes: row.sizeBytes,
   alt: row.alt,
   storage: row.storage,
+  private: row.private,
   createdAt: row.createdAt.toISOString(),
   uploadedBy: row.uploadedBy.name,
 });
@@ -86,6 +92,8 @@ export async function listMediaPage(input: unknown): Promise<PickerPage> {
   const list = await listMedia(db, {
     ...query,
     uploadedBy: can(viewer, "media.read") ? null : viewer.id,
+    // The picker puts files on pages: a private one would be missing there (decisions #149).
+    publicOnly: true,
   });
   return {
     ok: true,
@@ -175,4 +183,52 @@ export async function deleteMediaFile(id: unknown): Promise<DeleteMediaResult> {
     console.error("media delete: the stored file couldn't be removed", deleted.storageKey, error);
   }
   return { ok: true, message: `${row.filename} deleted.` };
+}
+
+// ── Private files (decisions #149) ───────────────────────────────────────────────────────────
+
+export type PrivateResult = { ok: true } | { ok: false; error: string };
+
+// Private: not served at its address to anyone but people signed in who may see it.
+export async function setFilePrivate(input: unknown): Promise<PrivateResult> {
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false, error: SESSION_ENDED };
+  const parsed = v.safeParse(v.object({ id: MediaId, private: v.boolean() }), input);
+  if (!parsed.success) return { ok: false, error: NOT_FOUND };
+  const row = await authorize(viewer, parsed.output.id, "update");
+  if (!row) return { ok: false, error: NOT_FOUND };
+  if (parsed.output.private && (await mediaUsage(db, row.id)).length > 0) {
+    return {
+      ok: false,
+      error:
+        "A page or post uses this file: visitors would see it missing. Take it off them first.",
+    };
+  }
+  const result = await setMediaPrivate(db, row.id, parsed.output.private);
+  if (!result.ok) return { ok: false, error: NOT_FOUND };
+  invalidate("setFilePrivate");
+  return { ok: true };
+}
+
+// A link that opens a private file for a while, for someone who isn't signed in.
+export async function makeShareLink(
+  input: unknown,
+): Promise<{ ok: true; url: string; expires: string } | { ok: false; error: string }> {
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false, error: SESSION_ENDED };
+  const parsed = v.safeParse(
+    v.object({ id: MediaId, seconds: v.picklist(SHARE_DURATIONS.map((d) => d.seconds)) }),
+    input,
+  );
+  if (!parsed.success) return { ok: false, error: "Choose how long the link lasts." };
+  const row = await authorize(viewer, parsed.output.id, "update");
+  if (!row) return { ok: false, error: NOT_FOUND };
+  if (!row.private) return { ok: false, error: "The file is public: its address is enough." };
+  const { SITE_URL, AUTH_SECRET } = env();
+  const expires = Math.floor(Date.now() / 1000) + parsed.output.seconds;
+  return {
+    ok: true,
+    url: `${SITE_URL}${mediaUrl(row.storageKey)}?${shareQuery(row.storageKey, expires, AUTH_SECRET)}`,
+    expires: new Date(expires * 1000).toISOString(),
+  };
 }

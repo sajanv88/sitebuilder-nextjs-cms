@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+.media-move {
+  display: grid;
+  gap: a.space(3);
+  margin-block-start: a.space(6);
+
+  &__progress {
+    display: grid;
+    gap: a.space(1);
+  }
+
+  &__count {
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+
+  &__start {
+    justify-self: start;
+  }
+}
