@@ -12,12 +12,12 @@ machine; their licences are checked all the same.
 
 | Licence | Packages | Shipped | Review |
 |---|---|---|---|
-| MIT | 365 | 219 | Permissive, GPL-compatible. |
+| MIT | 475 | 331 | Permissive, GPL-compatible. |
 | Apache-2.0 | 24 | 17 | Compatible with GPL-3.0 only, which Sitebuilder's “or later” allows: a build that includes Apache-2.0 code is distributed under GPL-3.0. |
-| ISC | 13 | 3 | Permissive, GPL-compatible. |
+| ISC | 14 | 4 | Permissive, GPL-compatible. |
 | BSD-2-Clause | 4 | 4 | Permissive, GPL-compatible. |
+| BSD-3-Clause | 4 | 2 | Permissive, GPL-compatible. |
 | MIT-0 | 4 | 1 | Permissive, no attribution needed. |
-| BSD-3-Clause | 3 | 1 | Permissive, GPL-compatible. |
 | (Apache-2.0 AND MIT) | 1 | 1 | posthog-js, reviewed 2026-10-24: parts under each; see Apache-2.0 for the GPL-3.0 condition. |
 | (MPL-2.0 OR Apache-2.0) | 1 | 1 | DOMPurify (through posthog-js), used under MPL-2.0. |
 | 0BSD | 1 | 1 | Permissive, no attribution needed. |
@@ -36,6 +36,8 @@ Licences that only appear in platform packages:
 
 | Package | Version | Licence | Ships |
 |---|---|---|---|
+| acorn-jsx | 5.3.2 | MIT | yes |
+| acorn | 8.19.0 | MIT | yes |
 | ajv | 8.20.0 | MIT | no |
 | ansi-regex | 5.0.1 | MIT | no |
 | ansi-regex | 6.4.0 | MIT | no |
@@ -44,9 +46,11 @@ Licences that only appear in platform packages:
 | aria-hidden | 1.2.6 | MIT | yes |
 | assertion-error | 2.0.1 | MIT | no |
 | astral-regex | 2.0.0 | MIT | no |
+| astring | 1.9.0 | MIT | yes |
 | aws4fetch | 1.0.20 | MIT | yes |
 | @babel/code-frame | 7.29.7 | MIT | no |
 | @babel/helper-validator-identifier | 7.29.7 | MIT | no |
+| bail | 2.0.2 | MIT | yes |
 | baseline-browser-mapping | 2.11.30 | Apache-2.0 | yes |
 | better-auth | 1.7.11 | MIT | yes |
 | @better-auth/core | 1.7.11 | MIT | yes |
@@ -66,14 +70,21 @@ Licences that only appear in platform packages:
 | @cacheable/utils | 2.5.0 | MIT | no |
 | callsites | 3.1.0 | MIT | no |
 | caniuse-lite | 1.0.30001816 | CC-BY-4.0 | yes |
+| ccount | 2.0.1 | MIT | yes |
 | chai | 6.3.0 | MIT | no |
+| character-entities-html4 | 2.1.0 | MIT | yes |
+| character-entities-legacy | 3.0.0 | MIT | yes |
+| character-entities | 2.0.2 | MIT | yes |
+| character-reference-invalid | 2.0.1 | MIT | yes |
 | chokidar | 5.0.0 | MIT | yes |
 | cjs-module-lexer | 2.3.0 | MIT | yes |
 | client-only | 0.0.1 | MIT | yes |
 | cmdk | 1.1.1 | MIT | yes |
+| collapse-white-space | 2.1.0 | MIT | yes |
 | color-convert | 2.0.1 | MIT | no |
 | color-name | 1.1.4 | MIT | no |
 | colord | 2.10.0 | MIT | no |
+| comma-separated-tokens | 2.0.3 | MIT | yes |
 | core-js | 3.51.0 | MIT | yes |
 | cosmiconfig | 9.0.2 | MIT | no |
 | css-functions-list | 3.3.3 | MIT | no |
@@ -91,9 +102,12 @@ Licences that only appear in platform packages:
 | @date-fns/tz | 1.5.0 | MIT | yes |
 | dayjs | 1.11.23 | MIT | yes |
 | debug | 4.4.3 | MIT | yes |
+| decode-named-character-reference | 1.3.0 | MIT | yes |
 | defu | 6.1.7 | MIT | yes |
+| dequal | 2.0.3 | MIT | yes |
 | detect-libc | 2.1.2 | Apache-2.0 | no |
 | detect-node-es | 1.1.0 | MIT | yes |
+| devlop | 1.1.0 | MIT | yes |
 | dom-serializer | 3.1.1 | MIT | yes |
 | domelementtype | 3.0.0 | BSD-2-Clause | yes |
 | domhandler | 6.0.1 | BSD-2-Clause | yes |
@@ -112,11 +126,20 @@ Licences that only appear in platform packages:
 | error-ex | 1.3.4 | MIT | no |
 | es-module-lexer | 2.3.2 | MIT | no |
 | es-module-lexer | 3.0.4 | MIT | yes |
+| esast-util-from-estree | 2.0.0 | MIT | yes |
+| esast-util-from-js | 2.0.1 | MIT | yes |
 | esbuild | 0.25.12 | MIT | no |
 | esbuild | 0.28.2 | MIT | yes |
 | escape-string-regexp | 4.0.0 | MIT | yes |
-| estree-walker | 3.0.3 | MIT | no |
+| estree-util-attach-comments | 3.0.0 | MIT | yes |
+| estree-util-build-jsx | 3.0.1 | MIT | yes |
+| estree-util-is-identifier-name | 3.0.0 | MIT | yes |
+| estree-util-scope | 1.0.1 | MIT | yes |
+| estree-util-to-js | 2.0.0 | MIT | yes |
+| estree-util-visit | 2.0.0 | MIT | yes |
+| estree-walker | 3.0.3 | MIT | yes |
 | expect-type | 1.4.0 | Apache-2.0 | no |
+| extend | 3.0.2 | MIT | yes |
 | fast-deep-equal | 3.1.3 | MIT | no |
 | fast-equals | 5.4.5 | MIT | yes |
 | fast-glob | 3.3.3 | MIT | no |
@@ -143,6 +166,9 @@ Licences that only appear in platform packages:
 | globjoin | 0.1.4 | MIT | no |
 | has-flag | 5.0.1 | MIT | no |
 | hashery | 1.5.1 | MIT | no |
+| hast-util-to-estree | 3.1.3 | MIT | yes |
+| hast-util-to-jsx-runtime | 2.3.6 | MIT | yes |
+| hast-util-whitespace | 3.0.0 | MIT | yes |
 | hookified | 1.15.1 | MIT | no |
 | hookified | 2.2.0 | MIT | no |
 | html-tags | 5.1.0 | MIT | no |
@@ -155,12 +181,18 @@ Licences that only appear in platform packages:
 | import-in-the-middle | 3.5.2 | Apache-2.0 | yes |
 | import-meta-resolve | 4.2.0 | MIT | no |
 | ini | 1.3.8 | ISC | no |
+| inline-style-parser | 0.2.7 | MIT | yes |
+| is-alphabetical | 2.0.1 | MIT | yes |
+| is-alphanumerical | 2.0.1 | MIT | yes |
 | is-arrayish | 0.2.1 | MIT | no |
+| is-decimal | 2.0.1 | MIT | yes |
 | is-extglob | 2.1.1 | MIT | no |
 | is-fullwidth-code-point | 3.0.0 | MIT | no |
 | is-glob | 4.0.3 | MIT | no |
+| is-hexadecimal | 2.0.1 | MIT | yes |
 | is-number | 7.0.0 | MIT | no |
 | is-path-inside | 4.0.0 | MIT | no |
+| is-plain-obj | 4.1.0 | MIT | yes |
 | is-plain-object | 5.1.0 | MIT | yes |
 | isexe | 2.0.0 | ISC | no |
 | jiti | 2.7.0 | MIT | no |
@@ -185,11 +217,54 @@ Licences that only appear in platform packages:
 | lines-and-columns | 1.2.4 | MIT | no |
 | linkifyjs | 4.3.3 | MIT | yes |
 | lodash.truncate | 4.4.2 | MIT | no |
+| longest-streak | 3.1.0 | MIT | yes |
 | magic-string | 1.4.3 | MIT | no |
+| markdown-extensions | 2.0.0 | MIT | yes |
 | mathml-tag-names | 4.0.0 | MIT | no |
+| mdast-util-from-markdown | 2.1.0 | MIT | yes |
+| mdast-util-mdx-expression | 2.0.1 | MIT | yes |
+| mdast-util-mdx-jsx | 3.2.0 | MIT | yes |
+| mdast-util-mdx | 3.0.0 | MIT | yes |
+| mdast-util-mdxjs-esm | 2.0.1 | MIT | yes |
+| mdast-util-phrasing | 4.1.0 | MIT | yes |
+| mdast-util-to-hast | 13.2.1 | MIT | yes |
+| mdast-util-to-markdown | 2.2.1 | MIT | yes |
+| mdast-util-to-string | 4.0.0 | MIT | yes |
 | mdn-data | 2.27.1 | CC0-1.0 | no |
+| @mdx-js/loader | 3.1.1 | MIT | yes |
+| @mdx-js/mdx | 3.1.1 | MIT | yes |
+| @mdx-js/react | 3.1.1 | MIT | yes |
 | meow | 14.1.0 | MIT | no |
 | merge2 | 1.4.1 | MIT | no |
+| micromark-core-commonmark | 2.0.4 | MIT | yes |
+| micromark-extension-mdx-expression | 3.0.1 | MIT | yes |
+| micromark-extension-mdx-jsx | 3.0.2 | MIT | yes |
+| micromark-extension-mdx-md | 2.0.0 | MIT | yes |
+| micromark-extension-mdxjs-esm | 3.0.0 | MIT | yes |
+| micromark-extension-mdxjs | 3.0.0 | MIT | yes |
+| micromark-factory-destination | 2.0.1 | MIT | yes |
+| micromark-factory-label | 2.0.1 | MIT | yes |
+| micromark-factory-mdx-expression | 2.0.3 | MIT | yes |
+| micromark-factory-space | 2.1.0 | MIT | yes |
+| micromark-factory-title | 2.0.1 | MIT | yes |
+| micromark-factory-whitespace | 2.0.1 | MIT | yes |
+| micromark-util-character | 2.1.1 | MIT | yes |
+| micromark-util-chunked | 2.0.1 | MIT | yes |
+| micromark-util-classify-character | 2.0.1 | MIT | yes |
+| micromark-util-combine-extensions | 2.0.1 | MIT | yes |
+| micromark-util-decode-numeric-character-reference | 2.0.2 | MIT | yes |
+| micromark-util-decode-string | 2.0.1 | MIT | yes |
+| micromark-util-edit-map | 1.0.0 | MIT | yes |
+| micromark-util-encode | 2.0.1 | MIT | yes |
+| micromark-util-events-to-acorn | 2.0.3 | MIT | yes |
+| micromark-util-html-tag-name | 2.0.1 | MIT | yes |
+| micromark-util-normalize-identifier | 2.0.1 | MIT | yes |
+| micromark-util-resolve-all | 2.0.1 | MIT | yes |
+| micromark-util-sanitize-uri | 2.0.1 | MIT | yes |
+| micromark-util-subtokenize | 2.1.0 | MIT | yes |
+| micromark-util-symbol | 2.0.1 | MIT | yes |
+| micromark-util-types | 2.0.3 | MIT | yes |
+| micromark | 4.0.3 | MIT | yes |
 | micromatch | 4.0.8 | MIT | no |
 | module-details-from-path | 1.0.4 | MIT | yes |
 | ms | 2.1.3 | MIT | yes |
@@ -197,6 +272,7 @@ Licences that only appear in platform packages:
 | nanostores | 1.5.5 | MIT | yes |
 | next | 16.4.2 | MIT | yes |
 | @next/env | 16.4.2 | MIT | yes |
+| @next/mdx | 16.4.2 | MIT | yes |
 | @noble/ciphers | 2.4.0 | MIT | yes |
 | @noble/hashes | 2.4.0 | MIT | yes |
 | node-addon-api | 7.1.1 | MIT | no |
@@ -227,6 +303,7 @@ Licences that only appear in platform packages:
 | @oxc-project/types | 0.154.0 | MIT | no |
 | @parcel/watcher | 2.6.0 | MIT | no |
 | parent-module | 1.0.1 | MIT | no |
+| parse-entities | 4.0.2 | MIT | yes |
 | parse-json | 5.2.0 | MIT | no |
 | parse-srcset | 1.0.2 | MIT | yes |
 | pg-cloudflare | 1.4.1 | MIT | no |
@@ -257,6 +334,7 @@ Licences that only appear in platform packages:
 | @posthog/core | 1.60.1 | MIT | yes |
 | @posthog/types | 1.416.0 | MIT | yes |
 | preact | 10.29.8 | MIT | yes |
+| property-information | 7.2.0 | MIT | yes |
 | prosemirror-changeset | 2.4.4 | MIT | yes |
 | prosemirror-commands | 1.7.2 | MIT | yes |
 | prosemirror-dropcursor | 1.8.4 | MIT | yes |
@@ -346,6 +424,14 @@ Licences that only appear in platform packages:
 | react-style-singleton | 2.2.3 | MIT | yes |
 | react | 19.3.1 | MIT | yes |
 | readdirp | 5.1.1 | MIT | yes |
+| recma-build-jsx | 1.0.0 | MIT | yes |
+| recma-jsx | 1.0.1 | MIT | yes |
+| recma-parse | 1.0.0 | MIT | yes |
+| recma-stringify | 1.0.0 | MIT | yes |
+| rehype-recma | 1.0.0 | MIT | yes |
+| remark-mdx | 3.1.1 | MIT | yes |
+| remark-parse | 11.0.0 | MIT | yes |
+| remark-rehype | 11.1.2 | MIT | yes |
 | require-from-string | 2.0.2 | MIT | no |
 | require-in-the-middle | 8.0.1 | MIT | yes |
 | resolve-from | 4.0.0 | MIT | no |
@@ -368,13 +454,18 @@ Licences that only appear in platform packages:
 | slash | 5.1.0 | MIT | no |
 | slice-ansi | 4.0.0 | MIT | no |
 | source-map-js | 1.2.2 | BSD-3-Clause | yes |
+| source-map | 0.7.6 | BSD-3-Clause | yes |
+| space-separated-tokens | 2.0.2 | MIT | yes |
 | split2 | 4.2.0 | ISC | yes |
 | @standard-schema/spec | 1.1.0 | MIT | yes |
 | std-env | 4.3.0 | MIT | no |
 | string-width | 4.2.3 | MIT | no |
 | string-width | 8.3.0 | MIT | no |
+| stringify-entities | 4.0.4 | MIT | yes |
 | strip-ansi | 6.0.1 | MIT | no |
 | strip-ansi | 7.2.0 | MIT | no |
+| style-to-js | 1.1.21 | MIT | yes |
+| style-to-object | 1.0.14 | MIT | yes |
 | styled-jsx | 5.1.6 | MIT | yes |
 | stylelint-config-recommended-scss | 17.0.1 | MIT | no |
 | stylelint-config-recommended | 18.0.0 | MIT | no |
@@ -423,28 +514,48 @@ Licences that only appear in platform packages:
 | @tiptap/react | 3.32.0 | MIT | yes |
 | @tiptap/starter-kit | 3.32.0 | MIT | yes |
 | to-regex-range | 5.0.1 | MIT | no |
+| trim-lines | 3.0.1 | MIT | yes |
+| trough | 2.2.0 | MIT | yes |
 | tslib | 2.8.1 | 0BSD | yes |
 | turbo | 2.11.9 | MIT | no |
 | @types/chai | 5.2.3 | MIT | no |
+| @types/debug | 4.1.13 | MIT | yes |
 | @types/deep-eql | 4.0.2 | MIT | no |
-| @types/estree | 1.0.9 | MIT | no |
+| @types/estree-jsx | 1.0.5 | MIT | yes |
+| @types/estree | 1.0.9 | MIT | yes |
+| @types/hast | 3.0.5 | MIT | yes |
+| @types/mdast | 4.0.4 | MIT | yes |
+| @types/mdx | 2.0.14 | MIT | yes |
+| @types/ms | 2.1.0 | MIT | yes |
 | @types/node | 26.6.5 | MIT | no |
 | @types/pg | 8.23.1 | MIT | no |
 | @types/react-dom | 19.3.0 | MIT | yes |
 | @types/react | 19.3.0 | MIT | yes |
 | @types/sanitize-html | 2.16.2 | MIT | no |
 | @types/trusted-types | 2.0.7 | MIT | no |
+| @types/unist | 2.0.11 | MIT | yes |
+| @types/unist | 3.0.3 | MIT | yes |
 | @types/use-sync-external-store | 0.0.6 | MIT | yes |
 | typescript | 6.0.3 | Apache-2.0 | yes |
 | typescript | 7.0.2 | Apache-2.0 | no |
 | undici-types | 8.9.0 | MIT | no |
+| @ungap/structured-clone | 1.4.0 | ISC | yes |
 | unicorn-magic | 0.4.1 | MIT | no |
+| unified | 11.0.5 | MIT | yes |
+| unist-util-is | 6.0.1 | MIT | yes |
+| unist-util-position-from-estree | 2.0.0 | MIT | yes |
+| unist-util-position | 5.0.0 | MIT | yes |
+| unist-util-stringify-position | 4.0.0 | MIT | yes |
+| unist-util-visit-parents | 6.1.0 | MIT | yes |
+| unist-util-visit | 5.2.0 | MIT | yes |
 | use-callback-ref | 1.3.3 | MIT | yes |
 | use-sidecar | 1.1.3 | MIT | yes |
 | use-sync-external-store | 1.7.0 | MIT | yes |
 | util-deprecate | 1.0.2 | MIT | no |
 | valibot | 1.5.0 | MIT | yes |
 | @vercel/otel | 2.1.3 | MIT | yes |
+| vfile-message | 4.0.3 | MIT | yes |
+| vfile | 6.0.3 | MIT | yes |
 | vite | 8.3.4 | MIT | no |
 | vitest | 5.0.5 | MIT | no |
 | @vitest/mocker | 5.0.5 | MIT | no |
@@ -457,3 +568,4 @@ Licences that only appear in platform packages:
 | write-file-atomic | 7.0.1 | ISC | no |
 | xtend | 4.0.2 | MIT | yes |
 | zod | 4.6.7 | MIT | yes |
+| zwitch | 2.0.4 | MIT | yes |
