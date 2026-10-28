@@ -1,0 +1,58 @@
+Sitebuilder runs in Docker. One command starts the database, the admin and the public site together, on your own computer or on a server.
+
+## What you need
+
+- **Git**, to download Sitebuilder.
+- **Docker** with Compose v2. Docker Desktop has both on Windows and macOS.
+
+## Download it and set a secret
+
+1. Download Sitebuilder and go into its folder:
+
+   ```sh
+   git clone https://github.com/sajanv88/sitebuilder-nextjs-cms.git sitebuilder
+   cd sitebuilder
+   ```
+
+2. Copy the example settings file:
+
+   ```sh
+   cp .env.example .env
+   ```
+
+3. Open `.env` in a text editor and set `AUTH_SECRET` to at least 32 random characters. This one command makes them:
+
+   ```sh
+   openssl rand -base64 32
+   ```
+
+   In PowerShell, use this instead:
+
+   ```sh
+   [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+   ```
+
+<Warning title="Keep AUTH_SECRET safe, and don't change it">
+  It signs everyone's sign-in, and it locks the keys you save later in Settings, such as an AI key. Change it and everyone is signed out, and those keys have to be entered again.
+</Warning>
+
+## Start it
+
+Run this in the same folder:
+
+```sh
+docker compose up --build
+```
+
+The first start takes a few minutes while Docker builds Sitebuilder. Later starts take seconds. Leave the window open: Sitebuilder runs as long as the command does, and <Kbd>Ctrl</Kbd> + <Kbd>C</Kbd> stops it.
+
+When the messages settle down, open [http://localhost:3000/setup](http://localhost:3000/setup) in your browser. The next page, [Create your account](/getting-started/create-your-account), picks up from there.
+
+## On a server
+
+On a server, Sitebuilder needs two more things before visitors arrive.
+
+- **A secure address.** Compose serves the site on port 3000 over plain HTTP. Put a reverse proxy such as Caddy, nginx or Traefik in front of it to add HTTPS.
+- **Its public address** in `.env`, as `SITE_URL=https://example.com`. Sign-in only works from that address.
+
+The project's README covers the rest: storing uploads in an S3 bucket, scheduled posts without Docker, and every setting `.env` takes.
