@@ -7,6 +7,7 @@ import {
   type CanvasData,
   type CanvasKey,
   canvasMessage,
+  type Move,
   readFromCanvas,
   type ToCanvas,
 } from "@sitebuilder/blocks";
@@ -28,6 +29,8 @@ import "./block-canvas.scss";
 // (/_canvas/<entryId>), which draws the active template's layouts on the server and the blocks
 // in the browser, from what this sends on every change. Clicking a block there selects it here,
 // and the editor's shortcuts pressed there work here. Links and buttons in it don't navigate.
+// A selected block can be dragged to another place there, and the line between two columns
+// dragged to change their widths (decisions #152); both come back here as changes to check.
 //
 // Each device is a window of its width, so the page's media queries and the blocks' container
 // queries both see that size. "Fit" is the pane's own width. A frame wider than the pane is
@@ -82,6 +85,9 @@ export function BlockCanvas({
   selectedId,
   issueIds,
   onSelect,
+  editable,
+  onMove,
+  onWidths,
   title,
   featuredMediaId,
   background,
@@ -96,6 +102,10 @@ export function BlockCanvas({
   selectedId: string | null;
   issueIds: ReadonlySet<string>;
   onSelect: (id: string | null) => void;
+  // Whether blocks may be dragged and columns resized on the canvas.
+  editable: boolean;
+  onMove: (move: Move) => void;
+  onWidths: (blockId: string, widths: string) => void;
   title: string;
   featuredMediaId: string;
   // "#rrggbb", or "" for the theme's.
@@ -119,16 +129,31 @@ export function BlockCanvas({
     send,
   ]);
 
-  // The canvas's messages: it's ready (after every load), a block was clicked, a key pressed.
-  const select = useRef(onSelect);
-  select.current = onSelect;
+  // The canvas's messages: it's ready (after every load), a block was clicked, a key pressed, a
+  // block dragged, columns resized.
+  const handlers = useRef({ onSelect, onMove, onWidths });
+  handlers.current = { onSelect, onMove, onWidths };
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       const message = readFromCanvas(event, frame.current);
       if (!message) return;
-      if (message.type === "ready") setLoads((n) => n + 1);
-      else if (message.type === "select") select.current(message.blockId);
-      else pressKey(message.key);
+      switch (message.type) {
+        case "ready":
+          setLoads((n) => n + 1);
+          break;
+        case "select":
+          handlers.current.onSelect(message.blockId);
+          break;
+        case "key":
+          pressKey(message.key);
+          break;
+        case "move":
+          handlers.current.onMove(message.move);
+          break;
+        case "widths":
+          handlers.current.onWidths(message.blockId, message.widths);
+          break;
+      }
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
@@ -153,8 +178,8 @@ export function BlockCanvas({
     if (loads > 0) send({ type: "content", blocks });
   }, [loads, send, blocks]);
   useEffect(() => {
-    if (loads > 0) send({ type: "selection", selectedId, issueIds: [...issueIds] });
-  }, [loads, send, selectedId, issueIds]);
+    if (loads > 0) send({ type: "selection", selectedId, issueIds: [...issueIds], editable });
+  }, [loads, send, selectedId, issueIds, editable]);
   // At once after a load; after a pause while it's being typed.
   const entryLoad = useRef(0);
   useEffect(() => {

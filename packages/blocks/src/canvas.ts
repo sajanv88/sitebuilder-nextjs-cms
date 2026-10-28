@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import type { BlockList } from "@sitebuilder/schema";
+import type { Move } from "./moves";
 import type { PostSummary, RenderMedia } from "./types";
 
 // The live canvas: the editor in the admin zone shows the page in an iframe
@@ -27,7 +28,14 @@ export interface CanvasData {
 export type ToCanvas =
   | { type: "content"; blocks: BlockList }
   | { type: "data"; data: CanvasData }
-  | { type: "selection"; selectedId: string | null; issueIds: readonly string[] }
+  // `editable`: whether blocks may be dragged and columns resized there (not while the canvas
+  // shows the assistant's proposal).
+  | {
+      type: "selection";
+      selectedId: string | null;
+      issueIds: readonly string[];
+      editable: boolean;
+    }
   | { type: "scrollTo"; blockId: string }
   // What the layouts draw from the editor's fields rather than from the blocks. The canvas draws
   // its layouts on the server again when the title or the picture changes. The background is the
@@ -48,14 +56,18 @@ export interface CanvasKey {
 export type FromCanvas =
   | { type: "ready" }
   | { type: "select"; blockId: string | null }
-  | { type: "key"; key: CanvasKey };
+  | { type: "key"; key: CanvasKey }
+  // A block dragged to another place (decisions #152). The editor checks it as the outline's.
+  | { type: "move"; move: Move }
+  // A columns block's widths, after its line was dragged.
+  | { type: "widths"; blockId: string; widths: string };
 
 export function canvasMessage<M extends ToCanvas | FromCanvas>(message: M): M & { source: string } {
   return { ...message, source: SOURCE };
 }
 
 const TO_CANVAS = new Set<string>(["content", "data", "selection", "scrollTo", "entry"]);
-const FROM_CANVAS = new Set<string>(["ready", "select", "key"]);
+const FROM_CANVAS = new Set<string>(["ready", "select", "key", "move", "widths"]);
 
 function tagged(data: unknown, types: ReadonlySet<string>): boolean {
   return (

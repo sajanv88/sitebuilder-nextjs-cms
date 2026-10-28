@@ -57,7 +57,14 @@ import {
   TooltipTrigger,
   toast,
 } from "@nuvui/react";
-import { CANVAS_PATH, createBlock, getBlockDefinition } from "@sitebuilder/blocks";
+import {
+  CANVAS_PATH,
+  type ColumnWidths,
+  columnWidthsFor,
+  createBlock,
+  getBlockDefinition,
+  type Move,
+} from "@sitebuilder/blocks";
 import {
   type BlockList,
   ENTRY_LIMITS,
@@ -99,6 +106,7 @@ import {
 import { type EditorData, EditorDataProvider } from "@/components/block-editor/editor-data";
 import {
   applyMove,
+  canMove,
   duplicateBlock,
   findBlock,
   insertBlock,
@@ -359,6 +367,32 @@ export function EntryEditor({
     setSelectedId(null);
   }
 
+  // From the canvas (decisions #152): a block dragged to another place, checked as the outline's
+  // moves are, and columns' widths after their line was dragged. Neither while the canvas shows
+  // a proposal.
+  function moveFromCanvas(move: Move) {
+    const shape =
+      Array.isArray(move.values) &&
+      move.values.every((id) => typeof id === "string") &&
+      typeof move.target === "string" &&
+      ["before", "after", "inside"].includes(move.position);
+    if (!canvasEditable || !shape || !canMove(blocks, move)) return;
+    setBlocks((now) => applyMove(now, move));
+    if (move.values[0]) select(move.values[0]);
+  }
+  function widthsFromCanvas(blockId: string, widths: string) {
+    const block = findBlock(blocks, blockId);
+    if (!canvasEditable || block?.type !== "columns") return;
+    const allowed: readonly string[] = columnWidthsFor(block.children?.length ?? 0);
+    if (!allowed.includes(widths) || block.props.widths === widths) return;
+    setBlocks((now) => {
+      const current = findBlock(now, blockId);
+      return current
+        ? updateProps(now, blockId, { ...current.props, widths: widths as ColumnWidths })
+        : now;
+    });
+  }
+
   // From the outline in the Page tab: select the block and bring it into view. The Page tab
   // stays open, so the next heading is a click away.
   function jump(blockId: string) {
@@ -394,6 +428,7 @@ export function EntryEditor({
       ? proposal.blocks
       : replaceBlock(blocks, proposal.replaces, proposal.blocks);
   }, [blocks, proposal, stale]);
+  const canvasEditable = shownBlocks === blocks;
 
   function acceptProposal() {
     if (!proposal) return;
@@ -916,6 +951,9 @@ export function EntryEditor({
                 selectedId={selectedId}
                 issueIds={issueIds}
                 onSelect={select}
+                editable={canvasEditable}
+                onMove={moveFromCanvas}
+                onWidths={widthsFromCanvas}
                 title={title}
                 featuredMediaId={featuredMediaId}
                 background={shownBackground}
