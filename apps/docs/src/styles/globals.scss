@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+// Imported once, by src/app/layout.tsx, after @nuvui/react/styles.css. Component blocks aren't
+// listed here; each component imports its own file. Unlayered, so it beats nuvui's layers.
+
+body {
+  margin: 0;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
