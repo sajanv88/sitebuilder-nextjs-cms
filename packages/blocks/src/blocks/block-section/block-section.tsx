@@ -5,6 +5,7 @@ import { SquareIcon } from "@nuvui/icons";
 import * as v from "valibot";
 import { alignClass, alignField } from "../../align/align";
 import { Backdrop, backdropFields, backdropProps } from "../../backdrop/backdrop";
+import { heightClasses, heightFields, heightProps } from "../../height/height";
 import { pageItemClass, pageWidthField, pageWidthOf, pageWidthProps } from "../../page/page";
 import { BlockPlaceholder } from "../../placeholder/block-placeholder";
 import { cx } from "../../shared";
@@ -19,6 +20,7 @@ const Props = v.strictObject({
   paddingY: v.optional(v.picklist(["none", "sm", "md", "lg"]), "md"),
   // For every block inside that isn't aligned itself.
   align: v.optional(v.picklist(["start", "center", "end"]), "start"),
+  ...heightProps,
   ...backdropProps,
 });
 type Props = v.InferOutput<typeof Props>;
@@ -38,6 +40,8 @@ export const section: BlockDefinition<Props> = {
     background: "none",
     paddingY: "md",
     align: "start",
+    height: "content",
+    place: "center",
     backdrop: "none",
     scrim: "strong",
     motion: "still",
@@ -81,6 +85,7 @@ export const section: BlockDefinition<Props> = {
         { value: "lg", label: "Large" },
       ],
     },
+    ...heightFields,
     ...backdropFields,
   ],
   summary: () => "Section",
@@ -94,6 +99,8 @@ export const section: BlockDefinition<Props> = {
       </div>
     );
     const backdrop = props.backdrop === "none" ? null : props.backdrop;
+    // On the element that lays the content out: the band, or its backdrop.
+    const tall = heightClasses(props.height, props.place);
     return (
       <section
         className={cx(
@@ -104,6 +111,7 @@ export const section: BlockDefinition<Props> = {
           !backdrop && `block-section--bg-${props.background}`,
           `block-section--pad-${props.paddingY}`,
           backdrop && "block-section--backdrop",
+          !backdrop && tall,
         )}
       >
         {backdrop ? (
@@ -111,7 +119,7 @@ export const section: BlockDefinition<Props> = {
             kind={backdrop}
             scrim={props.scrim}
             motion={props.motion}
-            className="block-section__backdrop"
+            className={cx("block-section__backdrop", tall)}
           >
             {inner}
           </Backdrop>

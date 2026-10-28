@@ -20,6 +20,14 @@
       gap: calc(var(--spacing) * 12);
     }
 
+    &--valign-center {
+      align-items: center;
+    }
+
+    &--valign-end {
+      align-items: end;
+    }
+
     &--count-3 {
       --block-columns-count: 3;
     }

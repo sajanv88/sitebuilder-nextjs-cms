@@ -13,9 +13,11 @@
 
     padding: var(--block-section-pad-block) var(--block-section-pad-inline);
 
+    // Its full width up to the content width, in a tall band's grid as in block layout.
     &__inner {
       display: grid;
       gap: calc(var(--spacing) * 6);
+      inline-size: 100%;
       max-inline-size: var(--block-section-max);
       margin-inline: auto;
     }

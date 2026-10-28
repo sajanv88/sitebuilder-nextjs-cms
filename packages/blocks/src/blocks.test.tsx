@@ -442,6 +442,48 @@ describe("card backgrounds", () => {
   });
 });
 
+describe("heights and lining up", () => {
+  const draw = (blocks: Blocks) => {
+    const result = validateContent(blocks);
+    if (!result.ok) throw new Error(JSON.stringify(result.issues));
+    return renderToStaticMarkup(<BlockList blocks={result.value} context={context} />);
+  };
+
+  test("a section and a hero can be tall or the whole screen, their content placed in it", () => {
+    const html = draw([
+      block("hero", { headline: "Big", height: "screen", place: "end" }),
+      block("section", { height: "tall", place: "start" }, [
+        block("heading", { text: "Inside", level: 2 }),
+      ]),
+    ]);
+    expect(html).toContain("block-height block-height--screen block-height--place-end");
+    expect(html).toContain("block-height--tall block-height--place-start");
+    // With a backdrop, on the backdrop, which lays the content out.
+    const backdrop = draw([
+      block("hero", { headline: "Stars", height: "tall", backdrop: "stars" }),
+    ]);
+    expect(backdrop).toMatch(/block-hero__backdrop[^"]*block-height--tall/);
+  });
+
+  test("blocks stored before these existed draw as they did", () => {
+    const html = draw([
+      block("hero", { headline: "Old" }),
+      block("section", {}, [block("heading", { text: "Old", level: 2 })]),
+      block("columns", {}, [block("column", {}, []), block("column", {}, [])]),
+    ]);
+    expect(html).not.toContain("block-height");
+    expect(html).not.toContain("block-columns--valign");
+  });
+
+  test("columns can line up in the middle or at the bottom", () => {
+    const html = draw([
+      block("columns", { valign: "center" }, [block("column", {}, []), block("column", {}, [])]),
+    ]);
+    expect(html).toContain("block-columns--valign-center");
+    expect(validateContent([block("columns", { valign: "stretch" }, [])]).ok).toBe(false);
+  });
+});
+
 describe("alignment", () => {
   const draw = (blocks: Blocks) => {
     const result = validateContent(blocks);

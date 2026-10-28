@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@layer host {
+  // A band taller than its content: a grid, so its content can sit at the top, the middle or the
+  // bottom. svh: the screen's height with the browser's own bars showing, so nothing is hidden
+  // under them on a phone.
+  .block-height {
+    display: grid;
+    align-content: var(--block-height-place, center);
+
+    &--tall {
+      min-block-size: 70svh;
+    }
+
+    &--screen {
+      min-block-size: 100svh;
+    }
+
+    &--place-start {
+      --block-height-place: start;
+    }
+
+    &--place-center {
+      --block-height-place: center;
+    }
+
+    &--place-end {
+      --block-height-place: end;
+    }
+  }
+}

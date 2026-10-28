@@ -6,6 +6,7 @@ import { Button } from "@nuvui/react";
 import * as v from "valibot";
 import { alignClass, alignField } from "../../align/align";
 import { Backdrop, backdropFields, backdropProps } from "../../backdrop/backdrop";
+import { heightClasses, heightFields, heightProps } from "../../height/height";
 import { pageItemClass, pageWidthField, pageWidthOf, pageWidthProps } from "../../page/page";
 import { Action, cx, mediaId, optionalText, text } from "../../shared";
 import type { BlockDefinition, RenderContext } from "../../types";
@@ -22,6 +23,7 @@ const Props = v.strictObject({
   imageMediaId: v.optional(mediaId),
   // Centered, as heroes were before alignment existed.
   align: v.optional(v.picklist(["start", "center", "end"]), "center"),
+  ...heightProps,
   ...backdropProps,
 });
 type Props = v.InferOutput<typeof Props>;
@@ -60,6 +62,8 @@ export const hero: BlockDefinition<Props> = {
     primaryAction: { label: "Get started", href: { kind: "url", url: "/" } },
     pageWidth: "contained",
     align: "center",
+    height: "content",
+    place: "center",
     backdrop: "none",
     scrim: "strong",
     motion: "still",
@@ -80,6 +84,7 @@ export const hero: BlockDefinition<Props> = {
     { kind: "action", name: "primaryAction", label: "Main button", max: 60, optional: true },
     { kind: "action", name: "secondaryAction", label: "Second button", max: 60, optional: true },
     { kind: "media", name: "imageMediaId", label: "Picture", accept: "image", optional: true },
+    ...heightFields,
     ...backdropFields,
   ],
   summary: (props) => props.headline,
@@ -90,6 +95,7 @@ export const hero: BlockDefinition<Props> = {
     const lead = context.headingBlockId === id;
     const placed = pageItemClass(pageWidthOf(props.pageWidth, context));
     const Heading = lead ? "h1" : "h2";
+    const tall = heightClasses(props.height, props.place);
     const content = (
       <>
         <div className="block-hero__inner">
@@ -131,7 +137,7 @@ export const hero: BlockDefinition<Props> = {
             kind={props.backdrop}
             scrim={props.scrim}
             motion={props.motion}
-            className="block-hero__backdrop"
+            className={cx("block-hero__backdrop", tall)}
           >
             {content}
           </Backdrop>
@@ -145,6 +151,7 @@ export const hero: BlockDefinition<Props> = {
           placed,
           picture && "block-hero--with-picture",
           alignClass(props.align),
+          tall,
         )}
       >
         {content}

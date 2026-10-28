@@ -14,6 +14,8 @@ const Props = v.strictObject({
   gap: v.optional(v.picklist(["sm", "md", "lg"]), "md"),
   // Below this breakpoint the columns stack, one under another.
   stackBelow: v.optional(v.picklist(["sm", "md"]), "md"),
+  // Side by side, where each column sits beside the others (decisions #146).
+  valign: v.optional(v.picklist(["start", "center", "end"]), "start"),
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -25,7 +27,7 @@ export const columns: BlockDefinition<Props> = {
   category: "layout",
   icon: ColumnsIcon,
   props: Props,
-  defaults: () => ({ pageWidth: "contained", gap: "md", stackBelow: "md" }),
+  defaults: () => ({ pageWidth: "contained", gap: "md", stackBelow: "md", valign: "start" }),
   container: { allow: ["column"], min: 2, max: 4 },
   fields: [
     pageWidthField,
@@ -48,6 +50,17 @@ export const columns: BlockDefinition<Props> = {
         { value: "md", label: "Phones and small tablets" },
       ],
     },
+    {
+      kind: "choice",
+      name: "valign",
+      label: "Line them up",
+      description: "Where a shorter column sits beside a taller one.",
+      options: [
+        { value: "start", label: "At the top" },
+        { value: "center", label: "In the middle" },
+        { value: "end", label: "At the bottom" },
+      ],
+    },
   ],
   summary: () => "Columns",
   Render: ({ props, children, context }) => {
@@ -60,6 +73,7 @@ export const columns: BlockDefinition<Props> = {
           `block-columns--gap-${props.gap}`,
           `block-columns--stack-${props.stackBelow}`,
           `block-columns--count-${count}`,
+          props.valign !== "start" && `block-columns--valign-${props.valign}`,
         )}
       >
         {children}
