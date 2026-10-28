@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+.docs-shell {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+
+  &__brand {
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  &__main {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-inline-size: 0;
+  }
+
+  // Stays at the top while the page scrolls, so the contents are always a press away.
+  &__bar {
+    position: sticky;
+    z-index: 10;
+    inset-block-start: 0;
+    display: flex;
+    gap: a.space(3);
+    align-items: center;
+    padding: a.space(2) a.space(4);
+    border-block-end: var(--nuv-border-width) solid var(--color-border);
+    background-color: var(--color-background);
+  }
+
+  &__title {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+}
