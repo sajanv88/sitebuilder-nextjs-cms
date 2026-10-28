@@ -23,6 +23,8 @@ import {
   listPublicPosts,
   listSitemapEntries,
   resolveRoute,
+  searchPublic,
+  searchTerms,
 } from "./public";
 import { countPosts, saveReadingSettings } from "./reading";
 import { upsertSettings } from "./settings";
@@ -378,5 +380,63 @@ describe("dashboard", () => {
     // The draft was written after About was published.
     expect(recent.map((row) => row.title)).toEqual(["Draft post", "About"]);
     expect(recent[0]?.authorName).toBe("Ada");
+  });
+});
+
+describe("site search", () => {
+  const block = (type: string, props: Record<string, unknown>) => ({
+    id: `b-${Math.random().toString(36).slice(2, 12)}`,
+    type,
+    props,
+  });
+
+  it("turns what's typed into word beginnings, and nothing else", () => {
+    expect(searchTerms("  Sourdough   BREAD ")).toBe("sourdough:* & bread:*");
+    expect(searchTerms("rye & (wheat) | !spelt:*")).toBe("rye:* & wheat:* & spelt:*");
+    expect(searchTerms("café")).toBe("café:*");
+    expect(searchTerms("!!! ---")).toBeNull();
+    expect(searchTerms("a b c d e f g h i j")?.split(" & ")).toHaveLength(8);
+  });
+
+  it("finds public pages and posts by their words, the title first, never drafts", async () => {
+    const titled = await entry("page", "Sourdough classes", {
+      content: [block("heading", { text: "Learn to bake", level: 2 })],
+    });
+    const mentioned = await entry("post", "Our week", {
+      content: [block("rich-text", { html: "<p>We baked <strong>sourdough</strong> rolls.</p>" })],
+    });
+    await entry("post", "A draft about sourdough");
+    await publish(titled.id);
+    await publish(mentioned.id);
+
+    const found = await searchPublic(db, { text: "sourd", page: 1, perPage: 10 });
+    expect(found.total).toBe(2);
+    expect(found.rows.map((row) => row.title)).toEqual(["Sourdough classes", "Our week"]);
+    expect((await searchPublic(db, { text: "learn bake", page: 1, perPage: 10 })).total).toBe(1);
+  });
+
+  it("doesn't match ids, addresses or settings", async () => {
+    const page = await entry("page", "Plain", {
+      content: [
+        block("section", { background: "muted", width: "wide" }),
+        block("button", { label: "Go", href: { kind: "url", url: "https://example.com/grid" } }),
+      ],
+    });
+    await publish(page.id);
+    for (const text of ["muted", "wide", "grid", "example"]) {
+      expect((await searchPublic(db, { text, page: 1, perPage: 10 })).total).toBe(0);
+    }
+    expect((await searchPublic(db, { text: "go", page: 1, perPage: 10 })).total).toBe(1);
+  });
+
+  it("answers /search while search is on", async () => {
+    expect(await resolveRoute(db, "/search")).toEqual({ kind: "search" });
+    await upsertSettings(db, "reading", {
+      homepageEntryId: null,
+      postsPerPage: 10,
+      postsPath: "/blog",
+      search: false,
+    });
+    expect(await resolveRoute(db, "/search")).toEqual({ kind: "missing" });
   });
 });

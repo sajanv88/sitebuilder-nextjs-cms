@@ -132,6 +132,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
               postsPerPage: String(reading.postsPerPage),
               postsPath: reading.postsPath,
               showReadingProgress: reading.showReadingProgress ? "on" : "",
+              search: reading.search ? "on" : "",
             }}
             pages={pages}
           />

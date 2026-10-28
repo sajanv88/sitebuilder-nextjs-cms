@@ -39,6 +39,8 @@ export type ReadingFormValues = {
   postsPath: string;
   // "on" or "", as the switch sends it.
   showReadingProgress: string;
+  // "on" or "", as the checkbox sends it.
+  search: string;
 };
 export type DateFormValues = { dateFormat: string; timeZone: string };
 export type AnalyticsFormValues = {
@@ -122,6 +124,7 @@ export async function saveReading(
     postsPerPage: text(form, "postsPerPage"),
     postsPath: text(form, "postsPath"),
     showReadingProgress: text(form, "showReadingProgress"),
+    search: text(form, "search"),
   };
   const refused = await allowed();
   if (refused) return { result: "failed", message: refused, values };
@@ -130,6 +133,7 @@ export async function saveReading(
     postsPerPage: values.postsPerPage,
     postsPath: values.postsPath,
     ...(values.showReadingProgress ? { showReadingProgress: values.showReadingProgress } : {}),
+    ...(values.search ? { search: values.search } : {}),
   });
   if (!input.success) {
     return {

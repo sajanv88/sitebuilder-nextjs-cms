@@ -5,6 +5,7 @@ import {
   type BlockList,
   type EntryKind,
   type ReadingSettings,
+  SEARCH_PATH,
   TAXONOMIES,
   type TaxonomyKind,
 } from "@sitebuilder/schema";
@@ -25,6 +26,7 @@ export const DEFAULT_READING: ReadingSettings = {
   postsPerPage: 10,
   postsPath: "/blog",
   showReadingProgress: true,
+  search: true,
 };
 
 export async function getReading(db: Executor): Promise<ReadingSettings> {
@@ -38,6 +40,7 @@ export type PublicRoute =
   | { kind: "entry"; id: string }
   | { kind: "posts"; page: number }
   | { kind: "term"; termId: string; page: number }
+  | { kind: "search" }
   | { kind: "redirect"; to: string; status: number }
   | { kind: "missing" };
 
@@ -84,6 +87,9 @@ export async function resolveRoute(db: Executor, path: string): Promise<PublicRo
     if (entry.id === reading.homepageEntryId) return { kind: "redirect", to: "/", status: 301 };
     return { kind: "entry", id: entry.id };
   }
+
+  // Search, unless a page took the address before it was reserved: that page keeps it.
+  if (path === SEARCH_PATH && reading.search) return { kind: "search" };
 
   const [redirect] = await db
     .select({ to: redirects.toPath, status: redirects.status })
@@ -305,4 +311,71 @@ export async function isPublishedPage(db: Executor, id: string): Promise<boolean
     .where(and(eq(entries.id, id), eq(entries.type, "page"), isPublic))
     .limit(1);
   return row !== undefined;
+}
+
+// ── Search ───────────────────────────────────────────────────────────────────────────────────
+
+// What someone typed, as a full-text query: its first eight words, each matching words that
+// start with it, all of them needed. Only letters and digits get through, so nothing typed is
+// query syntax. Null when there's nothing to search for.
+export function searchTerms(text: string): string | null {
+  const words = (
+    text
+      .normalize("NFKC")
+      .toLowerCase()
+      .match(/[\p{L}\p{N}]+/gu) ?? []
+  )
+    .filter((word) => word.length <= 40)
+    .slice(0, 8);
+  return words.length > 0 ? words.map((word) => `${word}:*`).join(" & ") : null;
+}
+
+export interface SearchHit {
+  id: string;
+  type: EntryKind;
+  title: string;
+  path: string;
+  // The excerpt, else the search description.
+  summary: string | null;
+  publishedAt: Date | null;
+}
+
+// Public pages and posts that match, best first (the title counts most), a page at a time.
+export async function searchPublic(
+  db: Executor,
+  input: { text: string; page: number; perPage: number },
+): Promise<{ rows: SearchHit[]; total: number }> {
+  const terms = searchTerms(input.text);
+  if (!terms) return { rows: [], total: 0 };
+  const query = sql`to_tsquery('simple', ${terms})`;
+  const where = and(isPublic, sql`${entries.search} @@ ${query}`);
+  const [rows, [counted]] = await Promise.all([
+    db
+      .select({
+        id: entries.id,
+        type: entries.type,
+        title: entries.title,
+        path: entries.path,
+        excerpt: entries.excerpt,
+        seoDescription: entries.seoDescription,
+        publishedAt: entries.publishedAt,
+      })
+      .from(entries)
+      .where(where)
+      .orderBy(
+        desc(sql`ts_rank(${entries.search}, ${query})`),
+        desc(entries.publishedAt),
+        asc(entries.id),
+      )
+      .limit(input.perPage)
+      .offset((input.page - 1) * input.perPage),
+    db.select({ total: count() }).from(entries).where(where),
+  ]);
+  return {
+    rows: rows.map(({ excerpt, seoDescription, ...row }) => ({
+      ...row,
+      summary: excerpt ?? seoDescription,
+    })),
+    total: counted?.total ?? 0,
+  };
 }

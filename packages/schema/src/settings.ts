@@ -28,6 +28,8 @@ export const ReadingSettings = v.object({
   postsPath: v.pipe(v.string(), v.regex(/^\/[a-z0-9-]+$/)), // "/blog"
   // A bar along the top of a post that fills as it's read. On for rows saved before it existed.
   showReadingProgress: v.optional(v.boolean(), true),
+  // Search at /search, and the templates' search link. On for rows saved before it existed.
+  search: v.optional(v.boolean(), true),
 });
 export type ReadingSettings = v.InferOutput<typeof ReadingSettings>;
 
@@ -177,6 +179,11 @@ export const ReadingSettingsInput = v.object({
     v.optional(v.picklist(["on", "off"]), "off"),
     v.transform((value) => value === "on"),
   ),
+  // A checkbox too.
+  search: v.pipe(
+    v.optional(v.picklist(["on", "off"]), "off"),
+    v.transform((value) => value === "on"),
+  ),
 });
 export type ReadingSettingsInput = v.InferOutput<typeof ReadingSettingsInput>;
 
@@ -299,6 +306,7 @@ export function defaultSettings(siteUrl: string): {
       postsPerPage: 10,
       postsPath: "/blog",
       showReadingProgress: true,
+      search: true,
     },
     theme: {
       customCss: "",

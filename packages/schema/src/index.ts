@@ -114,6 +114,7 @@ export {
   RESERVED_POST_SLUGS,
   RESERVED_SEGMENTS,
   SaveIntent,
+  SEARCH_PATH,
   SLUG_MAX_LENGTH,
   Slug,
   SlugField,

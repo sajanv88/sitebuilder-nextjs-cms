@@ -110,6 +110,7 @@ function sampleProps(name: string, manifest: TemplateManifest): Record<string, u
         site: SITE,
         menus: { primary: MENU, footer: MENU },
         currentPath: "/",
+        searchPath: "/search",
         options,
       };
     case "page":

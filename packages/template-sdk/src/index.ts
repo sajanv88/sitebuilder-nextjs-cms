@@ -107,6 +107,9 @@ export interface SiteLayoutProps {
   menus: Menus;
   // The address the visitor is on, to mark the current menu item.
   currentPath: string;
+  // The site's search page, for a search link in the header; absent or null when search is
+  // off.
+  searchPath?: string | null;
   options: TemplateOptionValues;
   children: ReactNode;
 }

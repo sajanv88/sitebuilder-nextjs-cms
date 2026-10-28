@@ -5,7 +5,7 @@
       "slug": "default",
       "version": "1.0.0",
       "source": "bundled",
-      "sha256": "6c2c1bf7dd8aae70598f692742c66d0204445558476b2ca09728b02e957e2b05"
+      "sha256": "9bf3e3c3eac2997b98c02249ffb69a79d8f628f8f01a0b76efcabb2301ca5f5e"
     },
     {
       "slug": "journal",
@@ -17,7 +17,7 @@
       "slug": "ledger",
       "version": "1.0.0",
       "source": "bundled",
-      "sha256": "e68a2876c46a362d63366cdd5b27f8f8c2b8b6a3ea5c42f38154384023057507"
+      "sha256": "e2f6944fd26d948080a8b1e327f1fd4be20f8730ef392810d158cb8f5a9fad8b"
     },
     {
       "slug": "studio",

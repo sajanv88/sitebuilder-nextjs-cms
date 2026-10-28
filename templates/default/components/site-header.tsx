@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
+import { SearchIcon } from "@nuvui/icons";
 import {
   Button,
   Navbar,
@@ -18,7 +19,8 @@ import {
 } from "@nuvui/react";
 import type { MenuItem } from "@sitebuilder/template-sdk";
 
-// The site's top bar, after nuvui's nav-bar block: the site's name and the primary menu. A
+// The site's top bar, after nuvui's nav-bar block: the site's name, the primary menu and, when
+// the site has search, a link to it. A
 // group, or a link with children, opens a panel; on a phone every link is in the panel behind
 // the menu button. Links are plain <a>: every page is drawn on the server. The template's
 // options say whether the bar stays at the top, where the menu sits in it, and whether the
@@ -37,6 +39,7 @@ export function SiteHeader({
   title,
   items: all,
   currentPath,
+  searchPath,
   behaviour,
   menuPosition,
   menuButton,
@@ -44,6 +47,7 @@ export function SiteHeader({
   title: string;
   items: readonly MenuItem[];
   currentPath: string;
+  searchPath: string | null;
   behaviour: "sticky" | "hides" | "scrolls";
   menuPosition: "start" | "center" | "end";
   menuButton: boolean;
@@ -108,8 +112,19 @@ export function SiteHeader({
             </NavigationMenu>
           </NavbarNav>
         ) : null}
-        {items.length > 0 || button ? (
+        {items.length > 0 || button || searchPath ? (
           <NavbarActions className="site-header__actions">
+            {searchPath ? (
+              <Button asChild intent="ghost" size="sm">
+                <a
+                  href={searchPath}
+                  aria-label="Search"
+                  {...(currentPath === searchPath ? { "aria-current": "page" as const } : {})}
+                >
+                  <SearchIcon aria-hidden="true" size={18} />
+                </a>
+              </Button>
+            ) : null}
             {button?.href ? (
               <Button asChild size="sm">
                 <a

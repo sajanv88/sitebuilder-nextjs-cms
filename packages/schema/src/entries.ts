@@ -67,11 +67,15 @@ export const RESERVED_SEGMENTS = [
   "setup",
   "api",
   "media",
+  "search",
   "_next",
   "feed.xml",
   "sitemap.xml",
   "robots.txt",
 ] as const;
+
+// The site's search page (decisions #144).
+export const SEARCH_PATH = "/search";
 
 // A root page can't take a reserved segment, or the first segment of the posts path ("blog"),
 // which the blog index owns.

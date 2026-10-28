@@ -1,0 +1,84 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "@nuvui/react/scss/mixins" as nuv;
+
+@layer host {
+  // In the page's content column, with the theme's colours, so it sits in any template.
+  .site-search {
+    display: grid;
+    gap: calc(var(--spacing) * 6);
+    inline-size: 100%;
+    max-inline-size: 48rem;
+    margin-inline: auto;
+    padding: calc(var(--spacing) * 10) calc(var(--spacing) * 4);
+
+    &__title {
+      margin: 0;
+      font-size: var(--text-3xl);
+      font-weight: var(--font-weight-semibold);
+      line-height: 1.15;
+    }
+
+    &__form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: calc(var(--spacing) * 2);
+      align-items: end;
+    }
+
+    &__field {
+      flex: 1 1 16rem;
+    }
+
+    &__count {
+      margin: 0;
+      color: var(--color-muted-foreground);
+    }
+
+    &__results {
+      display: grid;
+      gap: calc(var(--spacing) * 6);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    &__result {
+      display: grid;
+      gap: calc(var(--spacing) * 1);
+    }
+
+    &__result-title {
+      margin: 0;
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    &__link {
+      color: var(--color-primary);
+      text-underline-offset: 0.2em;
+    }
+
+    &__path {
+      margin: 0;
+      color: var(--color-muted-foreground);
+      font-size: var(--text-sm);
+      overflow-wrap: anywhere;
+    }
+
+    &__summary {
+      margin: 0;
+    }
+
+    &__pages {
+      display: flex;
+      gap: calc(var(--spacing) * 2);
+      justify-content: space-between;
+    }
+
+    @include nuv.breakpoint("md") {
+      padding-block: calc(var(--spacing) * 16);
+    }
+  }
+}

@@ -4,6 +4,7 @@
 import type { BlockList } from "@sitebuilder/schema";
 import { sql } from "drizzle-orm";
 import {
+  customType,
   foreignKey,
   index,
   jsonb,
@@ -16,6 +17,24 @@ import {
 import { user } from "./auth-schema";
 import { createdAt, id, optionalTimestamp, updatedAt } from "./columns";
 import { media } from "./media";
+
+// Postgres full-text search's document type. Only the database writes it (below).
+const tsvector = customType<{ data: string }>({ dataType: () => "tsvector" });
+
+// The words of the props visitors read, by name: headings, text, questions and answers,
+// button labels, quotes, names, a plan's features, a table's cells. Ids, addresses and settings
+// aren't among them, so a search for "muted" or "grid" doesn't find every page.
+const READ_PROPS =
+  "text|html|headline|body|heading|eyebrow|title|description|caption|cite|quote|author|role|name|question|answer|label|features|columns|rows|price|prefix|suffix";
+
+// What site search matches (decisions #144): the title first, then the excerpt and search
+// description, then the blocks' words. "simple": no language's stemming, so every site
+// language is treated the same; searches match word beginnings instead. Computed by Postgres on
+// every write, so saves, autosaves, restored revisions and imports all keep it current.
+const searchDocument = sql.raw(`
+  setweight(to_tsvector('simple', title), 'A') ||
+  setweight(to_tsvector('simple', coalesce(excerpt, '') || ' ' || coalesce(seo_description, '')), 'B') ||
+  setweight(jsonb_to_tsvector('simple', jsonb_path_query_array(content, 'lax $.** ? (@.type() == "object").keyvalue() ? (@.key like_regex "^(${READ_PROPS})$").value'), '["string"]'), 'C')`);
 
 export const entryType = pgEnum("entry_type", ["page", "post"]);
 // The trash is not a status: a trashed entry keeps its status and has deletedAt set (§4.1).
@@ -45,6 +64,7 @@ export const entries = snakeCase.table(
     seoDescription: text(),
     // The page's own background, "#rrggbb", or null for the site's (HexColor checks it).
     background: text(),
+    search: tsvector().generatedAlwaysAs(searchDocument),
     // "wp:123" for imported content, null otherwise.
     sourceRef: text(),
     publishedAt: optionalTimestamp(),
@@ -68,6 +88,7 @@ export const entries = snakeCase.table(
     index("entries_parent_id_idx").on(t.parentId),
     index("entries_author_id_idx").on(t.authorId),
     index("entries_featured_media_id_idx").on(t.featuredMediaId),
+    index("entries_search_idx").using("gin", t.search),
   ],
 );
 

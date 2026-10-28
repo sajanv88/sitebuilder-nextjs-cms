@@ -33,6 +33,8 @@ function internalPath(route: PublicRoute, path: string, preview: boolean): strin
       return `/_site/posts/${route.page}`;
     case "term":
       return `/_site/term/${route.termId}/${route.page}`;
+    case "search":
+      return "/_site/search";
     case "missing":
       return MISSING;
     case "redirect":

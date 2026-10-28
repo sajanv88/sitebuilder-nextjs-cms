@@ -111,6 +111,7 @@ describe("content tables and queries", () => {
       postsPerPage: 5,
       postsPath: "/news",
       showReadingProgress: true,
+      search: true,
     });
   });
 

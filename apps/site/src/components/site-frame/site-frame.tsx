@@ -1,11 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-import { hasTrackers } from "@sitebuilder/schema";
+import { hasTrackers, SEARCH_PATH } from "@sitebuilder/schema";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { ConsentBanner } from "@/components/consent-banner/consent-banner";
-import { getAnalytics, getEntry, getSite, getSiteMenu, getTheme } from "@/server/content";
+import {
+  getAnalytics,
+  getEntry,
+  getReadingSettings,
+  getSite,
+  getSiteMenu,
+  getTheme,
+} from "@/server/content";
 import { menuItems, siteInfo } from "@/server/layout-props";
 import { activeTemplate } from "@/server/template";
 
@@ -25,13 +32,14 @@ export async function SiteFrame({
   // The address the visitor asked for, before the proxy rewrote it (src/proxy.ts).
   const requestHeaders = await headers();
   const path = currentPath ?? requestHeaders.get("x-site-path") ?? "/";
-  const [site, primary, footer, template, theme, analytics] = await Promise.all([
+  const [site, primary, footer, template, theme, analytics, reading] = await Promise.all([
     getSite(),
     getSiteMenu("primary"),
     getSiteMenu("footer"),
     activeTemplate(),
     getTheme(),
     getAnalytics(),
+    getReadingSettings(),
   ]);
   const consent =
     currentPath === undefined && analytics && hasTrackers(analytics) ? analytics : null;
@@ -61,6 +69,7 @@ export async function SiteFrame({
         site={siteInfo(site)}
         menus={{ primary: menuItems(primary), footer: menuItems(footer) }}
         currentPath={path}
+        searchPath={reading.search ? SEARCH_PATH : null}
         options={template.options}
       >
         {children}

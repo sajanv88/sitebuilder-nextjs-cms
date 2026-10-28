@@ -230,6 +230,16 @@ export function ReadingForm({
           A thin bar along the top of a post that fills as it's read.
         </FieldDescription>
       </Field>
+      <Field orientation="horizontal">
+        <FieldControl>
+          {/* Keyed on the saved value, as the checkbox above. */}
+          <Checkbox key={values.search} name="search" defaultChecked={values.search === "on"} />
+        </FieldControl>
+        <FieldLabel>Search on the site</FieldLabel>
+        <FieldDescription>
+          A search page at /search, linked from the header, that finds published pages and posts.
+        </FieldDescription>
+      </Field>
       <Button
         ref={submit}
         type="submit"

@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
+import { SearchIcon } from "@nuvui/icons";
 import {
+  Button,
   Navbar,
   NavbarActions,
   NavbarBrand,
@@ -11,9 +13,9 @@ import {
 } from "@nuvui/react";
 import type { MenuItem, SiteLayoutProps } from "@sitebuilder/template-sdk";
 
-// The frame of every page: the firm's name and tagline over a ruled line, the menu, the page,
-// and a footer with its own menu. A group in the menu is shown as its links, one level only.
-// The width option sets the page's column (styles/_ledger.scss).
+// The frame of every page: the firm's name and tagline over a ruled line, the menu and a search
+// link, the page, and a footer with its own menu. A group in the menu is shown as its links, one
+// level only. The width option sets the page's column (styles/_ledger.scss).
 
 function links(items: readonly MenuItem[]): MenuItem[] {
   return items.flatMap((item) => (item.href ? [item] : item.children.filter((c) => c.href)));
@@ -22,7 +24,14 @@ function links(items: readonly MenuItem[]): MenuItem[] {
 const newTab = (item: MenuItem) =>
   item.openInNewTab ? { target: "_blank", rel: "noopener noreferrer" } : {};
 
-export default function Site({ site, menus, currentPath, options, children }: SiteLayoutProps) {
+export default function Site({
+  site,
+  menus,
+  currentPath,
+  searchPath,
+  options,
+  children,
+}: SiteLayoutProps) {
   const primary = links(menus.primary);
   const footer = links(menus.footer);
   const items = primary.map((item) => (
@@ -48,18 +57,31 @@ export default function Site({ site, menus, currentPath, options, children }: Si
           </a>
         </NavbarBrand>
         {primary.length > 0 ? (
-          <>
-            <NavbarNav aria-label="Main" className="ledger-header__nav">
-              {items}
-            </NavbarNav>
-            <NavbarActions className="ledger-header__actions">
+          <NavbarNav aria-label="Main" className="ledger-header__nav">
+            {items}
+          </NavbarNav>
+        ) : null}
+        {primary.length > 0 || searchPath ? (
+          <NavbarActions className="ledger-header__actions">
+            {searchPath ? (
+              <Button asChild intent="ghost" size="sm">
+                <a
+                  href={searchPath}
+                  aria-label="Search"
+                  {...(currentPath === searchPath ? { "aria-current": "page" as const } : {})}
+                >
+                  <SearchIcon aria-hidden="true" size={18} />
+                </a>
+              </Button>
+            ) : null}
+            {primary.length > 0 ? (
               <NavbarMenu>
                 <nav aria-label="Main" className="ledger-header__menu">
                   {items}
                 </nav>
               </NavbarMenu>
-            </NavbarActions>
-          </>
+            ) : null}
+          </NavbarActions>
         ) : null}
       </Navbar>
       <main id="content" className="ledger__main">

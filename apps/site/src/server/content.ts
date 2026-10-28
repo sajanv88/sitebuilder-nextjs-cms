@@ -26,7 +26,9 @@ import {
   type PublicTerm,
   type ResolvedMenuItem,
   resolveMenu,
+  type SearchHit,
   type SitemapEntry,
+  searchPublic,
 } from "@sitebuilder/db";
 import { mediaUrl } from "@sitebuilder/media";
 import {
@@ -121,6 +123,24 @@ export async function getPostsPage(
   cacheTag(CacheTags.entries, CacheTags.terms, CacheTags.settings);
   const { postsPerPage } = await getReadingSettings();
   return listPublicPosts(db, { page, perPage: postsPerPage, termId });
+}
+
+// Site search (decisions #144). Not cached: every visitor's words are different, and a cache
+// keyed on them would only fill up. The home page is found at "/".
+export async function searchSite(
+  text: string,
+  page: number,
+): Promise<{ rows: SearchHit[]; total: number; perPage: number }> {
+  const reading = await getReadingSettings();
+  const perPage = reading.postsPerPage;
+  const found = await searchPublic(db, { text, page, perPage });
+  return {
+    rows: found.rows.map((row) =>
+      row.id === reading.homepageEntryId ? { ...row, path: "/" } : row,
+    ),
+    total: found.total,
+    perPage,
+  };
 }
 
 export async function getArchiveTerm(id: string): Promise<PublicTerm | undefined> {

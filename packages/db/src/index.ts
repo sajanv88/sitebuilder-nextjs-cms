@@ -114,7 +114,10 @@ export {
   type PublicRoute,
   type PublicTerm,
   resolveRoute,
+  type SearchHit,
   type SitemapEntry,
+  searchPublic,
+  searchTerms,
 } from "./queries/public";
 export { countPosts, type SaveReadingResult, saveReadingSettings } from "./queries/reading";
 export {
