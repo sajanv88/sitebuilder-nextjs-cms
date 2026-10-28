@@ -24,6 +24,18 @@ export {
   newBlockId,
 } from "./content";
 export { FEATURE_ICON_NAMES, FEATURE_ICONS, type FeatureIconName } from "./icons";
+export {
+  applyMove,
+  canMove,
+  countAfterInsert,
+  findBlock,
+  fits,
+  inParent,
+  type Location,
+  locate,
+  type Move,
+  removeBlock,
+} from "./moves";
 export { type PageWidth, pageItemClass } from "./page/page";
 export {
   allBlocks,
