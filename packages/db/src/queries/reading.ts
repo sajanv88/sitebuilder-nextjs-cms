@@ -6,6 +6,7 @@ import { and, count, eq, isNull, like, or, sql } from "drizzle-orm";
 import type * as v from "valibot";
 import type { Executor } from "../executor";
 import { entries } from "../schema/entries";
+import { redirects } from "../schema/site";
 import { isPublic, type Move, writeRedirects } from "./entries";
 import { getReading, isPublishedPage } from "./public";
 import { upsertSettings } from "./settings";
@@ -74,9 +75,19 @@ export async function saveReadingSettings(
         if (post.public) moves.push({ from: post.path, to });
         moved += 1;
       }
-      // The blog index moves too. Its archive and page addresses don't get one each: those
-      // are lists, not content anyone links to for long.
+      // The blog index moves too, and one "/*" redirect covers its archive and page addresses
+      // (/blog/category/news, /blog/page/2) and anything else that was under it (decisions
+      // #145). The moved posts' own redirects come first, being exact.
       await writeRedirects(tx, [...moves, { from: current.postsPath, to: input.postsPath }]);
+      await tx
+        .insert(redirects)
+        .values({ fromPath: `${current.postsPath}/*`, toPath: `${input.postsPath}/*`, status: 301 })
+        .onConflictDoUpdate({
+          target: redirects.fromPath,
+          set: { toPath: `${input.postsPath}/*`, status: 301 },
+        });
+      // A "/*" redirect from the new posts path (an earlier move back) would hide it.
+      await tx.delete(redirects).where(eq(redirects.fromPath, `${input.postsPath}/*`));
     }
 
     const saved = await upsertSettings(tx, "reading", input);

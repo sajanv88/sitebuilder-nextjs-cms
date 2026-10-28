@@ -54,6 +54,9 @@ export const ACTION_EFFECTS = {
   saveReading: ["settings", "entries", "redirects"],
   saveDateSettings: ["settings"],
   saveAnalytics: ["settings"],
+  // redirects.ts
+  saveRedirectForm: ["redirects"],
+  removeRedirect: ["redirects"],
   // appearance.ts
   saveTheme: ["settings"],
   // templates.ts: a template can bring its theme, pages, menus and home page.

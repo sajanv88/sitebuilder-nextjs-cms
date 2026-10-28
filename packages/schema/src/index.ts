@@ -156,6 +156,16 @@ export {
   textOn,
 } from "./page-background";
 export {
+  isPrefixRedirect,
+  REDIRECT_STATUSES,
+  RedirectFrom,
+  RedirectInput,
+  type RedirectStatus,
+  RedirectTo,
+  redirectBase,
+  redirectTarget,
+} from "./redirects";
+export {
   CUSTOM_CSS_MAX,
   CustomCss,
   DateSettingsInput,

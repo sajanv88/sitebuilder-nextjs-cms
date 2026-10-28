@@ -27,6 +27,8 @@ export const statements = {
   media: ["upload", "read", "readOwn", "update", "updateOwn", "delete", "deleteOwn"],
   menu: ["update"],
   theme: ["update"],
+  // Redirects by hand (decisions #145). Admins and editors: they move pages, which writes them.
+  redirect: ["manage"],
   // Which template the site uses, and importing its starter content (design §14). Admins only.
   template: ["activate"],
   settings: ["update"],
@@ -48,6 +50,7 @@ const content = {
   media: statements.media,
   menu: statements.menu,
   theme: statements.theme,
+  redirect: statements.redirect,
 } as const;
 
 export const permissions = {

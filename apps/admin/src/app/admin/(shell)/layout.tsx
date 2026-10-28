@@ -17,6 +17,7 @@ function navFor(viewer: Viewer): NavKey[] {
     posts: canSome(viewer, "post.read"),
     media: canSome(viewer, "media.read"),
     menus: can(viewer, "menu.update"),
+    redirects: can(viewer, "redirect.manage"),
     appearance: can(viewer, "theme.update"),
     templates: can(viewer, "template.activate"),
     users: can(viewer, "user.read"),

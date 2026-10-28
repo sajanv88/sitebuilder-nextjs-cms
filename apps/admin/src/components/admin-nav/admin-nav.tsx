@@ -6,6 +6,7 @@
 import {
   BookOpenIcon,
   ChevronRightIcon,
+  CornerDownRightIcon,
   FileTextIcon,
   ImageIcon,
   LayersIcon,
@@ -46,6 +47,7 @@ export const NAV_KEYS = [
   "posts",
   "media",
   "menus",
+  "redirects",
   "appearance",
   "templates",
   "users",
@@ -98,6 +100,7 @@ const GROUPS: { label: string | null; items: Item[] }[] = [
     label: "Site",
     items: [
       { key: "menus", label: "Menus", href: "/admin/menus", Icon: ListIcon },
+      { key: "redirects", label: "Redirects", href: "/admin/redirects", Icon: CornerDownRightIcon },
       { key: "appearance", label: "Appearance", href: "/admin/appearance", Icon: PaletteIcon },
       { key: "templates", label: "Templates", href: "/admin/templates", Icon: LayersIcon },
     ],

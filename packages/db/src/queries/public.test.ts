@@ -328,12 +328,25 @@ describe("saveReadingSettings", () => {
       to: "/news/live",
       status: 301,
     });
-    expect(await resolveRoute(db, "/blog/draft")).toEqual({ kind: "missing" });
+    // Everything else under the old path follows it (decisions #145): archives, pages of the
+    // list, and any address there, a draft's too, which is still missing at its new address.
+    expect(await resolveRoute(db, "/blog/page/2")).toEqual({
+      kind: "redirect",
+      to: "/news/page/2",
+      status: 301,
+    });
+    expect(await resolveRoute(db, "/blog/draft")).toEqual({
+      kind: "redirect",
+      to: "/news/draft",
+      status: 301,
+    });
+    expect(await resolveRoute(db, "/news/draft")).toEqual({ kind: "missing" });
     expect((await getEntryForPreview(db, "/news/draft"))?.id).toBe(draft.id);
 
     // And back: no loops, the redirects point the new way.
     await saveReadingSettings(db, { homepageEntryId: null, postsPerPage: 5, postsPath: "/blog" });
     expect(await resolveRoute(db, "/blog/live")).toEqual({ kind: "entry", id: live.id });
+    expect(await resolveRoute(db, "/blog")).toEqual({ kind: "posts", page: 1 });
     expect(await resolveRoute(db, "/news/live")).toEqual({
       kind: "redirect",
       to: "/blog/live",

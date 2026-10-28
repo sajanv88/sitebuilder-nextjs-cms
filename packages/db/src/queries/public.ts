@@ -16,6 +16,7 @@ import { type EntryStatus, entries } from "../schema/entries";
 import { redirects } from "../schema/site";
 import { entryTerms, terms } from "../schema/terms";
 import { isPublic } from "./entries";
+import { prefixRedirect } from "./redirects";
 import { getSettings } from "./settings";
 
 // What the public site reads (design §7). Everything here applies the visibility rule of §4.1:
@@ -97,6 +98,9 @@ export async function resolveRoute(db: Executor, path: string): Promise<PublicRo
     .where(eq(redirects.fromPath, path))
     .limit(1);
   if (redirect) return { kind: "redirect", to: redirect.to, status: redirect.status };
+  // A "/*" redirect that covers it (decisions #145), the closest first.
+  const covering = await prefixRedirect(db, path);
+  if (covering) return { kind: "redirect", ...covering };
   return { kind: "missing" };
 }
 

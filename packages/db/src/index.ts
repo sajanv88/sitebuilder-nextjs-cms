@@ -121,6 +121,14 @@ export {
 } from "./queries/public";
 export { countPosts, type SaveReadingResult, saveReadingSettings } from "./queries/reading";
 export {
+  deleteRedirect,
+  listRedirects,
+  type RedirectRow,
+  redirectFor,
+  type SaveRedirectResult,
+  saveRedirect,
+} from "./queries/redirects";
+export {
   listRevisions,
   REVISIONS_KEPT,
   type RestoreRevisionResult,

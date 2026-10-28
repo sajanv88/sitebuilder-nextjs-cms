@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+.redirect-manager {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: a.space(4);
+
+  &__bar {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__form {
+    display: grid;
+    gap: a.space(4);
+  }
+
+  // A long address breaks where it must rather than widening the table.
+  &__to {
+    overflow-wrap: anywhere;
+  }
+
+  // A button that's only an icon: square, at the size of the button it is.
+  &__more {
+    aspect-ratio: 1;
+    padding: 0;
+  }
+}

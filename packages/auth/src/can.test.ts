@@ -101,3 +101,9 @@ test("canSome shows a screen when the actor has the action on at least their own
   expect(canSome(author, "user.read")).toBe(false);
   expect(canSome(editor, "settings.update")).toBe(false);
 });
+
+test("redirects are managed by admins and editors, not authors", () => {
+  expect(can({ id: "a", role: "admin" }, "redirect.manage")).toBe(true);
+  expect(can({ id: "e", role: "editor" }, "redirect.manage")).toBe(true);
+  expect(can({ id: "w", role: "author" }, "redirect.manage")).toBe(false);
+});
