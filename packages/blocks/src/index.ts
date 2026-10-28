@@ -5,6 +5,14 @@
 // editor and the site zone's pages. Server-only checks are in "@sitebuilder/blocks/server".
 
 export {
+  COLUMN_WIDTHS,
+  type ColumnWidths,
+  columnWidthsFor,
+  columnWidthsLabel,
+  dragColumnLine,
+  widthsOf,
+} from "./blocks/block-columns/widths";
+export {
   CANVAS_PATH,
   type CanvasData,
   type CanvasKey,

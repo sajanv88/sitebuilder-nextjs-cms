@@ -23,6 +23,9 @@ const {
 const { templateBlockDefinition } = await import("./template-block");
 const { BlockList } = await import("./render");
 const { canvasMessage, isEditorKey } = await import("./canvas");
+const { columnWidthsFor, columnWidthsLabel, dragColumnLine } = await import(
+  "./blocks/block-columns/widths"
+);
 const { sanitizeRichText, validateContent } = await import("./server");
 
 const IMAGE = "11111111-1111-4111-8111-111111111111";
@@ -646,5 +649,46 @@ describe("the canvas's messages", () => {
       type: "ready",
       source: "sitebuilder-canvas",
     });
+  });
+});
+
+describe("column widths (decisions #152)", () => {
+  const draw = (blocks: Blocks) => {
+    const result = validateContent(blocks);
+    if (!result.ok) throw new Error(JSON.stringify(result.issues));
+    return renderToStaticMarkup(<BlockList blocks={result.value} context={context} />);
+  };
+  const columns = (widths: string, count: number) =>
+    block(
+      "columns",
+      { widths },
+      Array.from({ length: count }, () => block("column", {}, [])),
+    );
+
+  test("lines at a quarter, a third, a half, two thirds or three quarters, no column narrower than a quarter", () => {
+    expect(columnWidthsFor(2)).toEqual(["equal", "3-9", "4-8", "8-4", "9-3"]);
+    expect(columnWidthsFor(3)).toEqual(["equal", "3-3-6", "3-5-4", "3-6-3", "4-5-3", "6-3-3"]);
+    expect(columnWidthsFor(4)).toEqual(["equal"]);
+    expect(columnWidthsLabel("4-8")).toBe("1/3 + 2/3");
+    expect(columnWidthsLabel("3-5-4")).toBe("1/4 + 5/12 + 1/3");
+  });
+
+  test("dragging a line moves it to the nearest place it may go, the others staying", () => {
+    expect(dragColumnLine("equal", 2, 0, 0.3)).toBe("4-8");
+    expect(dragColumnLine("4-8", 2, 0, 0.8)).toBe("9-3");
+    // Three equal columns: the first line can go to a quarter; the second stays at two thirds.
+    expect(dragColumnLine("equal", 3, 0, 0.2)).toBe("3-5-4");
+    // It can't pass the next line, nor leave a column under a quarter wide.
+    expect(dragColumnLine("equal", 3, 0, 0.6)).toBe("equal");
+    expect(dragColumnLine("3-5-4", 3, 1, 0.5)).toBe("3-3-6");
+    // Written for another number of columns: read as equal.
+    expect(dragColumnLine("3-9", 3, 1, 0.75)).toBe("4-5-3");
+  });
+
+  test("drawn as a modifier when the layout fits the columns, else equal", () => {
+    expect(draw([columns("4-8", 2)])).toContain("block-columns--widths-4-8");
+    expect(draw([columns("4-8", 3)])).not.toContain("block-columns--widths");
+    expect(draw([columns("equal", 2)])).not.toContain("block-columns--widths");
+    expect(validateContent([columns("5-7", 2)]).ok).toBe(false);
   });
 });

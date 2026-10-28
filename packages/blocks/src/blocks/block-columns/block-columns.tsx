@@ -7,6 +7,7 @@ import * as v from "valibot";
 import { pageItemClass, pageWidthField, pageWidthOf, pageWidthProps } from "../../page/page";
 import { cx } from "../../shared";
 import type { BlockDefinition } from "../../types";
+import { COLUMN_WIDTHS, widthsOf } from "./widths";
 import "./block-columns.scss";
 
 const Props = v.strictObject({
@@ -16,6 +17,8 @@ const Props = v.strictObject({
   stackBelow: v.optional(v.picklist(["sm", "md"]), "md"),
   // Side by side, where each column sits beside the others (decisions #146).
   valign: v.optional(v.picklist(["start", "center", "end"]), "start"),
+  // Each column's share of the row (decisions #152), dragged on the canvas or picked here.
+  widths: v.optional(v.picklist(COLUMN_WIDTHS), "equal"),
 });
 type Props = v.InferOutput<typeof Props>;
 
@@ -27,7 +30,13 @@ export const columns: BlockDefinition<Props> = {
   category: "layout",
   icon: ColumnsIcon,
   props: Props,
-  defaults: () => ({ pageWidth: "contained", gap: "md", stackBelow: "md", valign: "start" }),
+  defaults: () => ({
+    pageWidth: "contained",
+    gap: "md",
+    stackBelow: "md",
+    valign: "start",
+    widths: "equal",
+  }),
   container: { allow: ["column"], min: 2, max: 4 },
   fields: [
     pageWidthField,
@@ -65,6 +74,7 @@ export const columns: BlockDefinition<Props> = {
   summary: () => "Columns",
   Render: ({ props, children, context }) => {
     const count = Math.min(Math.max(Children.count(children), 2), 4);
+    const widths = widthsOf(props.widths, count);
     return (
       <div
         className={cx(
@@ -74,6 +84,7 @@ export const columns: BlockDefinition<Props> = {
           `block-columns--stack-${props.stackBelow}`,
           `block-columns--count-${count}`,
           props.valign !== "start" && `block-columns--valign-${props.valign}`,
+          widths && `block-columns--widths-${widths.join("-")}`,
         )}
       >
         {children}

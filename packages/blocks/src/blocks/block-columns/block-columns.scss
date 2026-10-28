@@ -4,9 +4,11 @@
 @use "../../styles/layout";
 
 @layer host {
-  // One column at a time on a small screen; side by side, equal widths, from the chosen size.
+  // One column at a time on a small screen; side by side from the chosen size, equal widths
+  // unless the block has its own (block-columns/widths.ts), as fractions of the row.
   .block-columns {
     --block-columns-count: 2;
+    --block-columns-template: repeat(var(--block-columns-count), minmax(0, 1fr));
 
     display: grid;
     gap: calc(var(--spacing) * 6);
@@ -36,15 +38,51 @@
       --block-columns-count: 4;
     }
 
+    &--widths-3-9 {
+      --block-columns-template: minmax(0, 3fr) minmax(0, 9fr);
+    }
+
+    &--widths-4-8 {
+      --block-columns-template: minmax(0, 4fr) minmax(0, 8fr);
+    }
+
+    &--widths-8-4 {
+      --block-columns-template: minmax(0, 8fr) minmax(0, 4fr);
+    }
+
+    &--widths-9-3 {
+      --block-columns-template: minmax(0, 9fr) minmax(0, 3fr);
+    }
+
+    &--widths-3-3-6 {
+      --block-columns-template: minmax(0, 3fr) minmax(0, 3fr) minmax(0, 6fr);
+    }
+
+    &--widths-3-5-4 {
+      --block-columns-template: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 4fr);
+    }
+
+    &--widths-3-6-3 {
+      --block-columns-template: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr);
+    }
+
+    &--widths-4-5-3 {
+      --block-columns-template: minmax(0, 4fr) minmax(0, 5fr) minmax(0, 3fr);
+    }
+
+    &--widths-6-3-3 {
+      --block-columns-template: minmax(0, 6fr) minmax(0, 3fr) minmax(0, 3fr);
+    }
+
     &--stack-sm {
       @include layout.width("sm") {
-        grid-template-columns: repeat(var(--block-columns-count), minmax(0, 1fr));
+        grid-template-columns: var(--block-columns-template);
       }
     }
 
     &--stack-md {
       @include layout.width("md") {
-        grid-template-columns: repeat(var(--block-columns-count), minmax(0, 1fr));
+        grid-template-columns: var(--block-columns-template);
       }
     }
   }
