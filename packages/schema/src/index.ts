@@ -92,6 +92,15 @@ export {
   zoneName,
 } from "./dates";
 export {
+  EMAIL_SECURITY,
+  EmailInput,
+  type EmailSecurity,
+  EmailSettings,
+  parseFrom,
+  SmtpHost,
+  SmtpPort,
+} from "./email";
+export {
   archivePath,
   ENTRY_LIMITS,
   ENTRY_SORT_KEYS,

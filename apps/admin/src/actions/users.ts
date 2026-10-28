@@ -3,14 +3,17 @@
 
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { can } from "@sitebuilder/auth";
-import { db, deleteUser, setUserBanned, setUserRole } from "@sitebuilder/db";
+import { WELCOME_PATH } from "@sitebuilder/auth/server";
+import { db, deleteUser, getUserSummary, setUserBanned, setUserRole } from "@sitebuilder/db";
 import { NewUserInput, Password, RoleSchema, UserId } from "@sitebuilder/schema";
 import { isAPIError } from "better-auth/api";
 import { headers } from "next/headers";
 import * as v from "valibot";
 import { auth } from "@/auth/auth";
 import { getViewer, type Viewer } from "@/auth/session";
+import { currentMail, mailFailureOf } from "@/server/mail";
 
 // The Users screen (design §6, §6.3), admin only by the permissions table. Creating a user and
 // setting a password go through Better Auth's admin endpoints, which hash the password and
@@ -54,7 +57,16 @@ export async function createUser(_: NewUserState, form: FormData): Promise<NewUs
   if (!viewer) return fail("failed", "Your session has ended. Sign in again.");
   if (!can(viewer, "user.create")) return fail("failed", "You can't add users.");
 
-  const input = v.safeParse(NewUserInput, { ...values, password: form.get("password") });
+  // Invited: a password nobody knows, and an email with a link to choose one (decisions #147).
+  const invite = form.get("invite") === "on";
+  if (invite && !(await currentMail()).ok) {
+    return fail(
+      "failed",
+      "Email isn't set up, so the invitation can't be sent. Set a password instead.",
+    );
+  }
+  const password = invite ? randomBytes(32).toString("base64url") : form.get("password");
+  const input = v.safeParse(NewUserInput, { ...values, password });
   if (!input.success) {
     const nested = v.flatten<typeof NewUserInput>(input.issues).nested ?? {};
     return fail("invalid", "Check the fields marked below.", {
@@ -83,9 +95,20 @@ export async function createUser(_: NewUserState, form: FormData): Promise<NewUs
     }
     throw error;
   }
+  if (invite) {
+    const sent = await emailPasswordLink(input.output.email);
+    return {
+      result: "saved",
+      message: sent.ok
+        ? `Added ${input.output.name}. An email with a link to choose their password is on its way.`
+        : `Added ${input.output.name}, but the email couldn't be sent: ${sent.error} Send it again from their row once email works.`,
+      values: { name: "", email: "", role: "author" },
+      savedAt: Date.now(),
+    };
+  }
   return {
     result: "saved",
-    message: `Added ${input.output.name}. Give them their password yourself; no email is sent.`,
+    message: `Added ${input.output.name}. Give them their password yourself.`,
     values: { name: "", email: "", role: "author" },
     savedAt: Date.now(),
   };
@@ -162,6 +185,35 @@ export async function removeUser(input: unknown): Promise<UserActionResult> {
     "invalid-reassign": "Choose someone else to give their content to.",
   } as const;
   return { ok: false, error: errors[result.error] };
+}
+
+// A link to choose a password, by email: Better Auth makes the token, Settings → Email sends it.
+async function emailPasswordLink(
+  email: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await auth().api.requestPasswordReset({ body: { email, redirectTo: WELCOME_PATH } });
+    return { ok: true };
+  } catch (error) {
+    const why = mailFailureOf(error);
+    if (why) return { ok: false, error: `${why.charAt(0).toUpperCase()}${why.slice(1)}.` };
+    throw error;
+  }
+}
+
+// From a user's row: an email with a link to choose a password, instead of setting one for them.
+export async function sendPasswordLink(input: unknown): Promise<UserActionResult> {
+  const viewer = await actor("user.update");
+  if (isResult(viewer)) return viewer;
+  const parsed = v.safeParse(v.object({ userId: UserId }), input);
+  if (!parsed.success) return { ok: false, error: "That user wasn't found." };
+  const user = await getUserSummary(db, parsed.output.userId);
+  if (!user) return { ok: false, error: "That user wasn't found." };
+  if (!(await currentMail()).ok) return { ok: false, error: "Email isn't set up." };
+  const sent = await emailPasswordLink(user.email);
+  return sent.ok
+    ? { ok: true, message: `A link to choose a password is on its way to ${user.email}.` }
+    : { ok: false, error: `The email couldn't be sent: ${sent.error}` };
 }
 
 export async function setPassword(input: unknown): Promise<UserActionResult> {

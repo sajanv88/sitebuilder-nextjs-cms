@@ -54,6 +54,8 @@ export const ACTION_EFFECTS = {
   saveReading: ["settings", "entries", "redirects"],
   saveDateSettings: ["settings"],
   saveAnalytics: ["settings"],
+  // email.ts: nothing public.
+  saveEmail: [],
   // redirects.ts
   saveRedirectForm: ["redirects"],
   removeRedirect: ["redirects"],
@@ -73,6 +75,7 @@ export const ACTION_EFFECTS = {
   changeBan: [],
   removeUser: [],
   setPassword: [],
+  sendPasswordLink: [],
 } as const satisfies Record<string, readonly Effect[]>;
 
 export type ActionName = keyof typeof ACTION_EFFECTS;

@@ -30,6 +30,8 @@ catalog:
   aws4fetch: 1.0.20
   image-size: 2.0.4
   next: 16.4.2
+  # SMTP for password reset links and invitations (packages/mail). Ships its own types.
+  nodemailer: 10.1.0
   postcss: 8.5.30
   # Loaded on the public site only after a visitor accepts analytics (the consent banner).
   posthog-js: 1.438.7

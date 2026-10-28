@@ -5,6 +5,9 @@ import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
 import { env } from "@/env";
 
+// The admin screens someone signed out uses: signing in, and getting a password by email.
+const SIGNED_OUT = new Set(["/admin/sign-in", "/admin/forgot-password", "/admin/set-password"]);
+
 // A fresh nonce per request, sent as the Content-Security-Policy. Next reads the nonce from
 // the request's CSP header and puts it on its own scripts; the root layout reads x-nonce for
 // anything else that needs it (nuvui's ScrollArea, next/script).
@@ -14,11 +17,7 @@ export function proxy(request: NextRequest) {
   // action (auth/session.ts). Built on SITE_URL: behind the site zone's rewrite, the request's
   // own URL is this zone's internal address.
   const { pathname } = request.nextUrl;
-  if (
-    pathname.startsWith("/admin") &&
-    pathname !== "/admin/sign-in" &&
-    !getSessionCookie(request)
-  ) {
+  if (pathname.startsWith("/admin") && !SIGNED_OUT.has(pathname) && !getSessionCookie(request)) {
     return NextResponse.redirect(new URL("/admin/sign-in", env().SITE_URL));
   }
 

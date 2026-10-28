@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
   Badge,
   Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -56,6 +57,7 @@ import {
   createUser,
   type NewUserState,
   removeUser,
+  sendPasswordLink,
   setPassword,
   type UserActionResult,
 } from "@/actions/users";
@@ -84,7 +86,15 @@ type Open =
   | { kind: "delete"; user: UserRow }
   | null;
 
-function NewUserForm({ onSaved }: { onSaved: (message: string) => void }) {
+function NewUserForm({
+  onSaved,
+  canEmail,
+}: {
+  onSaved: (message: string) => void;
+  // Email is set up: the new user can get a link to choose their own password.
+  canEmail: boolean;
+}) {
+  const [invite, setInvite] = useState(canEmail);
   const [state, action, pending] = useActionState(createUser, {
     result: "idle",
     values: { name: "", email: "", role: "author" },
@@ -129,16 +139,31 @@ function NewUserForm({ onSaved }: { onSaved: (message: string) => void }) {
         </FieldControl>
         <FieldError>{errors.role}</FieldError>
       </Field>
-      <Field required>
-        <FieldLabel>Password</FieldLabel>
-        <FieldControl>
-          <PasswordInput name="password" autoComplete="new-password" />
-        </FieldControl>
-        <FieldDescription>
-          At least {PASSWORD_MIN_LENGTH} characters. No email is sent: give it to them yourself.
-        </FieldDescription>
-        <FieldError>{errors.password}</FieldError>
-      </Field>
+      {canEmail ? (
+        <Field orientation="horizontal">
+          <FieldControl>
+            <Checkbox
+              name="invite"
+              checked={invite}
+              onCheckedChange={(checked) => setInvite(checked === true)}
+            />
+          </FieldControl>
+          <FieldLabel>Email them a link to choose their password</FieldLabel>
+          <FieldDescription>It works once, for a day.</FieldDescription>
+        </Field>
+      ) : null}
+      {invite ? null : (
+        <Field required>
+          <FieldLabel>Password</FieldLabel>
+          <FieldControl>
+            <PasswordInput name="password" autoComplete="new-password" />
+          </FieldControl>
+          <FieldDescription>
+            At least {PASSWORD_MIN_LENGTH} characters. Give it to them yourself.
+          </FieldDescription>
+          <FieldError>{errors.password}</FieldError>
+        </Field>
+      )}
       <DialogFooter>
         <Button type="submit" disabled={pending} aria-busy={pending}>
           Add user
@@ -150,7 +175,16 @@ function NewUserForm({ onSaved }: { onSaved: (message: string) => void }) {
 
 const helper = createColumnHelper<UserRow>();
 
-export function UserManager({ users, viewerId }: { users: UserRow[]; viewerId: string }) {
+export function UserManager({
+  users,
+  viewerId,
+  canEmail,
+}: {
+  users: UserRow[];
+  viewerId: string;
+  // Email is set up (Settings → Email or the environment).
+  canEmail: boolean;
+}) {
   const formatDateTime = useFormatDateTime();
   const router = useRouter();
   const [open, setOpen] = useState<Open>(null);
@@ -245,6 +279,13 @@ export function UserManager({ users, viewerId }: { users: UserRow[]; viewerId: s
                   <DropdownMenuItem onSelect={() => setOpen({ kind: "password", user })}>
                     Set a new password
                   </DropdownMenuItem>
+                  {canEmail ? (
+                    <DropdownMenuItem
+                      onSelect={() => run(() => sendPasswordLink({ userId: user.id }))}
+                    >
+                      Email a password link
+                    </DropdownMenuItem>
+                  ) : null}
                   {self ? null : (
                     <>
                       <DropdownMenuSeparator />
@@ -273,7 +314,7 @@ export function UserManager({ users, viewerId }: { users: UserRow[]; viewerId: s
           },
         }),
       ]),
-    [viewerId, run, formatDateTime],
+    [viewerId, run, formatDateTime, canEmail],
   );
 
   const table = useDataTable({
@@ -317,6 +358,7 @@ export function UserManager({ users, viewerId }: { users: UserRow[]; viewerId: s
           </DialogDescription>
           {open?.kind === "add" ? (
             <NewUserForm
+              canEmail={canEmail}
               onSaved={(message) => {
                 close();
                 toast(message, { intent: "success", duration: 10_000 });
@@ -380,8 +422,8 @@ export function UserManager({ users, viewerId }: { users: UserRow[]; viewerId: s
             >
               <DialogTitle>Set a new password for {open.user.name}</DialogTitle>
               <DialogDescription>
-                There's no email to send it, so tell them yourself. Their old password stops
-                working.
+                Tell them the new one yourself, or email them a link from their row instead. Their
+                old password stops working.
               </DialogDescription>
               <Field required>
                 <FieldLabel>New password</FieldLabel>

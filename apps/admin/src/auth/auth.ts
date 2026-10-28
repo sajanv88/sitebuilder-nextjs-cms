@@ -4,6 +4,7 @@
 import "server-only";
 import { type Auth, createAuth } from "@sitebuilder/auth/server";
 import { env } from "@/env";
+import { sendPasswordLink } from "@/server/mail";
 
 let instance: Auth | undefined;
 
@@ -15,6 +16,7 @@ export function auth(): Auth {
     siteUrl: SITE_URL,
     secret: AUTH_SECRET,
     clientIpHeader: CLIENT_IP_HEADER,
+    sendPasswordLink,
   });
   return instance;
 }

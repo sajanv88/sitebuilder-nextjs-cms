@@ -61,10 +61,10 @@ export async function listUserOptions(db: Executor): Promise<{ id: string; name:
 export async function getUserSummary(
   db: Executor,
   id: string,
-): Promise<{ id: string; name: string; role: string | null } | undefined> {
+): Promise<{ id: string; name: string; email: string; role: string | null } | undefined> {
   return db.query.user.findFirst({
     where: { id },
-    columns: { id: true, name: true, role: true },
+    columns: { id: true, name: true, email: true, role: true },
   });
 }
 

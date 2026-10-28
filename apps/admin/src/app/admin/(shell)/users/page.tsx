@@ -6,13 +6,14 @@ import type { Metadata } from "next";
 import { requirePermission } from "@/auth/session";
 import { AdminPage } from "@/components/admin-page/admin-page";
 import { UserManager } from "@/components/user-manager/user-manager";
+import { currentMail } from "@/server/mail";
 
 export const metadata: Metadata = { title: "Users" };
 
 // Admins only (§6.2). Every change on the screen is checked again by its action.
 export default async function UsersPage() {
   const viewer = await requirePermission("user.read");
-  const users = await listUsers(db);
+  const [users, mail] = await Promise.all([listUsers(db), currentMail()]);
   return (
     <AdminPage
       title="Users"
@@ -23,7 +24,7 @@ export default async function UsersPage() {
         { label: "Authors", value: users.filter((u) => u.role === "author").length },
       ]}
     >
-      <UserManager users={users} viewerId={viewer.id} />
+      <UserManager users={users} viewerId={viewer.id} canEmail={mail.ok} />
     </AdminPage>
   );
 }

@@ -29,6 +29,7 @@
     "@sitebuilder/auth": "workspace:*",
     "@sitebuilder/blocks": "workspace:*",
     "@sitebuilder/db": "workspace:*",
+    "@sitebuilder/mail": "workspace:*",
     "@sitebuilder/media": "workspace:*",
     "@sitebuilder/schema": "workspace:*",
     "@sitebuilder/templates": "workspace:*",

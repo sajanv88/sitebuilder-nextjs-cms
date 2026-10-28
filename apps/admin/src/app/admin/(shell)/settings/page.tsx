@@ -3,6 +3,7 @@
 
 import { aiSettingsView } from "@sitebuilder/ai";
 import { DEFAULT_READING, db, getSettings, listPublishedPages } from "@sitebuilder/db";
+import { mailConfig, openPassword } from "@sitebuilder/mail";
 import { describeEnvironment, openSecret } from "@sitebuilder/media";
 import {
   analyticsService,
@@ -15,6 +16,7 @@ import type { StorageFormValues } from "@/actions/media-storage";
 import { requirePermission } from "@/auth/session";
 import { AdminPage } from "@/components/admin-page/admin-page";
 import { AiSettingsForm } from "@/components/ai-settings-form/ai-settings-form";
+import { EmailSettingsForm } from "@/components/email-settings-form/email-settings-form";
 import {
   type EnvironmentSummary,
   MediaStorageForm,
@@ -39,10 +41,11 @@ const SECTIONS = [
   { id: "media-storage", title: "Media storage" },
   { id: "ai", title: "AI" },
   { id: "analytics", title: "Analytics" },
+  { id: "email", title: "Email" },
 ];
 
 // Settings (design §5.4, §8): the site, reading, dates, media storage (decisions #45), the AI
-// assistant (design §15) and analytics. Admins only.
+// assistant (design §15), analytics and email. Admins only.
 export default async function SettingsPage({ searchParams }: PageProps<"/admin/settings">) {
   await requirePermission("settings.update");
   // The open tab: the one the address names, or the first.
@@ -58,6 +61,16 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
     getSettings(db, "ai"),
     getSettings(db, "analytics"),
   ]);
+  const savedEmail = await getSettings(db, "email");
+  // What the SMTP_* variables set up, without their secrets.
+  const fromEnvironment = mailConfig({
+    settings: null,
+    env: config,
+    authSecret: config.AUTH_SECRET,
+  });
+  const environmentMail = fromEnvironment.ok
+    ? `${fromEnvironment.config.host}:${fromEnvironment.config.port}, from ${fromEnvironment.config.from.address}.`
+    : null;
   const posthogRegion = !analytics?.posthog
     ? "eu"
     : analytics.posthog.host === POSTHOG_HOSTS.us
@@ -165,6 +178,31 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
             initial={aiSettingsView(savedAi, config.AUTH_SECRET)}
             allowPrivate={config.AI_ALLOW_PRIVATE_URLS}
             locale={site.language}
+          />
+        </SettingsSection>
+        <SettingsSection
+          id="email"
+          title="Email"
+          description="The server password reset links and invitations are sent through."
+        >
+          <EmailSettingsForm
+            initial={{
+              source: savedEmail ? "smtp" : "environment",
+              host: savedEmail?.host ?? "",
+              port: String(savedEmail?.port ?? 587),
+              security: savedEmail?.security ?? "starttls",
+              username: savedEmail?.username ?? "",
+              fromName: savedEmail?.fromName ?? site.title,
+              fromAddress: savedEmail?.fromAddress ?? "",
+            }}
+            environment={environmentMail}
+            password={
+              !savedEmail?.password
+                ? "none"
+                : openPassword(savedEmail.password, config.AUTH_SECRET) === null
+                  ? "unreadable"
+                  : "saved"
+            }
           />
         </SettingsSection>
         <SettingsSection

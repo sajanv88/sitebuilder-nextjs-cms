@@ -48,6 +48,18 @@ const base = {
   // Lets the AI assistant reach addresses on this machine or a private network, such as Ollama
   // on the same server or the office network. Off, only https addresses on the internet are
   // reached (the outbound guard in packages/ai). Link-local and metadata addresses never are.
+  // Email through SMTP, until an admin sets a server in Settings → Email (decisions #147).
+  // SMTP_FROM is "Site <site@example.com>" or an address. Without SMTP_HOST, no email is sent.
+  SMTP_HOST: v.optional(v.pipe(v.string(), v.minLength(1))),
+  SMTP_PORT: v.optional(
+    v.pipe(v.string(), v.regex(/^\d{1,5}$/, "Must be a port number"), v.toNumber()),
+  ),
+  SMTP_SECURITY: v.optional(
+    v.picklist(["tls", "starttls", "none"], 'Must be "tls", "starttls" or "none"'),
+  ),
+  SMTP_USER: v.optional(v.string()),
+  SMTP_PASSWORD: v.optional(v.string()),
+  SMTP_FROM: v.optional(v.pipe(v.string(), v.minLength(3))),
   AI_ALLOW_PRIVATE_URLS: v.optional(
     v.pipe(
       v.picklist(["true", "false"], 'Must be "true" or "false"'),

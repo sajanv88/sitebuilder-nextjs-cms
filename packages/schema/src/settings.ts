@@ -5,6 +5,7 @@ import * as v from "valibot";
 import { AiSettings } from "./ai";
 import { AnalyticsSettings } from "./analytics";
 import { DateFormatSchema, DEFAULT_DATE_FORMAT, DEFAULT_TIME_ZONE, TimeZoneSchema } from "./dates";
+import { EmailSettings } from "./email";
 import { RESERVED_SEGMENTS } from "./entries";
 import { HexColor, SealedSecret, Uuid } from "./shared";
 
@@ -280,13 +281,15 @@ export const SettingsSchemas = {
   template: TemplateSettings,
   ai: AiSettings,
   analytics: AnalyticsSettings,
+  email: EmailSettings,
 } as const;
 export type SettingsKey = keyof typeof SettingsSchemas;
 export type SettingsValue<K extends SettingsKey> = v.InferOutput<(typeof SettingsSchemas)[K]>;
 
 // The keys /setup writes. Not `media` (without a row, the environment decides), `ai` (without a
-// row, the assistant is off) nor `analytics` (without a row, there are none).
-export type DefaultSettingsKey = Exclude<SettingsKey, "media" | "ai" | "analytics">;
+// row, the assistant is off), `analytics` (without a row, there are none) nor `email` (without
+// a row, the environment decides).
+export type DefaultSettingsKey = Exclude<SettingsKey, "media" | "ai" | "analytics" | "email">;
 
 // The rows /setup writes.
 export function defaultSettings(siteUrl: string): {

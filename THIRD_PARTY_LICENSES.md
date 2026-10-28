@@ -16,8 +16,8 @@ machine; their licences are checked all the same.
 | Apache-2.0 | 24 | 17 | Compatible with GPL-3.0 only, which Sitebuilder's “or later” allows: a build that includes Apache-2.0 code is distributed under GPL-3.0. |
 | ISC | 13 | 3 | Permissive, GPL-compatible. |
 | BSD-2-Clause | 4 | 4 | Permissive, GPL-compatible. |
+| MIT-0 | 4 | 1 | Permissive, no attribution needed. |
 | BSD-3-Clause | 3 | 1 | Permissive, GPL-compatible. |
-| MIT-0 | 3 | 0 | Permissive, no attribution needed. |
 | (Apache-2.0 AND MIT) | 1 | 1 | posthog-js, reviewed 2026-10-24: parts under each; see Apache-2.0 for the GPL-3.0 condition. |
 | (MPL-2.0 OR Apache-2.0) | 1 | 1 | DOMPurify (through posthog-js), used under MPL-2.0. |
 | 0BSD | 1 | 1 | Permissive, no attribution needed. |
@@ -203,6 +203,7 @@ Licences that only appear in platform packages:
 | @nodelib/fs.scandir | 2.1.5 | MIT | no |
 | @nodelib/fs.stat | 2.0.5 | MIT | no |
 | @nodelib/fs.walk | 1.2.8 | MIT | no |
+| nodemailer | 10.1.0 | MIT-0 | yes |
 | normalize-path | 3.0.0 | MIT | no |
 | @nuvui/backgrounds | 0.1.0 | MIT | yes |
 | @nuvui/date-picker | 0.1.8 | MIT | yes |

@@ -263,6 +263,9 @@ catalogs:
     next:
       specifier: 16.4.2
       version: 16.4.2
+    nodemailer:
+      specifier: 10.1.0
+      version: 10.1.0
     pg:
       specifier: 8.23.1
       version: 8.23.1
@@ -382,6 +385,9 @@ importers:
       '@sitebuilder/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@sitebuilder/mail':
+        specifier: workspace:*
+        version: link:../../packages/mail
       '@sitebuilder/media':
         specifier: workspace:*
         version: link:../../packages/media
@@ -758,6 +764,34 @@ importers:
       esbuild:
         specifier: 'catalog:'
         version: 0.28.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.5(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.2))
+
+  packages/mail:
+    dependencies:
+      '@sitebuilder/schema':
+        specifier: workspace:*
+        version: link:../schema
+      nodemailer:
+        specifier: 'catalog:'
+        version: 10.1.0
+      server-only:
+        specifier: 'catalog:'
+        version: 0.0.1
+      valibot:
+        specifier: 'catalog:'
+        version: 1.5.0(typescript@7.0.2)
+    devDependencies:
+      '@sitebuilder/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -3887,6 +3921,10 @@ packages:
   node-addon-api@7.1.1:
     resolution: {integrity: sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==}
 
+  nodemailer@10.1.0:
+    resolution: {integrity: sha512-fXW8AulB25aOTuwfRYV6lqHyfz2VM4rr4SGXH03mE7x5znEUpzL5mu6anARUpZN7744Ziwkmr4AxSLPJsBQspg==}
+    engines: {node: '>=20.0.0'}
+
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
@@ -6941,6 +6979,8 @@ snapshots:
 
   node-addon-api@7.1.1:
     optional: true
+
+  nodemailer@10.1.0: {}
 
   normalize-path@3.0.0: {}
 
