@@ -52,6 +52,7 @@ const ONE: Record<MediaKind | "any", string> = {
   image: "Choose an image",
   video: "Choose a video",
   document: "Choose a document",
+  font: "Choose a font file",
   any: "Choose a file",
 };
 
@@ -221,7 +222,9 @@ export function MediaPicker({
               <TabsContent value="upload" className="media-picker__panel">
                 <MediaUploader
                   maxBytes={upload.maxBytes}
-                  accept={accept === "image" || accept === "video" ? accept : "any"}
+                  accept={
+                    accept === "image" || accept === "video" || accept === "font" ? accept : "any"
+                  }
                   onUploaded={(media) => {
                     const fitting = media.filter((m) => accept === "any" || m.kind === accept);
                     if (fitting.length === 0) return;

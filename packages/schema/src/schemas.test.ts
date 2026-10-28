@@ -95,6 +95,26 @@ describe("settings", () => {
     expect(v.is(ThemeSettings, theme("x".repeat(50_001)))).toBe(false);
   });
 
+  test("fonts: a safe family name, a file or more, one family for text and one for code", () => {
+    const { fonts: _, ...older } = defaultSettings("https://example.com").theme;
+    expect(v.parse(ThemeSettings, older).fonts).toEqual([]);
+    const file = {
+      mediaId: "11111111-1111-4111-8111-111111111111",
+      weight: "400",
+      style: "normal",
+    };
+    const theme = (fonts: unknown[]) => ({ ...older, fonts });
+    const inter = { family: "Inter", files: [file], use: "text" };
+    expect(v.is(ThemeSettings, theme([inter]))).toBe(true);
+    expect(v.is(ThemeSettings, theme([{ ...inter, family: 'Inter"; } body {' }]))).toBe(false);
+    expect(v.is(ThemeSettings, theme([{ ...inter, family: "monospace" }]))).toBe(false);
+    expect(v.is(ThemeSettings, theme([{ ...inter, files: [] }]))).toBe(false);
+    expect(v.is(ThemeSettings, theme([inter, { ...inter, family: "Lora" }]))).toBe(false);
+    expect(v.is(ThemeSettings, theme([inter, { ...inter, family: "inter", use: "none" }]))).toBe(
+      false,
+    );
+  });
+
   test("reading progress is on for older rows, and follows the checkbox in the form", () => {
     const older = { homepageEntryId: null, postsPerPage: 10, postsPath: "/blog" };
     expect(v.parse(ReadingSettings, older).showReadingProgress).toBe(true);

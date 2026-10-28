@@ -11,6 +11,7 @@ import {
   GridIcon,
   ImageIcon,
   ListIcon,
+  TypeIcon,
   VideoIcon,
 } from "@nuvui/icons";
 import {
@@ -194,8 +195,8 @@ export function MediaBrowser({
       ? "All files"
       : query.month
         ? monthName(query.month, language)
-        : { image: "Images", video: "Videos", document: "Documents" }[
-            query.kind as "image" | "video" | "document"
+        : { image: "Images", video: "Videos", document: "Documents", font: "Fonts" }[
+            query.kind as "image" | "video" | "document" | "font"
           ];
 
   // ── The files ─────────────────────────────────────────────────────────────────────────────
@@ -235,6 +236,13 @@ export function MediaBrowser({
             textValue="Documents"
             label={label("Documents", folders.kinds.document, FileTextIcon)}
           />
+          {folders.kinds.font > 0 ? (
+            <TreeItem
+              value="kind:font"
+              textValue="Fonts"
+              label={label("Fonts", folders.kinds.font, TypeIcon)}
+            />
+          ) : null}
           {years.length > 0 ? (
             <TreeItem
               value="by-month"

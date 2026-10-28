@@ -94,7 +94,7 @@ export async function mediaFolders(db: Executor, uploadedBy: string | null): Pro
     .from(media)
     .where(mine)
     .groupBy(media.mimeType);
-  const kinds: Record<MediaKind, number> = { image: 0, video: 0, document: 0 };
+  const kinds: Record<MediaKind, number> = { image: 0, video: 0, document: 0, font: 0 };
   for (const row of byType) kinds[MEDIA_TYPES[row.type]] += row.total;
   const month = sql<string>`to_char(${media.createdAt} at time zone 'UTC', 'YYYY-MM')`;
   const months = await db

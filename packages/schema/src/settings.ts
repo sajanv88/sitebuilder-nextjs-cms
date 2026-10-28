@@ -56,6 +56,64 @@ export const CustomCss = v.pipe(
   v.check((s) => !s.includes("<"), 'Leave out "<": in a content string, write \\3c instead.'),
 );
 
+// Fonts an admin uploads (decisions #148): a family's WOFF2 files, each a weight (or the range a
+// variable font covers) and a style, and what the family is for: the text (--font-sans) or
+// code (--font-mono). The name goes into the page's CSS in quotes, so it's held to letters,
+// digits, spaces and hyphens, and can't be a generic family the browser has.
+export const FONT_WEIGHTS = [
+  "100",
+  "200",
+  "300",
+  "400",
+  "500",
+  "600",
+  "700",
+  "800",
+  "900",
+  "100 900",
+] as const;
+const GENERIC_FAMILIES =
+  /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-serif|ui-sans-serif|ui-monospace|ui-rounded|math|emoji|fangsong|inherit|initial|unset|revert|default)$/i;
+
+export const FontFamilyName = v.pipe(
+  v.string(),
+  v.trim(),
+  v.regex(/^[A-Za-z0-9][A-Za-z0-9 -]{0,59}$/, "Use letters, digits, spaces and hyphens"),
+  v.check((s) => !GENERIC_FAMILIES.test(s), "That's the name of the browser's own fonts"),
+);
+
+export const FontFamily = v.object({
+  family: FontFamilyName,
+  files: v.pipe(
+    v.array(
+      v.object({
+        mediaId: Uuid,
+        weight: v.picklist(FONT_WEIGHTS),
+        style: v.picklist(["normal", "italic"]),
+      }),
+    ),
+    v.minLength(1, "Add at least one file"),
+    v.maxLength(12, "Use at most 12 files"),
+  ),
+  use: v.picklist(["none", "text", "code"]),
+});
+export type FontFamily = v.InferOutput<typeof FontFamily>;
+
+export const ThemeFonts = v.pipe(
+  v.array(FontFamily),
+  v.maxLength(6, "Keep at most 6 font families"),
+  v.check(
+    (fonts) => new Set(fonts.map((f) => f.family.toLowerCase())).size === fonts.length,
+    "Each family needs a name of its own",
+  ),
+  v.check(
+    (fonts) =>
+      fonts.filter((f) => f.use === "text").length <= 1 &&
+      fonts.filter((f) => f.use === "code").length <= 1,
+    "One family for the text and one for code, at most",
+  ),
+);
+
 export const ThemeSettings = v.object({
   preset: v.picklist(["default", "ember", "high-contrast", "ink", "ledger", "meadow"]),
   mode: v.picklist(["light", "dark", "system"]),
@@ -69,6 +127,8 @@ export const ThemeSettings = v.object({
   pageBackground: v.optional(v.nullable(HexColor), null),
   // The site's own CSS, after the theme's and the template's (Appearance → Custom CSS).
   customCss: v.optional(CustomCss, ""),
+  // Uploaded fonts (Appearance → Fonts); none for rows saved before them.
+  fonts: v.optional(ThemeFonts, []),
 });
 export type ThemeSettings = v.InferOutput<typeof ThemeSettings>;
 
@@ -313,6 +373,7 @@ export function defaultSettings(siteUrl: string): {
     },
     theme: {
       customCss: "",
+      fonts: [],
       preset: "default",
       mode: "system",
       density: "default",

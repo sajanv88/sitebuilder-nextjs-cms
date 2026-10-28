@@ -25,7 +25,7 @@ const png = Uint8Array.from(
 const gif = bytes("GIF89a", [3, 0, 2, 0, 0, 0, 0]);
 
 describe("sniffType", () => {
-  test("knows the eight allowed types by their bytes", () => {
+  test("knows the nine allowed types by their bytes", () => {
     expect(sniffType(bytes([0xff, 0xd8, 0xff, 0xe0]))).toBe("image/jpeg");
     expect(sniffType(png)).toBe("image/png");
     expect(sniffType(gif)).toBe("image/gif");
@@ -36,6 +36,9 @@ describe("sniffType", () => {
       "video/webm",
     );
     expect(sniffType(bytes("%PDF-1.7\n"))).toBe("application/pdf");
+    expect(sniffType(bytes("wOF2\u0000\u0001\u0000\u0000"))).toBe("font/woff2");
+    // WOFF 1 isn't taken (decisions #148).
+    expect(sniffType(bytes("wOFF\u0000\u0001\u0000\u0000"))).toBeNull();
   });
 
   test("refuses SVG, HTML, Matroska that isn't WebM, and short files", () => {

@@ -137,7 +137,7 @@ describe("media rows", () => {
     const folders = await mediaFolders(db, null);
     expect(folders).toEqual({
       all: 2,
-      kinds: { image: 1, video: 0, document: 1 },
+      kinds: { image: 1, video: 0, document: 1, font: 0 },
       months: [{ month: thisMonth, count: 2 }],
     });
     expect((await mediaFolders(db, "someone-else")).all).toBe(0);

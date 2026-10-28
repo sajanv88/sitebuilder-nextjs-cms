@@ -39,6 +39,9 @@ export function sniffType(bytes: Uint8Array): MediaType | null {
   if (ascii(bytes, 0, "GIF87a") || ascii(bytes, 0, "GIF89a")) return "image/gif";
   if (ascii(bytes, 0, "RIFF") && ascii(bytes, 8, "WEBP")) return "image/webp";
   if (ascii(bytes, 0, "%PDF-")) return "application/pdf";
+  // WOFF 2.0's signature (W3C WOFF2 §3). WOFF 1 and bare TTF/OTF aren't taken: WOFF2 is what
+  // every browser the site supports reads, and the smallest.
+  if (ascii(bytes, 0, "wOF2")) return "font/woff2";
   if (startsWith(bytes, [0x1a, 0x45, 0xdf, 0xa3])) {
     // Matroska and WebM share this header; the doctype names which one it is.
     const head = String.fromCharCode(...bytes.subarray(0, Math.min(bytes.length, 64)));

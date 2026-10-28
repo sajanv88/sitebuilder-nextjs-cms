@@ -28,7 +28,7 @@ export interface UploadedMedia {
   id: string;
   filename: string;
   mimeType: string;
-  kind: "image" | "video" | "document";
+  kind: "image" | "video" | "document" | "font";
   url: string;
   width: number | null;
   height: number | null;
@@ -47,9 +47,10 @@ interface Queued {
 }
 
 // The browser's picker shows these; the server checks the bytes whatever they're called.
-const ACCEPT_ALL = ".jpg,.jpeg,.png,.gif,.webp,.avif,.mp4,.webm,.pdf";
+const ACCEPT_ALL = ".jpg,.jpeg,.png,.gif,.webp,.avif,.mp4,.webm,.pdf,.woff2";
 const ACCEPT_IMAGES = ".jpg,.jpeg,.png,.gif,.webp,.avif";
 const ACCEPT_VIDEOS = ".mp4,.webm";
+const ACCEPT_FONTS = ".woff2";
 
 function send(
   file: File,
@@ -83,7 +84,7 @@ export function MediaUploader({
   onUploaded,
 }: {
   maxBytes: number;
-  accept?: "any" | "image" | "video";
+  accept?: "any" | "image" | "video" | "font";
   // Called once a round of uploads ends, with the files that went through.
   onUploaded: (media: UploadedMedia[]) => void;
 }) {
@@ -142,7 +143,13 @@ export function MediaUploader({
             key={round}
             multiple
             accept={
-              accept === "image" ? ACCEPT_IMAGES : accept === "video" ? ACCEPT_VIDEOS : ACCEPT_ALL
+              accept === "image"
+                ? ACCEPT_IMAGES
+                : accept === "video"
+                  ? ACCEPT_VIDEOS
+                  : accept === "font"
+                    ? ACCEPT_FONTS
+                    : ACCEPT_ALL
             }
             maxSize={maxBytes}
             disabled={running}
@@ -164,7 +171,9 @@ export function MediaUploader({
             ? `JPEG, PNG, GIF, WebP or AVIF, up to ${limit} each.`
             : accept === "video"
               ? `MP4 or WebM, up to ${limit} each.`
-              : `Images (JPEG, PNG, GIF, WebP, AVIF), videos (MP4, WebM) and PDFs, up to ${limit} each.`}
+              : accept === "font"
+                ? `WOFF2 font files, up to ${limit} each.`
+                : `Images (JPEG, PNG, GIF, WebP, AVIF), videos (MP4, WebM), PDFs and WOFF2 fonts, up to ${limit} each.`}
         </FieldDescription>
         <FieldError>
           {rejected.length > 0

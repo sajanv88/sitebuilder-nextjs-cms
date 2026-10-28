@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (C) 2026 Sajankumar Vijayan
+
+@use "abstracts" as a;
+
+.font-manager {
+  display: grid;
+  gap: a.space(3);
+
+  // A line of the family, in it.
+  &__sample {
+    color: var(--color-foreground);
+    font-size: var(--text-lg);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  &__new {
+    justify-self: start;
+  }
+
+  &__dialog {
+    display: grid;
+    gap: a.space(4);
+  }
+
+  &__files {
+    display: grid;
+    gap: a.space(2);
+  }
+
+  &__label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  &__hint {
+    margin: 0;
+    color: var(--color-muted-foreground);
+    font-size: var(--text-sm);
+  }
+
+  // A file's name, its weight and style, and remove: one row, wrapping on a phone.
+  &__file {
+    display: flex;
+    flex-wrap: wrap;
+    gap: a.space(2);
+    align-items: center;
+  }
+
+  &__filename {
+    flex: 1 1 12rem;
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+  }
+
+  &__add {
+    justify-self: start;
+  }
+}

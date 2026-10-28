@@ -18,10 +18,17 @@ export const MEDIA_TYPES = {
   "video/mp4": "video",
   "video/webm": "video",
   "application/pdf": "document",
+  // Fonts for the theme (Appearance → Fonts, decisions #148).
+  "font/woff2": "font",
 } as const;
 export type MediaType = keyof typeof MEDIA_TYPES;
 export type MediaKind = (typeof MEDIA_TYPES)[MediaType];
-export const MEDIA_KINDS = ["image", "video", "document"] as const satisfies readonly MediaKind[];
+export const MEDIA_KINDS = [
+  "image",
+  "video",
+  "document",
+  "font",
+] as const satisfies readonly MediaKind[];
 
 export const MEDIA_ALT_MAX = 200;
 

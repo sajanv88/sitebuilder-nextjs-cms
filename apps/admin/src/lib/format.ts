@@ -25,6 +25,7 @@ const TYPE_NAMES: Record<MediaType, string> = {
   "video/mp4": "MP4",
   "video/webm": "WebM",
   "application/pdf": "PDF",
+  "font/woff2": "WOFF2",
 };
 
 // "JPEG image", "MP4 video", "PDF document".

@@ -247,7 +247,7 @@ export const TemplateManifestSchema = v.strictObject({
   licence: v.picklist(TEMPLATE_LICENCES),
   requires: v.strictObject({ sitebuilder: VersionRange, nuvui: VersionRange }),
   // Written to the theme settings when an admin activates it with "Use its colours and type".
-  theme: v.optional(v.omit(ThemeSettings, ["pageBackground", "customCss"])),
+  theme: v.optional(v.omit(ThemeSettings, ["pageBackground", "customCss", "fonts"])),
   screenshots: v.pipe(
     v.array(
       v.strictObject({

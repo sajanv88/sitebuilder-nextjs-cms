@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Sajankumar Vijayan
 
 import "server-only";
-import { type SettingsValue, TokenName, TokenValue } from "@sitebuilder/schema";
+import { FontFamilyName, type SettingsValue, TokenName, TokenValue } from "@sitebuilder/schema";
 import * as v from "valibot";
 
 // The theme's token overrides as one stylesheet (design §5.4): light values on :root and any
@@ -35,4 +35,34 @@ export function themeStylesheet(tokens: Tokens): string {
     css += `@media (prefers-color-scheme:dark){[data-theme=system]{${dark}}}`;
   }
   return css;
+}
+
+// Uploaded fonts (decisions #148): an @font-face for each file the media library still has,
+// then the family as the text's or code's font, after a stack the browser has. swap: text shows
+// at once in a fallback, then in the font once it's loaded. The name and each address are
+// checked again here: this text goes into the page as it is.
+const MEDIA_URL = /^\/media\/[A-Za-z0-9._~/-]+$/;
+const FALLBACK = { text: "system-ui, sans-serif", code: "ui-monospace, monospace" } as const;
+const TOKEN = { text: "--font-sans", code: "--font-mono" } as const;
+
+export function fontsStylesheet(
+  fonts: SettingsValue<"theme">["fonts"],
+  urls: Readonly<Record<string, string>>,
+): string {
+  let css = "";
+  const uses: string[] = [];
+  for (const font of fonts) {
+    if (!v.is(FontFamilyName, font.family)) continue;
+    let faces = 0;
+    for (const file of font.files) {
+      const url = urls[file.mediaId];
+      if (!url || !MEDIA_URL.test(url)) continue;
+      css += `@font-face{font-family:"${font.family}";src:url("${url}") format("woff2");font-weight:${file.weight};font-style:${file.style};font-display:swap}`;
+      faces += 1;
+    }
+    if (faces > 0 && font.use !== "none") {
+      uses.push(`${TOKEN[font.use]}:"${font.family}", ${FALLBACK[font.use]}`);
+    }
+  }
+  return uses.length > 0 ? `${css}:root{${uses.join(";")}}` : css;
 }

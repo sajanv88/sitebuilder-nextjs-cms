@@ -97,7 +97,16 @@ describe("activateTemplate", () => {
     // The site's own CSS outlives a template's colours.
     const before = await getSettings(db, "theme");
     if (!before) throw new Error("no theme");
-    await upsertSettings(db, "theme", { ...before, customCss: "body { margin: 0; }" });
+    const font = {
+      family: "Inter",
+      files: [{ mediaId: randomUUID(), weight: "400" as const, style: "normal" as const }],
+      use: "text" as const,
+    };
+    await upsertSettings(db, "theme", {
+      ...before,
+      customCss: "body { margin: 0; }",
+      fonts: [font],
+    });
     const input = activation({ publish: true });
     const home = input.entries[0]?.id ?? "";
     const result = await activateTemplate(db, {
@@ -112,6 +121,7 @@ describe("activateTemplate", () => {
     expect(result.ok).toBe(true);
     expect((await getSettings(db, "theme"))?.preset).toBe("ember");
     expect((await getSettings(db, "theme"))?.customCss).toBe("body { margin: 0; }");
+    expect((await getSettings(db, "theme"))?.fonts).toEqual([font]);
     expect(await getMenu(db, "primary")).toHaveLength(1);
     expect((await getReading(db)).homepageEntryId).toBe(home);
     expect((await status(home))?.status).toBe("published");

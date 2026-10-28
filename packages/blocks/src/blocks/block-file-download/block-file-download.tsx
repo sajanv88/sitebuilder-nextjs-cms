@@ -27,6 +27,7 @@ const KIND: Record<MediaType, string> = {
   "video/mp4": "MP4 video",
   "video/webm": "WebM video",
   "application/pdf": "PDF",
+  "font/woff2": "WOFF2 font",
 };
 
 export const fileDownload: BlockDefinition<Props> = {

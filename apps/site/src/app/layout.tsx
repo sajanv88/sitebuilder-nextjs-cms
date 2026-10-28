@@ -20,8 +20,8 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { NonceProvider } from "@/components/nonce-provider/nonce-provider";
 import { PageBackground } from "@/components/page-background/page-background";
-import { getAnalytics, getSite, getTheme } from "@/server/content";
-import { themeStylesheet } from "@/server/theme";
+import { getAnalytics, getCardMedia, getSite, getTheme } from "@/server/content";
+import { fontsStylesheet, themeStylesheet } from "@/server/theme";
 
 // Every page renders per request (below), and the settings live in the database, which the
 // build doesn't have: nothing here is prerendered. RequestTime below says so to Next.
@@ -55,7 +55,16 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const requestHeaders = await headers();
   const nonce = requestHeaders.get("x-nonce") ?? "";
   const [site, theme] = await Promise.all([getSite(), getTheme()]);
-  const tokens = themeStylesheet(theme.tokens);
+  const fontFiles = await getCardMedia(
+    theme.fonts.flatMap((font) => font.files.map((f) => f.mediaId)),
+  );
+  // After the token overrides: a font chosen for the text wins over a font stack typed there.
+  const tokens =
+    themeStylesheet(theme.tokens) +
+    fontsStylesheet(
+      theme.fonts,
+      Object.fromEntries(Object.entries(fontFiles).map(([id, media]) => [id, media.url])),
+    );
 
   return (
     <html

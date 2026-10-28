@@ -57,6 +57,7 @@ import {
 import { type CSSProperties, useEffect, useRef, useState, useTransition } from "react";
 import * as v from "valibot";
 import { saveTheme } from "@/actions/appearance";
+import { type FontFile, FontManager } from "@/components/font-manager/font-manager";
 import "./appearance-form.scss";
 import {
   BACKGROUND_PRESETS,
@@ -146,13 +147,25 @@ function rowProblem(row: TokenRow): string | null {
   return null;
 }
 
-export function AppearanceForm({ initial }: { initial: Theme }) {
+export function AppearanceForm({
+  initial,
+  fontFiles,
+  upload,
+}: {
+  initial: Theme;
+  // The saved fonts' files, by media id.
+  fontFiles: Record<string, FontFile>;
+  // Whether the viewer may upload, for adding font files.
+  upload: { allowed: boolean; maxBytes: number };
+}) {
   const [preset, setPreset] = useState<Preset>(initial.preset);
   const [mode, setMode] = useState<Theme["mode"]>(initial.mode);
   const [density, setDensity] = useState<Theme["density"]>(initial.density);
   const [rows, setRows] = useState<TokenRow[]>(() => rowsOf(initial.tokens));
   const [pageBackground, setPageBackground] = useState(initial.pageBackground);
   const [customCss, setCustomCss] = useState(initial.customCss);
+  const [fonts, setFonts] = useState(initial.fonts);
+  const [files, setFiles] = useState(fontFiles);
   const cssCheck = v.safeParse(CustomCss, customCss);
   const cssProblem = cssCheck.success ? undefined : cssCheck.issues[0].message;
   const [previewDark, setPreviewDark] = useState(initial.mode === "dark");
@@ -253,6 +266,7 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
         tokens,
         pageBackground,
         customCss,
+        fonts,
       });
       if (result.ok)
         toast("Appearance saved. The site shows it on the next page load.", { intent: "success" });
@@ -536,6 +550,23 @@ export function AppearanceForm({ initial }: { initial: Theme }) {
             <PlusIcon aria-hidden="true" size={16} />
             Add a token
           </Button>
+        </section>
+
+        <section className="appearance-form__section" aria-labelledby="appearance-fonts">
+          <h2 id="appearance-fonts" className="appearance-form__heading">
+            Fonts
+          </h2>
+          <p className="appearance-form__note">
+            Fonts of your own, from WOFF2 files. Choose one for the text and one for code. With the
+            default template, its Fonts option uses them when set to the theme's.
+          </p>
+          <FontManager
+            fonts={fonts}
+            files={files}
+            upload={upload}
+            onChange={setFonts}
+            onFiles={(added) => setFiles((now) => ({ ...now, ...added }))}
+          />
         </section>
 
         <section className="appearance-form__section" aria-labelledby="appearance-css">
