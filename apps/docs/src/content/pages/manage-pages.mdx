@@ -1,0 +1,48 @@
+import pagesList from "./images/pages-list.jpg";
+import pagesSelected from "./images/pages-selected.jpg";
+import trash from "./images/trash.jpg";
+
+**Pages** in the sidebar lists every page on your site: what it's called, its address, who wrote it, and whether visitors can see it. Editors and admins can open it. Authors write posts only, so they don't see it.
+
+<Screenshot src={pagesList} alt="The Pages list with five pages: one scheduled, one draft and three published, one of them at /about-us/our-team." />
+
+## What the status means
+
+Every page is in one of three states, shown as a badge.
+
+- **Published** pages are on your site now.
+- **Draft** pages are only in the admin. Nobody outside it can see them.
+- **Scheduled** pages go live by themselves at the date and time in the Date column.
+
+The tabs above the list show each group on its own, with a count: **All**, **Published**, **Drafts**, **Scheduled** and **Trash**. The **All** tab leaves out the trash.
+
+## Find a page
+
+Type in **Search** to narrow the list by title. Click a column heading to sort by it, and click it again to reverse the order. The list starts with the most recent date first.
+
+**Columns** chooses which columns show. **Rows per page**, under the list, shows more at once on a big site.
+
+Click a page's title to open it in the editor. The **⋯** button at the end of each row has the same **Edit**, and **Move to trash**.
+
+## Pages inside pages
+
+A page can sit under another one. In the example, Our team is under About us, so its address is `/about-us/our-team`.
+
+To put a page under another, open it and choose **Parent page** in the **Page** tab, under **Address**. The list shows each page's full address under its title.
+
+## Move pages to the trash
+
+To get rid of a page, choose **Move to trash** from its **⋯** menu, or from the editor's top bar. For several at once, tick their rows: a bar appears above the list with **Move to trash**.
+
+<Screenshot src={pagesSelected} alt="The Pages list with one row ticked and a bar above it saying 1 selected, with Move to trash and Clear selection." />
+
+A page in the trash is off your site straight away, but nothing is lost yet. Open the **Trash** tab to see it. From its **⋯** menu:
+
+- **Restore** brings it back as it was, published or not. If another page has taken its address meanwhile, it comes back as a draft with a new one.
+- **Delete permanently** removes it for good. Sitebuilder asks first, because this can't be undone.
+
+<Screenshot src={trash} alt="The Trash tab with Christmas orders in it, and its menu open showing Restore and Delete permanently." />
+
+<Tip>
+  Changed a page's address instead of deleting it? You don't need to do anything for old links: Sitebuilder sends visitors from the old address to the new one.
+</Tip>

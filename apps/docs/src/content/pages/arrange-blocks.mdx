@@ -1,0 +1,54 @@
+import columnWidths from "./images/column-widths.jpg";
+import columnsSettings from "./images/columns-settings.jpg";
+
+A page is a stack of blocks, and some blocks hold others: a **Section** is a band across the page, and **Columns** puts blocks side by side. This page covers getting them where you want them.
+
+## Select a block
+
+Click it on the canvas. A blue outline shows it's selected, its settings open on the right, and a small grip appears above its top corner.
+
+To select a block that's inside another, click it directly. To select the container itself, such as a single column, click it in **Outline** on the left: it lists every block, with the ones inside set in under their container.
+
+## Move a block
+
+There are four ways, so use whichever suits you.
+
+- **Drag the grip** above the selected block. As you drag, a blue line shows where it will land; it only appears where the block is allowed to go. Let go to drop it, or press <Kbd>Esc</Kbd> to leave it where it was. Near the top or bottom of the window, the page scrolls for you.
+- **Drag its row in Outline**, the same way.
+- **Press <Kbd>Alt</Kbd> + <Kbd>↑</Kbd> or <Kbd>Alt</Kbd> + <Kbd>↓</Kbd>** to move it one place up or down.
+- **Press the arrows** at the top of the **Block** tab.
+
+Each move is one step you can undo with <Kbd>Ctrl</Kbd> + <Kbd>Z</Kbd>.
+
+<Note title="Where blocks can go">
+  Some blocks only fit in certain places. A column only lives inside Columns, and Columns holds two to four of them. Sitebuilder won't offer a place a block can't go, whichever way you move it.
+</Note>
+
+## Copy or remove a block
+
+At the top of the **Block** tab, **Duplicate** puts a copy right after the block, and **Delete** removes it. <Kbd>Delete</Kbd> on the keyboard removes the selected block too. Removing a container removes what's inside it, so undo is there if you change your mind.
+
+## Put blocks side by side
+
+Add **Columns** from the Layout group. It starts with two empty columns. To fill one, click it, then add blocks: they go inside the column you selected.
+
+### Make one column wider
+
+Select the Columns block, or anything inside it, and a line appears between the columns. Drag it left or right.
+
+<Screenshot src={columnWidths} alt="Two columns, Sourdough and Rye. The line between them has been dragged so the first column takes two thirds of the row." />
+
+The line snaps to a quarter, a third, a half, two thirds or three quarters of the row, and the page redraws as you go. No column gets narrower than a quarter. <Kbd>Esc</Kbd> while dragging puts it back.
+
+You can also pick the widths from a list: select the Columns block and choose **Widths** on the right.
+
+<Screenshot src={columnsSettings} alt="The Columns settings: Width on the page Contained, Widths 2/3 + 1/3, Space between Medium, Stack them on Phones and small tablets, Line them up At the top." />
+
+Two columns have five layouts to choose from, and three columns have six. Four columns always share the row equally.
+
+### Other Columns settings
+
+- **Width on the page** sets how far across the page the row reaches.
+- **Space between** sets the gap between columns.
+- **Stack them on** chooses the screen size where the columns go one under another.
+- **Line them up** chooses where a short column sits next to a taller one: at the top, in the middle or at the bottom.

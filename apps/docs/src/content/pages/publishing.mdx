@@ -1,0 +1,59 @@
+import preview from "./images/preview.jpg";
+import scheduleFields from "./images/schedule-fields.jpg";
+import scheduledBar from "./images/scheduled-bar.jpg";
+import history from "./images/history.jpg";
+
+Nothing you write reaches your site until you publish it. Until then a page is a draft, and you can work on it, look at it and change your mind as often as you like.
+
+## Drafts save themselves
+
+While a page is a draft, the editor saves it three seconds after you stop typing. The top bar says when: "Saved at 06:44 AM".
+
+**Save draft**, or <Kbd>Ctrl</Kbd> + <Kbd>S</Kbd>, saves straight away and also keeps a version of the page in its history. Saving by itself doesn't keep a version, so press Save draft at points you might want to go back to.
+
+## Preview a draft
+
+**Preview** opens the page in a new tab, as it will look on your site, with your header and menu. A note at the top says it's a draft that visitors can't see. **Leave preview** takes you back to the site as visitors see it.
+
+<Screenshot src={preview} alt="A preview of the Visit us draft on the site, with a note saying This is a draft. Visitors can't see it until it's published, and a Leave preview button." />
+
+Preview shows the last saved version, so save before you open it.
+
+## Publish
+
+**Publish** puts the page on your site at once. After that the buttons change:
+
+- **Update** saves your changes to the live page. A published page doesn't save by itself, so visitors never see half-finished changes. Press Update when you're done.
+- **Unpublish** takes the page off your site and makes it a draft again.
+
+<Warning title="Pages with [TODO] in them">
+  The AI assistant marks what it couldn't know with `[TODO: …]`. Publishing a page that still has one asks you first, so a placeholder doesn't go live by mistake.
+</Warning>
+
+## Publish later
+
+To publish at a set time, open the **Page** tab and fill in **Publishing**.
+
+1. Choose a **Publish date**, or type it.
+2. Choose a **Publish time**. Times are in quarter hours, and you can type one, such as 07:00. They're in your site's time zone, which the field names.
+3. The **Publish** button now says **Schedule**. Press it.
+
+<Screenshot src={scheduleFields} alt="The Publishing settings with Publish date 01/12/2026 and Publish time 07:00, in the site's time zone, Europe/London." />
+
+The page's badge says **Scheduled**, and it goes live by itself at that time. You don't need to be signed in, or have the admin open.
+
+<Screenshot src={scheduledBar} alt="The editor's top bar for Christmas orders, with a Scheduled badge and Unpublish and Schedule buttons." />
+
+To change the time, pick a new one and press **Schedule** again. To publish it now instead, clear the date and press **Publish**. **Unpublish** turns it back into a draft.
+
+## Go back to an earlier version
+
+**History** lists the versions of the page, newest first: one for every Save draft, Publish, Update and Schedule. It keeps the latest 50.
+
+<Screenshot src={history} alt="The History panel with two versions of Our bread, the newest marked Current and the other with a Restore button." />
+
+**Restore** puts that version's title and blocks back. It's saved at once as a new version, so you can restore the one before it if you change your mind. On a published page, visitors see the restored version straight away.
+
+## Trash a page
+
+**Move to trash** in the top bar takes the page off your site and puts it in the trash, where you can still restore it. [Find and manage pages](/pages/manage-pages#move-pages-to-the-trash) explains the trash.

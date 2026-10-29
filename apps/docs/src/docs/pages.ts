@@ -18,4 +18,8 @@ export const PAGES: Record<string, Loader> = {
   "getting-started/name-your-site": () => import("@/content/getting-started/name-your-site.mdx"),
   "getting-started/first-page": () => import("@/content/getting-started/first-page.mdx"),
   "getting-started/home-and-menu": () => import("@/content/getting-started/home-and-menu.mdx"),
+  "pages/manage-pages": () => import("@/content/pages/manage-pages.mdx"),
+  "pages/the-editor": () => import("@/content/pages/the-editor.mdx"),
+  "pages/arrange-blocks": () => import("@/content/pages/arrange-blocks.mdx"),
+  "pages/publishing": () => import("@/content/pages/publishing.mdx"),
 };

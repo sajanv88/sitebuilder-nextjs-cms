@@ -49,6 +49,31 @@ export const SECTIONS: DocSection[] = [
       },
     ],
   },
+  {
+    title: "Pages and the editor",
+    pages: [
+      {
+        slug: "pages/manage-pages",
+        title: "Find and manage pages",
+        description: "The list of pages: what each status means, finding one, and the trash.",
+      },
+      {
+        slug: "pages/the-editor",
+        title: "Find your way around the editor",
+        description: "The three parts of the editor, the page at different widths, and shortcuts.",
+      },
+      {
+        slug: "pages/arrange-blocks",
+        title: "Move and arrange blocks",
+        description: "Select, move, copy and remove blocks, and set how wide columns are.",
+      },
+      {
+        slug: "pages/publishing",
+        title: "Drafts, scheduling and publishing",
+        description: "Save a draft, preview it, publish now or later, and go back to a version.",
+      },
+    ],
+  },
 ];
 
 export const ALL_PAGES: DocPage[] = SECTIONS.flatMap((section) => section.pages);
