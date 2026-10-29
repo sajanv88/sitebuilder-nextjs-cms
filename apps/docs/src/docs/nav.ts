@@ -110,6 +110,26 @@ export const SECTIONS: DocSection[] = [
       },
     ],
   },
+  {
+    title: "Posts, categories and tags",
+    pages: [
+      {
+        slug: "posts/write-a-post",
+        title: "Write a post",
+        description: "The Posts screen, a new post, its author, excerpt and address.",
+      },
+      {
+        slug: "posts/categories-and-tags",
+        title: "Categories and tags",
+        description: "Group posts by subject, choose them in the editor, and manage them.",
+      },
+      {
+        slug: "posts/the-blog",
+        title: "Where posts appear",
+        description: "The blog, each post's page, category and tag pages, the menu and the feed.",
+      },
+    ],
+  },
 ];
 
 export const ALL_PAGES: DocPage[] = SECTIONS.flatMap((section) => section.pages);

@@ -1,0 +1,59 @@
+import blog from "./images/blog.jpg";
+import post from "./images/post.jpg";
+import postTerms from "./images/post-terms.jpg";
+import archive from "./images/archive.jpg";
+
+You don't build a blog page: your site has one already. Publish a post and it appears there, and in a few other places, by itself. The pictures here use Sitebuilder's default template; another template may lay things out differently.
+
+## The blog
+
+Your published posts are listed at `/blog`, newest first, ten to a page. Older posts are on `/blog/page/2` and on, with page numbers at the bottom.
+
+<Screenshot src={blog} alt="The blog: the heading Posts, then three posts as cards, each with its featured picture, title, date and excerpt." />
+
+Each card shows the post's featured image, its title, the date it was published, and its excerpt. Drafts and scheduled posts aren't listed until they go live.
+
+## A post's page
+
+A post shows its title, the date and who wrote it, then its featured image, then your blocks.
+
+<Screenshot src={post} alt="The post Meet our new oven on the site: the title, 27/10/2026 · Sam Rivera, a picture of a loaf in an oven, then the text with two headings." />
+
+At the end are its categories and tags, each a link to the page that lists its posts.
+
+<Screenshot src={postTerms} alt="The end of a post: Categories, News, and Tags, The oven, each as a link." />
+
+A thin bar along the top of the window fills up as visitors scroll through a post. You can turn it off in the Reading settings.
+
+## Category and tag pages
+
+Every category and tag has its own page, listing its posts like the blog does: `/blog/category/news` for the News category, and `/blog/tag/the-oven` for a tag called The oven.
+
+<Screenshot src={archive} alt="The News category's page: the heading News, the line Posts in News., and three posts as cards." />
+
+## Help visitors find it
+
+The blog isn't added to your menu by itself. To add it, open **Menus**, add an item and choose:
+
+- **A web address**, with `/blog`, for the whole blog;
+- **A category or tag**, for one of their pages. It follows the category if you rename it later.
+
+Or make the blog your home page: in Settings → Reading, set **Home page** to **The latest posts**. Your site's address then lists the posts too, with your site's name and tagline as the heading.
+
+To show a few posts inside a page, such as your three newest on the home page, use the [Latest posts block](/blocks/lists-and-tables#latest-posts).
+
+## Reading settings
+
+Under **Settings → Reading**:
+
+- **Posts per page**: how many posts the blog, and each category and tag page, shows at a time, from 1 to 50.
+- **Posts address**: where the blog lives. It's `/blog` to start with; `/news` or `/journal` work too.
+- **Show reading progress on posts**: the bar along the top of a post.
+
+Changing the posts address moves every post with it, so you're asked first. Each published post gets a redirect from its old address, so links to it keep working. The address can't be one a page already has.
+
+## The feed and search engines
+
+Your site has a feed at `/feed.xml` with your 20 newest posts, each with its excerpt. People who follow sites in a feed reader can subscribe to it, and their reader finds it from any page of your site.
+
+Published posts, and the category and tag pages, are also in your site's sitemap at `/sitemap.xml`, which tells search engines what to look at.

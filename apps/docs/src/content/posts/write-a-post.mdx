@@ -1,0 +1,50 @@
+import postsList from "./images/posts-list.jpg";
+import postSettings from "./images/post-settings.jpg";
+
+Posts are for news and articles: things with a date, which your site lists newest first. Pages are for what stays put, such as About us or Contact. If you'd still want it there unchanged in a year, it's probably a page.
+
+## The Posts screen
+
+**Posts** in the sidebar lists every post, with who wrote it and its categories.
+
+<Screenshot src={postsList} alt="The Posts list with seven posts: one scheduled, one draft and five published, each with its author, its categories, and its address under /blog." />
+
+It works like the list of pages: the tabs filter by status, **Search** narrows the list by title, and a post in the trash can be restored until it's deleted permanently. [Find and manage pages](/pages/manage-pages) covers all of it.
+
+Authors only see the posts they wrote. Editors and admins see everyone's.
+
+## Write a new post
+
+1. Go to **Posts** and press **New post**.
+2. Give it a title, and add blocks for the rest. It's the same editor as for pages, so [Find your way around the editor](/pages/the-editor) applies here too.
+3. Open the **Post** tab on the right for the post's own settings, described below.
+4. Press **Publish**, or set a date to publish it later. [Drafts, scheduling and publishing](/pages/publishing) explains both.
+
+Like a page, a post saves itself while it's a draft.
+
+## The post's settings
+
+The **Post** tab has the same cards as a page's (see [the Page tab](/pages/the-editor#the-page-tab)), with two more: **Author**, and **Categories and tags**. A post has no parent page.
+
+<Screenshot src={postSettings} alt="Two cards from the Post tab: Author, with Written by set to Sam Rivera, and Categories and tags, with News chosen as the category and The oven as the tag." />
+
+- **Address**: every post lives under the blog's address, so a post with the slug `new-oven` is at `/blog/new-oven`. Leave the slug empty and it's made from the title. The blog's address itself is set in [Settings → Reading](/posts/the-blog#reading-settings).
+- **Featured image**: shown under the post's title, on its card in the blog, and when someone shares a link to it.
+- **Author**: **Written by** sets whose name appears under the title. Only editors and admins can change it.
+- **Categories and tags**: what the post is about. [Categories and tags](/posts/categories-and-tags) explains the difference and how to choose them.
+- **Excerpt**, under **Summary**: a sentence or two about the post, up to 500 characters. It appears under the title on the blog's cards and in your site's feed. Search engines show it too, unless you write a description for them under **Search engines**.
+
+<Tip title="Write the excerpt">
+  A post without one shows only its title and date in lists. One plain sentence about what's in the post is enough, and makes people far more likely to click.
+</Tip>
+
+Changing the slug of a published post moves it to the new address. Its old address redirects to the new one, so links people have shared keep working.
+
+## What authors can do
+
+Someone with the Author role writes posts and nothing else. They can:
+
+- write posts, and publish, schedule, change and trash their own;
+- choose categories and tags for their posts from those that already exist.
+
+They can't edit other people's posts, delete a post for good, create new categories or tags, or see pages at all. An editor or admin can do all of those.

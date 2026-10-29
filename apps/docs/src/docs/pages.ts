@@ -28,4 +28,7 @@ export const PAGES: Record<string, Loader> = {
   "blocks/layout": () => import("@/content/blocks/layout.mdx"),
   "blocks/marketing": () => import("@/content/blocks/marketing.mdx"),
   "blocks/lists-and-tables": () => import("@/content/blocks/lists-and-tables.mdx"),
+  "posts/write-a-post": () => import("@/content/posts/write-a-post.mdx"),
+  "posts/categories-and-tags": () => import("@/content/posts/categories-and-tags.mdx"),
+  "posts/the-blog": () => import("@/content/posts/the-blog.mdx"),
 };

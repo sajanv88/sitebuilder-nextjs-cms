@@ -1,0 +1,51 @@
+import termPicker from "./images/term-picker.jpg";
+import categories from "./images/categories.jpg";
+import addCategory from "./images/add-category.jpg";
+
+Categories and tags both group posts by what they're about. Each one gets its own page on your site, listing its posts, so a visitor who liked one post about rye can find the others.
+
+The difference is how broad they are:
+
+- **Categories** are the few big subjects your posts fall under, such as News, Bread and Events. Most posts have one.
+- **Tags** are finer labels, as many as help: Rye, Christmas, The oven. A post can have several, or none.
+
+Neither goes inside the other: there are no sub-categories.
+
+## Choose them for a post
+
+In the editor, open the **Post** tab and find **Categories and tags**. Open either list, search it, and click the ones you want. You can choose several. They're listed under the box, and you can click one in the list again to take it off.
+
+<Screenshot src={termPicker} alt="Categories and tags, with News chosen as the category. The Tags list is open with Seasonal typed in its search, offering Add tag “Seasonal”." />
+
+To use a tag that doesn't exist yet, type its name in the search. **Add tag "…"** creates it and adds it to the post in one go. The same works for categories.
+
+Only editors and admins can create new ones. Authors choose from those that already exist.
+
+## Manage categories and tags
+
+Under **Posts** in the sidebar, **Categories** and **Tags** each list theirs, with the number of posts that use each one. Search the list, or click a column heading to sort by it.
+
+<Screenshot src={categories} alt="The Categories screen: Bread, Events and News, each with its slug and how many posts use it, and an Add category button." />
+
+### Add one
+
+1. Press **Add category** (or **Add tag**).
+2. Type its **Name**, as visitors will see it.
+3. Leave **Slug** empty unless you want a particular address for its page. It's made from the name: News gets `/blog/category/news`.
+4. Press **Add category**.
+
+<Screenshot src={addCategory} alt="The Add a category dialog, with Recipes typed in Name and Slug left empty." />
+
+Two categories can't share a slug, and neither can two tags. If you type one that's taken, you're asked for another.
+
+### Rename one
+
+Choose **Rename** from the **⋯** menu at the end of its row. Posts keep it under the new name.
+
+Changing the slug moves its page to a new address. The old address redirects to the new one, so links people saved still work. You'll find the redirect under **Redirects**, and menu items that point to the category or tag follow it by themselves.
+
+### Delete one
+
+Choose **Delete** from the **⋯** menu. It's taken off every post that has it, and the posts themselves stay. There's no trash for categories and tags, so this can't be undone.
+
+Only editors and admins see these screens.
