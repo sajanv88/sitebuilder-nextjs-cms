@@ -1,0 +1,71 @@
+import image from "./images/image.jpg";
+import galleryGrid from "./images/gallery-grid.jpg";
+import galleryCarousel from "./images/gallery-carousel.jpg";
+import video from "./images/video.jpg";
+import compare from "./images/compare.jpg";
+import fileDownload from "./images/file-download.jpg";
+
+Pictures, video and files, all from your media library. Each block opens the library when you press **Choose**, and you can upload a new file from there too: see [Pictures and files](/blocks/settings#pictures-and-files). These blocks are under **Media** in the **Add** list.
+
+## Image
+
+One picture, with an optional caption under it.
+
+<Screenshot src={image} alt="A picture of a sourdough loaf, cropped wide, with the caption Our sourdough, three days from starter to shelf." />
+
+- **Image** and **Alt text**: the picture, and what it shows for people who can't see it.
+- **Caption**: optional, in small text under the picture.
+- **Links to**: optional. Makes the whole picture a link.
+- **Shape**: **As uploaded**, or crop it to **Wide (16:9)**, **Standard (4:3)** or **Square**. A set shape keeps a row of pictures tidy when the files are different sizes.
+- **Fit**: for a set shape only. **Fill and crop** fills the shape and trims the edges; **Show all of it** fits the whole picture in, with space around it.
+- **Width on the page** and **Alignment**: see [How block settings work](/blocks/settings#width-on-the-page). Alignment only matters for a picture narrower than its column.
+
+The site serves each picture at the size the visitor's screen needs, so you can upload the full-size file.
+
+## Gallery
+
+Several pictures together, up to 24. Press **Add** to pick them from the library. The trash button beside each one takes it out again.
+
+**Layout** sets how they're shown. **Grid** shows them all at once, as small squares:
+
+<Screenshot src={galleryGrid} alt="A gallery in a grid: five small square pictures of sourdough, rye, croissants, baguettes and cinnamon buns." />
+
+**Carousel** shows one large picture at a time, with arrows and dots to move between them. On a phone, visitors can swipe too.
+
+<Screenshot src={galleryCarousel} alt="A gallery as a carousel: one large picture of sourdough, with an arrow on each side and five dots under it, the first one filled." />
+
+A gallery uses each picture's own alt text from the library, so write it there.
+
+## Video
+
+A video file from the media library, in a player with play, volume, picture in picture and full screen.
+
+<Screenshot src={video} alt="A video player showing a loaf in an oven, with a play button in the middle and controls along the bottom." />
+
+- **Video**: an MP4 or WebM file.
+- **Title**: what the video is. Screen readers say it as the player's name.
+- **Picture before it plays**: optional. Without one, visitors see the first frame.
+- **Width on the page**: see [How block settings work](/blocks/settings#width-on-the-page).
+
+Videos never play by themselves. Keep files small: a minute of video is often bigger than every picture on the page put together.
+
+## Before and after
+
+Two pictures of the same thing, such as a room before and after it was painted.
+
+<Screenshot src={compare} alt="The shop front in 2018, grey and boarded up, on the left, and in 2019, green with an awning, on the right, with a divider between them." />
+
+- **Before** and **After**, each with its **alt text**: the two pictures. They work best at the same size, taken from the same spot.
+- **Name of before** and **Name of after**: the labels in the corners, such as 2018 and 2019.
+- **Show them**: **Side by side, with a divider** that visitors drag (or move with the arrow keys), or **One at a time, with a switch**.
+- **What changed**: optional, written under the pictures. It tells people who can't see them what the difference is.
+
+## File download
+
+A button that downloads a file, such as a menu or an order form. It shows the file's type and size, so people know what they're getting before they press it.
+
+<Screenshot src={fileDownload} alt="A download button saying Download the order form, with PDF, 82 KB beside it." />
+
+- **File**: any file from the media library.
+- **Words on the button**: what the file is, such as "Download the order form".
+- **Alignment**: see [How block settings work](/blocks/settings#alignment).

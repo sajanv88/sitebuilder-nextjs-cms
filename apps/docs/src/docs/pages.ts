@@ -22,4 +22,10 @@ export const PAGES: Record<string, Loader> = {
   "pages/the-editor": () => import("@/content/pages/the-editor.mdx"),
   "pages/arrange-blocks": () => import("@/content/pages/arrange-blocks.mdx"),
   "pages/publishing": () => import("@/content/pages/publishing.mdx"),
+  "blocks/settings": () => import("@/content/blocks/settings.mdx"),
+  "blocks/text": () => import("@/content/blocks/text.mdx"),
+  "blocks/media": () => import("@/content/blocks/media.mdx"),
+  "blocks/layout": () => import("@/content/blocks/layout.mdx"),
+  "blocks/marketing": () => import("@/content/blocks/marketing.mdx"),
+  "blocks/lists-and-tables": () => import("@/content/blocks/lists-and-tables.mdx"),
 };

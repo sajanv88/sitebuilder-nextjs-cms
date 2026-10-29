@@ -1,0 +1,65 @@
+import linkField from "./images/link-field.jpg";
+import listField from "./images/list-field.jpg";
+import mediaPicker from "./images/media-picker.jpg";
+
+Each block has its settings in the **Block** tab, on the right of the editor. Click a block on the canvas, or its row in **Outline**, and its settings open. Most of them are plain: a box to type in, or a list to choose from. A few work the same way in every block that has them, and they're explained here once.
+
+The pages after this one go through the blocks group by group, in the order the **Add** list shows them: [text](/blocks/text), [media](/blocks/media), [layout](/blocks/layout), [marketing](/blocks/marketing), and [lists and tables](/blocks/lists-and-tables).
+
+## Settings you must fill in
+
+A setting with a red star must have something in it. A new block often starts with an empty one, such as an Image with no picture chosen. The page won't save until it's filled: the top bar says **Not saved**, and why, and **Outline** marks the block that needs you.
+
+## Alignment
+
+Three buttons: left, center and right. In most blocks, none pressed means the block follows the **Section** it's in, and on its own it sits on the left. Press the one that's pressed again to go back to following the section.
+
+## Width on the page
+
+Images, videos, sections, columns and heroes can run wider than the text.
+
+- **Contained** keeps it to the width of the page's text.
+- **Fluid** runs it across the window, with a margin on each side.
+- **Full width** runs it from edge to edge.
+
+Inside a section or a column, the block fills that instead, whatever this says.
+
+## Links
+
+Buttons, images and a few other blocks link somewhere. Choose the **Kind of link** first.
+
+<Screenshot src={linkField} alt="The Goes to settings of a button: Kind of link set to A web address, and Address /our-bread." />
+
+- **A page or post on this site** lets you search for one by title. The link follows the page if its address changes later, so it never breaks.
+- **A web address** takes a full address such as `https://example.com`, a path on your own site such as `/contact`, an email link such as `mailto:hello@example.com`, or a phone number such as `tel:+44 20 7946 0000`.
+- **No link** is offered where a link is optional.
+
+A link can't point to a place within a page, such as `#prices`.
+
+## Pictures and files
+
+**Choose** opens your media library. Pick a file, or switch to **Upload** to add a new one from your computer. Once a block has a file, the button says **Replace**.
+
+<Screenshot src={mediaPicker} alt="The Choose an image dialog, with Library and Upload tabs, a search box, and eight pictures of bread and the shop." />
+
+Pictures also have **Alt text**: the words a screen reader says in place of the picture, and what shows if it can't load. You have three choices.
+
+- **The file's alt text, from the media library**: what you wrote when you uploaded it. Change it there and every block using the picture follows.
+- **Words written here**: alt text for this one use of the picture.
+- **None: the picture is only decoration**: for pictures that add nothing a reader would miss.
+
+## Lists of things
+
+Questions in a FAQ, plans in Pricing, events in a Timeline and the like are lists. Each item folds open to show its settings.
+
+<Screenshot src={listField} alt="The Questions list of a FAQ block: the first question open, with Question and Answer boxes and Earlier, Later and Remove buttons, two more questions folded, and Add question." />
+
+- **Add …** puts a new item at the end, already open.
+- **Earlier** and **Later** move an item up and down the list.
+- **Remove** takes it out.
+
+Each list has a most and a least it can hold, and the buttons turn grey when you reach either.
+
+## Blocks from your template
+
+Some templates come with blocks of their own. They're listed in **Add** with the others, in the group they belong to, and their settings work the same way. If you change to another template, its blocks take their place, and pages keep the old ones but no longer show them on the site.

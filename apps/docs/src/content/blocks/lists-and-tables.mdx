@@ -1,0 +1,45 @@
+import latestPosts from "./images/latest-posts.jpg";
+import table from "./images/table.jpg";
+import timeline from "./images/timeline.jpg";
+
+Blocks for information with a shape to it: your newest posts, rows and columns, and events in order. They're under **Lists and tables** in the **Add** list.
+
+## Latest posts
+
+Your newest posts, kept up to date by themselves. Publish a post and it appears here; you never edit this block to add one.
+
+<Screenshot src={latestPosts} alt="Three posts in cards, newest first: Meet our new oven, Christmas orders are open, and Rye on Tuesdays too, each with its date and a sentence." />
+
+- **How many**: 1 to 24 posts.
+- **Only from these categories and tags**: leave it empty for every post, or pick some to show only posts that have one of them, such as the News category.
+- **Layout**: **Cards** side by side, or a **List**.
+- **Show each post's excerpt**: the short summary under each title. A post without a summary of its own shows none.
+
+Only published posts are listed, newest first. Drafts and scheduled posts join the list when they go live.
+
+## Table
+
+Rows and columns of text, such as a price list or opening hours.
+
+<Screenshot src={table} alt="A table of bread prices with three columns, Bread, Small and Large, and rows for sourdough, rye and white, with the caption Bread prices under it." />
+
+- **Caption**: what the table shows. It's written under the table, and screen readers say it as the table's name.
+- **Columns**: a heading for each column, up to 8.
+- **Rows**: up to 100, with a box for each column. **Add a row** puts one at the end, and **Remove row** takes one out.
+
+The first cell of each row names that row, as Sourdough, Rye and White do in the picture, so make the first column the one people look along.
+
+On a narrow screen, a wide table scrolls sideways rather than squashing its text.
+
+## Timeline
+
+Dated events in order, such as your story or a project's milestones. Up to 20.
+
+<Screenshot src={timeline} alt="A timeline headed Our story, with four events down a line: 2018 We find the shop, May 2019 We open, 2023 The bread club starts, 2026 A second oven." />
+
+- **Heading**: optional, above the events.
+- **When**: written as you'd say it, such as 2019 or March 2024. It isn't a date picker, so "Spring 2020" works too.
+- **What happened**: a short title.
+- **More about it**: optional, a sentence or two.
+
+The events are shown in the order you put them, not sorted by date, so use **Earlier** and **Later** to arrange them.

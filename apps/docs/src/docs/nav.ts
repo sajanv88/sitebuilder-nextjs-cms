@@ -74,6 +74,42 @@ export const SECTIONS: DocSection[] = [
       },
     ],
   },
+  {
+    title: "Blocks",
+    pages: [
+      {
+        slug: "blocks/settings",
+        title: "How block settings work",
+        description:
+          "Required settings, alignment, width, links, pictures and lists, in every block.",
+      },
+      {
+        slug: "blocks/text",
+        title: "Text blocks",
+        description: "Heading, Text, Quote, Button and Callout.",
+      },
+      {
+        slug: "blocks/media",
+        title: "Media blocks",
+        description: "Image, Gallery, Video, Before and after, and File download.",
+      },
+      {
+        slug: "blocks/layout",
+        title: "Layout blocks",
+        description: "Section, Columns, Spacer and Separator.",
+      },
+      {
+        slug: "blocks/marketing",
+        title: "Marketing blocks",
+        description: "Hero, Feature grid, Pricing, Questions and answers, Reviews and Figures.",
+      },
+      {
+        slug: "blocks/lists-and-tables",
+        title: "Lists and tables",
+        description: "Latest posts, Table and Timeline.",
+      },
+    ],
+  },
 ];
 
 export const ALL_PAGES: DocPage[] = SECTIONS.flatMap((section) => section.pages);

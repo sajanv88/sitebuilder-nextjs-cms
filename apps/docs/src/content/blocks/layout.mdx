@@ -1,0 +1,56 @@
+import section from "./images/section.jpg";
+import backdrop from "./images/backdrop.jpg";
+import columnsSeparator from "./images/columns-separator.jpg";
+import columnsPhone from "./images/columns-phone.jpg";
+
+Layout blocks shape the page rather than fill it: bands across it, blocks side by side, and space between them. They're under **Layout** in the **Add** list.
+
+## Section
+
+A band across the page, with its own background, holding other blocks. Use it to group the parts of a page that belong together, such as an address, opening hours and a button for directions.
+
+<Screenshot src={section} alt="A grey band across the page, holding a heading Come and see us, the address and opening hours, and a Get directions button, all centered." />
+
+To fill a section, select it and add blocks: they go inside it. A section holds up to 50 blocks.
+
+- **Background**: **None**, **Muted** (a soft grey) or your **Brand color**. Text inside changes color to stay readable.
+- **Width on the page**: how far the band reaches. **Full width** runs the background from edge to edge.
+- **Content width**: how wide the blocks inside may get, from **Narrow** to **Full width**. Narrow is easiest to read for long text.
+- **Alignment**: where the blocks inside sit, unless they're aligned themselves.
+- **Space above and below**: from **None** to **Large**.
+- **Height**: **As tall as its content**, **Tall**, or **The whole screen**. With more height than it needs, **Content's place** sets whether the content sits at the top, middle or bottom.
+
+### A moving backdrop
+
+**Moving backdrop** draws a pattern behind the section in your theme's colors, in place of the background: drifting colors, a grid of lines or dots, stars, contour lines, hexagons or characters.
+
+<Screenshot src={backdrop} alt="A section with contour lines behind it, like a map, and the heading Fresh every morning in the middle." />
+
+- **Movement**: **Still** or **Moving**. Moving has no pause button, so keep it for short pages. Visitors who've asked their device for less motion always see it still.
+- **Text over the backdrop**: **Easiest to read** fades the pattern behind the text; **More of the backdrop** lets more of it show. The picture above uses More of the backdrop.
+
+<Note title="What a section can hold">
+  A section holds the everyday blocks, but not other layout blocks that hold things: no sections or Columns inside a section. To put blocks side by side, add Columns to the page, outside the section.
+</Note>
+
+## Columns
+
+Two to four columns side by side, each holding its own blocks. Select a column to add blocks into it.
+
+<Screenshot src={columnsSeparator} alt="Three columns, Weekdays, Saturdays and Orders, each with a heading and a line of text, with a thin line under them." />
+
+On a phone there's no room for columns, so they stack one under another.
+
+<Screenshot src={columnsPhone} alt="The same three columns on a phone, one under another." />
+
+[Move and arrange blocks](/pages/arrange-blocks#put-blocks-side-by-side) covers columns in full: adding them, dragging the line between them to set their widths, and the rest of their settings.
+
+## Spacer
+
+Empty space between two blocks, when the page needs more room to breathe. **Height** is Small, Medium, Large or Extra large.
+
+Reach for it rarely: the template already spaces blocks evenly, and a Section's **Space above and below** usually does the job better.
+
+## Separator
+
+A thin line across the page, between two parts of it. The picture of Columns above has one under it. A separator has no settings.
