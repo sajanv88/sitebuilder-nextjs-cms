@@ -67,6 +67,10 @@ const nextConfig: NextConfig = {
   experimental: {
     // Type-check with the project's own tsc: TypeScript 7, the native compiler.
     useTypeScriptCli: true,
+    // How long a forwarded admin request may take, 30 seconds by default. The AI routes take
+    // minutes (their maxDuration, up to 300 in apps/admin/src/app/admin/api/ai/), and a request
+    // cut off here fails while the admin carries on with it.
+    proxyTimeout: 300_000,
   },
   async headers() {
     return [
