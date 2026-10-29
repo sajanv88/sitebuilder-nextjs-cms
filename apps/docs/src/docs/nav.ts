@@ -130,6 +130,26 @@ export const SECTIONS: DocSection[] = [
       },
     ],
   },
+  {
+    title: "Media",
+    pages: [
+      {
+        slug: "media/the-library",
+        title: "The media library",
+        description: "Find a file, see where it's used, give pictures alt text, and delete files.",
+      },
+      {
+        slug: "media/upload",
+        title: "Upload files",
+        description: "What you can upload, how big, and from where.",
+      },
+      {
+        slug: "media/private-files",
+        title: "Private files and share links",
+        description: "Keep a file to yourselves, and share it for a while with a link.",
+      },
+    ],
+  },
 ];
 
 export const ALL_PAGES: DocPage[] = SECTIONS.flatMap((section) => section.pages);

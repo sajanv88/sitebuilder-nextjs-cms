@@ -1,0 +1,47 @@
+import mediaLibrary from "./images/media-library.jpg";
+import mediaList from "./images/media-list.jpg";
+import mediaDetails from "./images/media-details.jpg";
+
+**Media** in the sidebar holds every picture, video and document on your site: everything you've uploaded, from here or from the editor. The figures at the top count each kind, and say how big a single file can be.
+
+<Screenshot src={mediaLibrary} alt="The Media screen: folders on the left, eleven files as cards with small pictures in the middle, and a panel on the right saying Choose a file." />
+
+Authors see the files they uploaded. Editors and admins see everyone's.
+
+## Find a file
+
+- **The folders** on the left narrow the files to one kind, **Images**, **Videos** or **Documents**, or to the month they were uploaded, under **By month**.
+- **Search** looks at file names and alt text, so "sourdough" finds `sourdough.jpg` and any picture whose alt text mentions sourdough.
+- **The two buttons** beside the search show the files as cards with small pictures, or as a list with their type, size, and who uploaded them when.
+
+<Screenshot src={mediaList} alt="The files as a list, with columns for the file, its type, its size, and when and by whom it was uploaded." />
+
+The newest files come first, 20 to a page.
+
+## A file's details
+
+Click a file to see its details beside the files. On a narrower screen they open in a panel from the side.
+
+<Screenshot src={mediaDetails} alt="The details of sourdough.jpg: a preview, its size, Open the file, the alt text, Who can see it, when it was uploaded, its address, Used in with three pages and posts, and a greyed-out Delete file button." />
+
+- **Open the file** opens it in a new tab, at full size.
+- **Alt text** says what a picture shows, for people who can't see it. See [Alt text](#alt-text) below.
+- **Who can see it** makes the file private. [Private files and share links](/media/private-files) explains how.
+- **Address** is where the file is on your site. You can link to it from anywhere.
+- **Used in** lists the pages and posts that show the file, as a block or as their featured image. Click one to open it in the editor.
+
+## Alt text
+
+Alt text is read out by screen readers in place of a picture, and shown when a picture can't load. Write what the picture shows, in a sentence: "A round sourdough loaf on a wooden board, dusted with flour".
+
+Type it under **Alt text** and press **Save alt text**. Every block that shows the picture uses it, unless that block has alt text of its own (see [Pictures and files](/blocks/settings#pictures-and-files)). Changing it here changes it everywhere at once.
+
+Leave it empty for a picture that's only there to look nice, such as a pattern. Screen readers then skip it.
+
+## Delete a file
+
+**Delete file** removes it from the library and from storage. It can't be undone.
+
+A file that's in use can't be deleted: the button stays greyed out until nothing uses it. Take the file out of the pages and posts under **Used in** first. A page or post in the trash still counts, marked **In the trash**: delete it permanently, or restore it and take the file out.
+
+Authors can delete their own files. Editors and admins can delete anyone's.

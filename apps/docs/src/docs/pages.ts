@@ -31,4 +31,7 @@ export const PAGES: Record<string, Loader> = {
   "posts/write-a-post": () => import("@/content/posts/write-a-post.mdx"),
   "posts/categories-and-tags": () => import("@/content/posts/categories-and-tags.mdx"),
   "posts/the-blog": () => import("@/content/posts/the-blog.mdx"),
+  "media/the-library": () => import("@/content/media/the-library.mdx"),
+  "media/upload": () => import("@/content/media/upload.mdx"),
+  "media/private-files": () => import("@/content/media/private-files.mdx"),
 };

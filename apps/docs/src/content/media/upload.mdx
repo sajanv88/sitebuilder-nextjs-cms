@@ -1,0 +1,36 @@
+import uploadDialog from "./images/upload-dialog.jpg";
+
+You can upload from the Media screen, or straight from the editor while you're choosing a picture for a block. Either way the file lands in the same library.
+
+## What you can upload
+
+- **Pictures**: JPEG, PNG, GIF, WebP and AVIF.
+- **Videos**: MP4 and WebM.
+- **Documents**: PDF.
+- **Fonts**: WOFF2, for your site's lettering. See Appearance.
+
+Each file can be up to 25 MB, unless whoever runs your site has set another limit. The Media screen shows the limit at the top, under **Largest upload**.
+
+Sitebuilder checks what a file really is from its contents, not its name, so a file renamed to `.jpg` that isn't a picture is turned away.
+
+## Upload from the Media screen
+
+1. Press **Upload**.
+2. Drag files onto the box, or click it to choose them. You can pick several at once.
+3. Check the list, then press **Upload**. Nothing is sent until you do.
+
+<Screenshot src={uploadDialog} alt="The Upload files dialog with two pictures waiting in the list, shop-window.jpg at 2.3 MB and bread-club-loaves.jpg at 1.1 MB, and an Upload 2 files button." />
+
+Each file shows how far it's got, then **Uploaded**. **Cancel** stops the rest; files that finished stay in the library. A file that's too big, or a kind that can't be uploaded, is named under the box, and the others go ahead.
+
+## Upload from the editor
+
+Wherever a block asks for a picture, video or file, **Choose** opens the library with an **Upload** tab. A file uploaded there is chosen for the block straight away. [Pictures and files](/blocks/settings#pictures-and-files) shows how.
+
+## After you upload
+
+- Give each picture its **alt text** in its details, so every block that uses it has a description. See [Alt text](/media/the-library#alt-text).
+- Upload pictures as large as you have them. Your site makes smaller copies to fit each screen, in formats that load quickly, so visitors on a phone don't download a picture made for a big monitor.
+- Videos are shown as they are, so keep them short and small. A minute of video at 720p is usually plenty for a web page.
+
+Files go to the storage set in Settings: your server's own disk, or S3-compatible storage such as Amazon S3 or Cloudflare R2.
