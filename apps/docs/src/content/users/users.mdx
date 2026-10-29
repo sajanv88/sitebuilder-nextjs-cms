@@ -1,0 +1,49 @@
+import users from "./images/users.jpg";
+import addUser from "./images/add-user.jpg";
+import deleteUser from "./images/delete-user.jpg";
+
+**Users** in the sidebar lists everyone who can sign in to your admin, with their role, whether they're active, and how many pages and posts they've written. Only admins see it.
+
+<Screenshot src={users} alt="The Users screen: Alex Chen, an editor; Chris Moore, an author who is banned; Jo Patel, an author with 3 entries; and Sam Rivera, you, the admin, with 15." />
+
+Each person has one role, which decides what they can do. [Roles](/users/roles) explains the three.
+
+## Add someone
+
+1. Press **Add user**.
+2. Type their **Name** and **Email**. They sign in with that email.
+3. Choose their **Role**.
+4. Give them a way in:
+   - If your site can send email, tick **Email them a link to choose their password**. The link works once, for a day.
+   - Otherwise type a **Password** of at least 12 characters, and give it to them yourself, in person or by a different route than the email address.
+5. Press **Add user**.
+
+<Screenshot src={addUser} alt="Add a user: Name Robin Ellis, Email robin@example.com, Role Author, and a Password field." />
+
+They sign in at your site's address followed by `/admin`. Sending email needs [Settings → Email](/settings/email).
+
+## Change someone's account
+
+The **⋯** button at the end of each row has:
+
+- **Change role**: it applies from their next click.
+- **Set a new password**: their old one stops working. Tell them the new one yourself.
+- **Email a password link**, when your site can send email: they choose a new password themselves.
+- **Ban**: they're signed out at once and can't sign in until you choose **Unban**. Everything they wrote stays.
+- **Delete**: see below.
+
+You can't ban or delete yourself here, and the site always keeps at least one admin who isn't banned. To hand over, make someone else an admin first.
+
+## Delete someone
+
+Deleting a user can't be undone. If they wrote pages or posts, or uploaded files, choose who gets them: everything moves to that person, history included, and stays on your site.
+
+<Screenshot src={deleteUser} alt="Delete Jo Patel?: their 3 entries, revisions and uploads go to the person you choose, with Give their content to set to Sam Rivera." />
+
+If you only want to stop someone signing in, perhaps for a while, ban them instead.
+
+## Forgotten passwords
+
+On the sign-in page, **Forgot your password?** emails a link to choose a new one, if your site can send email. Otherwise an admin sets a new one for them from this screen.
+
+After 10 wrong passwords, an account is locked, so nobody can guess their way in. It opens again 15 minutes after the last wrong try.

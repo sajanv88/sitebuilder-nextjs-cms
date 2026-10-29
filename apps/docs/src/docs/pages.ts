@@ -38,4 +38,7 @@ export const PAGES: Record<string, Loader> = {
   "menus/redirects": () => import("@/content/menus/redirects.mdx"),
   "appearance/appearance": () => import("@/content/appearance/appearance.mdx"),
   "appearance/templates": () => import("@/content/appearance/templates.mdx"),
+  "users/users": () => import("@/content/users/users.mdx"),
+  "users/roles": () => import("@/content/users/roles.mdx"),
+  "users/your-account": () => import("@/content/users/your-account.mdx"),
 };

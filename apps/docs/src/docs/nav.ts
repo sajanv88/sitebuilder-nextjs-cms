@@ -180,6 +180,26 @@ export const SECTIONS: DocSection[] = [
       },
     ],
   },
+  {
+    title: "Users and roles",
+    pages: [
+      {
+        slug: "users/users",
+        title: "Add and manage users",
+        description: "Add people, change their role or password, ban them, or delete them.",
+      },
+      {
+        slug: "users/roles",
+        title: "Roles",
+        description: "What admins, editors and authors can each do.",
+      },
+      {
+        slug: "users/your-account",
+        title: "Your account",
+        description: "Change your own name and password.",
+      },
+    ],
+  },
 ];
 
 export const ALL_PAGES: DocPage[] = SECTIONS.flatMap((section) => section.pages);
