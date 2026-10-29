@@ -1,0 +1,21 @@
+import search from "./images/search.jpg";
+
+Your site has a search page at `/search`, and a magnifying glass at the end of the header that leads to it. Visitors type what they're after, and see the pages and posts that match, best first.
+
+<Screenshot src={search} alt="The search page with sour typed in: 7 results, starting with How we make our sourdough and its excerpt, then From the oven, News and prices, Our story, Our bread, About us and Meet our new oven." />
+
+## What it finds
+
+- Published pages and posts only. Drafts, scheduled pages, and anything in the trash never show up.
+- Pages that contain every word typed. Words match from their start, so "sour" finds "sourdough".
+- The title counts most, then the excerpt and search description, then the text in the page's blocks: headings, paragraphs, questions and answers, prices, and so on.
+
+Each result shows its title, its address, and its excerpt if it has one, else its search description. That's one more reason to [write an excerpt](/posts/write-a-post#the-posts-settings).
+
+Results come 10 to a page. A search has its own address, such as `/search?q=sourdough`, so it can be bookmarked or shared. Search engines are asked not to list search results.
+
+## Turn it off
+
+If your site is small enough not to need it, turn off **Search on the site** in [Settings → Reading](/settings/reading). The page and the magnifying glass go away.
+
+If you have a page of your own at `/search`, it keeps that address, and the search page isn't shown.

@@ -1,0 +1,42 @@
+import settingsAi from "./images/settings-ai.jpg";
+
+Sitebuilder has an AI assistant that can draft a whole site's pages, rewrite text, suggest what search engines show, and describe pictures. It's off until an admin turns it on, and it uses an account of your own with an AI provider, so you choose who sees your text and you pay them directly.
+
+## What's sent, and to whom
+
+When someone uses the assistant, what they ask for and the page they're working on are sent to the provider you choose, and handled under that provider's terms. Nothing else from your site is sent, and nothing at all while the assistant is off. Check the provider's terms before you turn it on, especially if your pages hold anything private.
+
+## Turn it on
+
+Open **Settings → AI**.
+
+<Screenshot src={settingsAi} alt="Settings, AI, with Anthropic chosen: an API key field, a Connect button, Model waiting for a connection, Daily token limit 1,000,000, and This model accepts images." />
+
+1. Choose a **Provider**:
+   - **Anthropic**, for Claude models, with an API key from your Anthropic account.
+   - **OpenAI**, for GPT models, with an API key from your OpenAI account.
+   - **Ollama**, for open models on a server you run, or on Ollama's cloud. Type the **Server address**; a key is only needed if the server asks for one, as Ollama's cloud does.
+2. Paste the **API key**. It's stored encrypted and never shown again. Once one is saved, the box shows its last four characters; leave it empty to keep it.
+3. Press **Connect**. Sitebuilder asks the provider which models your key can use.
+4. Choose a **Model** from the list.
+5. Set the **Daily token limit**, see below.
+6. Tick **This model accepts images** if the model can read pictures. The assistant then offers to write alt text.
+7. Press **Save AI settings**.
+
+To turn it off again, choose **Off** and save. Nothing is sent anywhere after that.
+
+<Note title="Ollama on your own computer">
+  An Ollama server on your computer or your network, such as `http://localhost:11434`, only works if whoever runs your site has allowed private addresses on the server. Otherwise use an `https` address on the internet.
+</Note>
+
+## The daily limit
+
+Providers charge by the token, roughly three quarters of a word, counting both what's sent and what comes back. The **Daily token limit** caps how many the whole site may use in a day, counted in UTC. It starts at 1,000,000, and can be anything from 10,000 to 100,000,000.
+
+When the limit is reached, the assistant stops until midnight UTC, and says so. An admin can raise the limit here.
+
+## Who can use it
+
+- Admins can [create pages with AI](/ai/create-with-ai), and use the [assistant in the editor](/ai/assistant) on any page or post.
+- Editors can use the assistant on any page or post.
+- Authors can use it on their own posts.

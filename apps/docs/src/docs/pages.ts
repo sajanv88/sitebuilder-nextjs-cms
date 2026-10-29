@@ -46,4 +46,10 @@ export const PAGES: Record<string, Loader> = {
   "settings/media-storage": () => import("@/content/settings/media-storage.mdx"),
   "settings/email": () => import("@/content/settings/email.mdx"),
   "settings/analytics": () => import("@/content/settings/analytics.mdx"),
+  "ai/set-up": () => import("@/content/ai/set-up.mdx"),
+  "ai/create-with-ai": () => import("@/content/ai/create-with-ai.mdx"),
+  "ai/assistant": () => import("@/content/ai/assistant.mdx"),
+  "search-and-cookies/search": () => import("@/content/search-and-cookies/search.mdx"),
+  "search-and-cookies/cookie-banner": () =>
+    import("@/content/search-and-cookies/cookie-banner.mdx"),
 };

@@ -1,0 +1,29 @@
+import cookieBanner from "./images/cookie-banner.jpg";
+import cookieSettings from "./images/cookie-settings.jpg";
+
+Sitebuilder sets no cookies for visitors on its own, so out of the box your site needs no cookie banner. The banner appears only when you connect an analytics service in [Settings → Analytics](/settings/analytics), because those services set cookies and send what visitors do to another company. In much of the world, including the EU and the UK, that needs a visitor's consent first.
+
+## What visitors see
+
+The banner appears at the bottom of the window, naming the service and what it does, with a link to your privacy page if you've chosen one.
+
+<Screenshot src={cookieBanner} alt="A page of the site with the banner at the bottom: Cookies for statistics, a sentence saying the site uses Google Analytics to count visits with your consent and nothing loads unless you accept, a link to the privacy page, and Decline and Accept buttons." />
+
+- **Accept** loads the analytics service.
+- **Decline** keeps it off. It's one press, just like accepting, as the rules require.
+
+Until a visitor chooses, nothing loads. Their choice is kept in their browser, so they're asked once, and asked again if you change to another service.
+
+## Changing their mind
+
+After choosing, visitors find **Cookie settings** at the foot of every page. It opens the banner again.
+
+<Screenshot src={cookieSettings} alt="The foot of a page, with a Cookie settings button under the footer menu." />
+
+A visitor who accepted and then declines has the service's cookies removed, and the page loads again without it.
+
+## Your part
+
+The banner asks for consent; it doesn't explain your use of data for you. Write a privacy page that says which service you use, what it collects and why, and how to change your mind, publish it, and choose it as the **Privacy page** in Settings → Analytics. Whether you need more depends on where you and your visitors are. If in doubt, ask someone who knows the rules where you are.
+
+Search Console's verification tag sets no cookies, so it never needs the banner.

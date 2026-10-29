@@ -231,6 +231,42 @@ export const SECTIONS: DocSection[] = [
       },
     ],
   },
+  {
+    title: "The AI assistant",
+    pages: [
+      {
+        slug: "ai/set-up",
+        title: "Set up the assistant",
+        description:
+          "Choose a provider and model, what's sent, the daily limit, and who can use it.",
+      },
+      {
+        slug: "ai/create-with-ai",
+        title: "Create pages with AI",
+        description: "Describe the site, answer a few questions, and get its pages as drafts.",
+      },
+      {
+        slug: "ai/assistant",
+        title: "The assistant in the editor",
+        description: "Rewrite text, suggest search text, and describe pictures.",
+      },
+    ],
+  },
+  {
+    title: "Search and the cookie banner",
+    pages: [
+      {
+        slug: "search-and-cookies/search",
+        title: "Search on your site",
+        description: "What the search page finds, how it ranks it, and turning it off.",
+      },
+      {
+        slug: "search-and-cookies/cookie-banner",
+        title: "The cookie banner",
+        description: "When it appears, what visitors see, and your part.",
+      },
+    ],
+  },
 ];
 
 export const ALL_PAGES: DocPage[] = SECTIONS.flatMap((section) => section.pages);
