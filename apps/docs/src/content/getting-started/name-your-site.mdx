@@ -1,1 +1,35 @@
-Written next, with its screenshots.
+import settingsSite from "./images/settings-site.jpg";
+
+A new site is called "My Site". Change it first: the name is in the header and the footer, and it ends every page's title in the browser tab and in search results.
+
+## Open Settings → Site
+
+1. In the sidebar, open **Settings**. It opens on **Site**.
+2. Fill in the four fields. This guide uses a bakery as the example.
+3. Press **Save site settings**. A "Site settings saved." message appears in the corner, and the name at the top of the admin changes straight away.
+
+<Screenshot src={settingsSite} alt="Settings with the Site section open: Site title Riverside Bakery, a tagline, Language en and Site address http://localhost:3200." />
+
+Only admins can open Settings.
+
+## What each field does
+
+### Site title
+
+The site's name, as visitors see it. Keep it to the name itself: "Riverside Bakery", not "Welcome to Riverside Bakery".
+
+### Tagline
+
+One line about the site. It shows in the footer, and search engines may show it under your site's name. You can leave it empty.
+
+### Language
+
+The language your pages are written in, as a short code: `en` for English, `nl` for Dutch, `en-GB` for British English. Browsers and screen readers use it to pronounce your pages properly, and search engines use it to show them to the right people.
+
+### Site address
+
+The address visitors type to reach your site, such as `https://riversidebakery.com`. Search engines and feeds are given this address for every link to your pages, so it has to be the real one once the site is public.
+
+<Tip>
+  On your own computer the address is something like `http://localhost:3000`. Change it to the real `https://` address when you move the site to a server.
+</Tip>

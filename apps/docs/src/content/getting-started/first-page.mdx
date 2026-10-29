@@ -1,1 +1,61 @@
-Written next, with its screenshots.
+import editorEmpty from "./images/editor-empty.jpg";
+import editorBlocks from "./images/editor-blocks.jpg";
+import editorPublished from "./images/editor-published.jpg";
+import siteAbout from "./images/site-about.jpg";
+
+Every page is built from blocks: a heading, some text, a picture, a row of columns. You stack them in the editor, see the page exactly as visitors will, and publish when it's ready.
+
+This guide makes an "About us" page with a heading and a paragraph.
+
+## Open a new page
+
+In the sidebar, open **Pages** and press **New page**. You can also press **New page** on the dashboard.
+
+<Screenshot src={editorEmpty} alt="The page editor for a new page: the Add list of blocks on the left, an empty page in the middle, and the Page settings on the right." />
+
+The editor has three parts.
+
+- **On the left**, under **Add**, every block you can use, in groups. **Outline** shows the blocks already on the page, as a list.
+- **In the middle**, the page itself, drawn with your site's header and look. This is the canvas.
+- **On the right**, **Block** shows the settings of the block you've selected, and **Page** the settings of the whole page: when it's published, its address and its picture.
+
+## Add blocks
+
+1. Type the page's name in **Title**: "About us". It becomes the big heading at the top of the page, and the page's address.
+2. Under **Add**, press **Heading**. A heading appears on the page, selected, and its settings open on the right.
+3. On the right, change **Text** to "Our story".
+4. Press **Text** in the Add list. A text block appears after the heading.
+5. Click in the text box on the right and write your paragraph. Select words there to make them bold or italic, or to add a link.
+
+<Screenshot src={editorBlocks} alt="The editor with a heading, Our story, and a paragraph on the page. The paragraph is selected and its text editor is open on the right." />
+
+A new block always goes after the one that's selected. To put it somewhere else, select the block it should follow first, or drag the grip that shows above the selected block.
+
+<Tip title="Quick add">
+  Press <Kbd>Ctrl</Kbd> + <Kbd>K</Kbd> (<Kbd>⌘</Kbd> + <Kbd>K</Kbd> on a Mac), type part of a block's name and press <Kbd>Enter</Kbd>. It adds the block without reaching for the mouse.
+</Tip>
+
+## Your work is saved as you go
+
+While a page is a draft, the editor saves it three seconds after you stop typing. The **Draft** badge next to the title says it's saved but not public. Nobody outside the admin can see a draft.
+
+Changed your mind? The undo and redo arrows at the top undo one change at a time. **History** keeps a version each time you press **Save draft** or publish, the latest 50, and can bring any of them back.
+
+## Publish it
+
+Press **Publish**, top right. The page goes live at once, and a "Published." message appears.
+
+<Screenshot src={editorPublished} alt="The top of the editor after publishing: a green Published badge, Saved at 06:31 AM, and Unpublish and Update buttons." />
+
+The badge now reads **Published**, and the buttons change.
+
+- **Update** saves later changes to the live page. Once a page is published, the editor no longer saves by itself: nothing changes on your site until you press Update.
+- **Unpublish** takes the page off the site and makes it a draft again.
+
+## See it on your site
+
+The page's address comes from its title, in lowercase with hyphens: "About us" lives at `/about-us`. Press **View site** in the top right corner, or open the address yourself.
+
+<Screenshot src={siteAbout} alt="The published About us page on the public site, with the site's name at the top and the tagline in the footer." />
+
+To give a page a different address, change **Slug** under **Page → Address** before you publish. If you change it afterwards, Sitebuilder adds a redirect from the old address, so existing links keep working.

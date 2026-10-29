@@ -1,1 +1,38 @@
-Written next, with its screenshots.
+import setupForm from "./images/setup-form.jpg";
+import signIn from "./images/sign-in.jpg";
+import dashboard from "./images/dashboard-new.jpg";
+
+The first account on a new site is an admin, and it's the only one you make without signing in. Everyone else you add later, from Users.
+
+## Fill in the setup form
+
+1. Open your site's address followed by `/setup`. On your own computer that's [http://localhost:3000/setup](http://localhost:3000/setup).
+2. Type your name and your email address. The name is what other people see next to your pages and posts.
+3. Choose a password of at least 12 characters.
+4. Press **Create the admin account**.
+
+<Screenshot src={setupForm} alt="The Set up your site form, with Your name, Email and Password filled in, and the Create the admin account button." />
+
+<Note title="Setup only works once">
+  As soon as a site has an account, `/setup` shows a "not found" page. Nobody who finds the address later can make themselves an admin.
+</Note>
+
+## Sign in
+
+Sitebuilder takes you to the sign-in page, with a line saying the site is set up. Type the email and password you just chose and press **Sign in**.
+
+<Screenshot src={signIn} alt="The Sign in form with Email and Password fields and a Sign in button." />
+
+From now on you sign in at your site's address followed by `/admin`. If you aren't signed in, any admin page sends you here first.
+
+There's no "Forgot your password?" link yet. It appears once an admin has set up email in **Settings → Email**, because Sitebuilder needs a way to send you the reset link.
+
+## Your dashboard
+
+After signing in you land on the dashboard. On a new site everything reads zero.
+
+<Screenshot src={dashboard} alt="A new site's dashboard: four counts at zero, an empty Recent changes list, and a Get started checklist at 0 of 6 done." />
+
+The **Get started** card on the right lists six steps to a site that's ready for visitors. Nothing on it is ticked by hand: each step ticks itself when the site really has it, and the card goes away when all six are done.
+
+The next three pages of this guide cover four of the steps: naming the site, publishing a page, choosing the home page and building the menu. Templates and the look of the site have their own guides.
