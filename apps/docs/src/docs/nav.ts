@@ -165,6 +165,21 @@ export const SECTIONS: DocSection[] = [
       },
     ],
   },
+  {
+    title: "Appearance and templates",
+    pages: [
+      {
+        slug: "appearance/appearance",
+        title: "Change how your site looks",
+        description: "Theme, colours and corners, light or dark, your own fonts, and custom CSS.",
+      },
+      {
+        slug: "appearance/templates",
+        title: "Templates",
+        description: "Choose a design, what it brings, and its options.",
+      },
+    ],
+  },
 ];
 
 export const ALL_PAGES: DocPage[] = SECTIONS.flatMap((section) => section.pages);

@@ -1,0 +1,63 @@
+import appearance from "./images/appearance.jpg";
+import customCss from "./images/custom-css.jpg";
+
+**Appearance** in the sidebar sets how your whole site looks: its colours, how round the corners are, light or dark, and its fonts. Editors and admins can change it.
+
+Nothing changes on your site as you click. The **Preview** on the right shows each choice straight away, and your site follows when you press **Save appearance** at the bottom.
+
+<Screenshot src={appearance} alt="The Appearance screen: six themes with Meadow chosen, Colours and corners with Brand colour, Corners and Page background, Light or dark set to The visitor's setting, Density set to Default, and a preview in green on the right." />
+
+Your template decides the layout: where the menu goes, how posts are listed, what the footer holds. Appearance decides the colours and type it's drawn in. [Templates](/appearance/templates) covers the other half.
+
+## Choose a theme
+
+A theme is a set of colours, corners and type that go together. Pick one of the six: **Default**, **Ember**, **High contrast**, **Ink**, **Ledger** or **Meadow**. The three squares on each card show its main colour, its quiet background and its lines.
+
+**High contrast** makes everything as easy to read as possible, with strong colours and clear edges.
+
+## Colours and corners
+
+Change these to make a theme your own:
+
+- **Brand colour** is for buttons, links and the outline that shows where the keyboard is. Pick from the swatches or choose any colour. The text on buttons changes to stay readable, and dark pages get a lighter shade of it. If the colour is too light for links on a white page, you're told.
+- **Corners** sets how round buttons, fields and cards are: **Square**, **Round** or **Rounder**.
+- **Page background** goes behind every page and post that doesn't have a colour of its own. Text and lines change to read on it. A single page can have its own in the editor (see [the Page tab](/pages/the-editor#the-page-tab)).
+
+**Use the theme's** puts any of them back to what the theme has.
+
+## Light or dark, and density
+
+- **Light or dark**: **Light**, **Dark**, or **The visitor's setting**, which follows whatever their phone or computer is set to. With the visitor's setting, turn on **Show dark** above the preview to see the dark version.
+- **Density**: how much room controls such as buttons and fields take. **Comfortable** is roomier and easier to tap; **Compact** fits more in.
+
+## Fonts
+
+Out of the box, your site uses fonts that visitors' phones and computers already have, so nothing extra has to load. To use a font of your own, such as the one in your logo:
+
+1. Get the font as WOFF2 files, and check its licence allows use on a website.
+2. Under **Fonts**, press **Add a font family**.
+3. Type its **Family name**, and press **Add files** to upload or choose its files: one for each weight and style, such as regular, bold and italic. The weight and style are read from each file's name; correct them if they're wrong.
+4. Press **Add the family**, then choose what it's for: **Text** or **Code**.
+5. Press **Save appearance**.
+
+The fonts are served from your own site, not a font service, so visitors' browsers don't contact anyone else. You can add up to six families.
+
+<Note title="With the Company template">
+  The Company template has its own **Fonts** option. Your fonts are used when it's set to **The theme's, as set in Appearance**.
+</Note>
+
+## Advanced: each value
+
+Every colour, corner and size in a theme is a named value, such as `--color-primary`. **Add a token** lets you replace any one of them, with a value for light pages and, if you like, another for dark ones. The brand colour and corners above are written here too.
+
+Use it for one or two finishing touches. After changing a colour, check that text on it still reads well, in the preview and on your site.
+
+## Custom CSS
+
+For anything else, **Custom CSS** adds your own stylesheet to every page of your site, after the theme and the template. It's also used in the editor, so pages look the same there.
+
+<Screenshot src={customCss} alt="The Custom CSS box, with an example rule that draws a line under the site header in the brand colour." />
+
+Use the theme's values, such as `var(--color-primary)`, rather than fixed colours, so your styles follow light and dark. Pictures, fonts and stylesheets from other sites are blocked by your site's security settings, so upload them to Media instead.
+
+Custom CSS depends on the template's class names, which can change when the template is updated. Check your site after an update if you rely on it.
