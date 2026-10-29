@@ -8,8 +8,21 @@
   gap: a.space(2);
   margin: 0;
 
+  // As wide as the picture, so a small crop (one form) isn't blown up past its own size.
+  &__link {
+    display: block;
+    justify-self: start;
+    max-inline-size: 100%;
+    border-radius: var(--radius-lg);
+    cursor: zoom-in;
+
+    @include a.focus-ring;
+  }
+
   &__image {
-    inline-size: 100%;
+    display: block;
+    inline-size: auto;
+    max-inline-size: 100%;
     block-size: auto;
     border: var(--nuv-border-width) solid var(--color-border);
     border-radius: var(--radius-lg);
