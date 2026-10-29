@@ -1,3 +1,10 @@
+import describe from "./images/create-describe.jpg";
+import questions from "./images/create-questions.jpg";
+import plan from "./images/create-plan.jpg";
+import confirm from "./images/create-confirm.jpg";
+import writing from "./images/create-writing.jpg";
+import done from "./images/create-done.jpg";
+
 **Create with AI** drafts the pages of a whole site from a description: you describe it, answer a few questions, check the plan, and the assistant writes each page as a draft. It's the quickest way from an empty site to something to edit. Only admins can use it, and [the assistant must be set up](/ai/set-up) first.
 
 Open **Pages**, then press **Create with AI**. The steps along the top show where you are: **Describe**, **Questions**, **Plan** and **Pages**.
@@ -8,25 +15,43 @@ In a few sentences, say what the business or project is and what the site is for
 
 > A website for our family bakery in Ghent. People should find us and order birthday cakes.
 
-Up to 3,000 characters. Only this description and your answers are sent to the provider, nothing else from your site.
+Up to 3,000 characters. Only this description and your answers are sent to the provider, nothing else from your site. Then press **Next**.
+
+<Screenshot src={describe} alt="Create with AI at the Describe step: the description of a family bakery in Ghent typed in, 89 of 3,000 characters, and a Next button." />
 
 ## 2. Answer a few questions
 
-The assistant asks up to six questions to fill the gaps, such as who your customers are, or what the site should help them do. Pick from the answers it offers, or write your own. Skip any you'd rather not answer.
+The assistant asks up to six questions to fill the gaps, such as what the business is called, what it sells, or how people should order. Pick from the answers it offers, or write your own. Skip any you'd rather not answer. Then press **Plan the site**.
+
+The more you answer, the less it has to leave for you to fill in later. Facts you give here, such as your address, prices and opening hours, go into the pages.
+
+<Screenshot src={questions} alt="A few questions, after a summary of the site: the bakery's name, what else it bakes, how people order a birthday cake with Call us chosen, the contact details, cake prices, and the tone, each answered." />
 
 ## 3. Check the plan
 
-The plan lists the pages it would write, up to 12, the first being the home page, with a title for the site. Leave out the pages you don't want, and change their titles. Then press **Write the pages**: you're told roughly how many tokens it will use before anything starts.
+The plan lists the pages it would write, up to 12, the first being the home page, with a title for the site. Under each page is what it's for and the sections it will have. Untick the pages you don't want, and change their titles.
+
+<Screenshot src={plan} alt="The plan: Site title Riverside Bakery, and four pages, each ticked, with what it's for and its sections: Home, Birthday cakes, Our story and Visit us. A Write 4 pages button at the bottom." />
+
+Press **Write 4 pages** (the number is however many you kept). You're told roughly how many tokens it will use before anything starts. Press **Write the pages** to go ahead.
+
+<Screenshot src={confirm} alt="A dialog: Write 4 pages? Anthropic writes them, using roughly 40,000 tokens. Cancel and Write the pages buttons." />
 
 ## 4. The pages are written
 
-The pages are written three at a time, each under its parent, and appear in a list as they're done. You can open each one in the editor. Leave the screen open while it works; **Stop** halts it. A page that couldn't be written is marked **Not written**, with **Try again** beside it once the rest are done.
+The pages are written three at a time, each under its parent, and appear in a list as they're done. Leave the screen open while it works; **Stop** halts it.
 
-Every page is a **draft**: nothing is published, and visitors see nothing yet.
+<Screenshot src={writing} alt="Writing the pages: Home, Birthday cakes and Our story marked Writing, Visit us Waiting, and a Stop button." />
+
+A page that couldn't be written is marked **Not written**, with **Try again** beside it once the rest are done. A page that has `[TODO]` markers left in it says how many.
+
+Every page is a **draft**: nothing is published, and visitors see nothing yet. Each title links to the page in the editor.
+
+<Screenshot src={done} alt="The pages: Home, Birthday cakes, Our story and Visit us, each a Draft. Below, Finish with three ticked options, an Apply button and Discard this design." />
 
 ## Finish
 
-Last, choose what the plan may change on your site:
+Last, under **Finish**, choose what the plan may change on your site, and press **Apply**:
 
 - **Use the planned menus**: replaces the primary and footer menus with links to the new pages. Each link appears once its page is published.
 - **Make the first page the home page**, once it's published.

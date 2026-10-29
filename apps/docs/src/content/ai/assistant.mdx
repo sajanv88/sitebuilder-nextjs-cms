@@ -1,12 +1,21 @@
+import panel from "./images/assistant-panel.jpg";
+import rewrite from "./images/assistant-rewrite.jpg";
+import seo from "./images/assistant-seo.jpg";
+import alt from "./images/assistant-alt.jpg";
+
 Once [the assistant is set up](/ai/set-up), the editor has an **Assistant** tab beside **Block** and the page's own settings. It helps with the page you're on. Every answer is a suggestion: nothing changes until you accept it.
 
 ## Rewrite text
 
-1. Under **What to rewrite**, choose **The whole page**, or select a block in the page first and choose that block.
+1. Under **What to rewrite**, choose **The whole page**. Or select a block in the page first, then choose that block: the button is named after it, such as **This text**.
 2. In **What to change**, say what you want, such as "Make it warmer, and mention we deliver on Saturdays". The buttons below fill in common ones: **Make it shorter**, **Make it friendlier**, **Fix spelling and grammar** and **Simpler words**.
 3. Press **Rewrite**.
 
+<Screenshot src={panel} alt="The Assistant tab: What to rewrite with This text chosen, What to change saying Make it friendlier, the four quick buttons, a Rewrite button, and Search engines with a Suggest button." />
+
 The rewrite shows in the page itself, with a note at the top saying it isn't part of the page yet. Read it there, then press **Accept** to keep it, or **Discard** to go back to what you had. You can't ask for another rewrite until you've done one or the other.
+
+<Screenshot src={rewrite} alt="The editor for Our bread showing the rewritten opening text, with a note above it: The page shows the assistant's rewrite of the text. It isn't part of the page until you accept it. Discard and Accept buttons." />
 
 Accepted changes can be undone like any other, with <Kbd>Ctrl</Kbd> + <Kbd>Z</Kbd>.
 
@@ -14,9 +23,13 @@ Accepted changes can be undone like any other, with <Kbd>Ctrl</Kbd> + <Kbd>Z</Kb
 
 Under **Search engines**, **Suggest** writes a title and description for search results, and an excerpt for lists, from what's on the page. Press **Use these** to put them in the page's settings, where you can still change them, or **Dismiss**.
 
+<Screenshot src={seo} alt="Search engines with a suggested title, description and excerpt for Our bread, and Dismiss and Use these buttons." />
+
 ## Describe a picture
 
 If the model can read pictures (**This model accepts images** in Settings → AI), every alt text field in a block's settings has **Suggest alt text**. The assistant looks at the picture and writes a description. Press **Use it**, or **Dismiss**.
+
+<Screenshot src={alt} alt="An Image block's settings for sourdough.jpg, with a suggested alt text under Suggest alt text describing a round golden-brown sourdough loaf, and Dismiss and Use it buttons." />
 
 If the picture is only decoration, it says so, and suggests leaving the alt text empty so screen readers skip it.
 
