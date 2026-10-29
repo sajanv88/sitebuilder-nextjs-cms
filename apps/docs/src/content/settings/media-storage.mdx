@@ -1,0 +1,30 @@
+import settingsStorage from "./images/settings-storage.jpg";
+
+**Settings → Media storage** decides where uploaded pictures, videos and documents are kept. Visitors don't notice the difference: every file keeps its address on your site wherever it's stored.
+
+## Where uploads go
+
+- **The server's configuration**: whatever whoever runs your site set up when they installed it. The card says what that is. Leave it on this unless you have a reason to change it.
+- **The server's disk**: simple, and fine when your site runs on one server that keeps its disk. On Kubernetes, Vercel and similar platforms a disk doesn't last, so use S3 storage there.
+- **S3-compatible storage**: a bucket of your own on Amazon S3, Cloudflare R2, MinIO or a similar service. The bucket can stay private: visitors get files through your site.
+
+## Set up S3 storage
+
+<Screenshot src={settingsStorage} alt="Settings, Media storage, with S3-compatible storage chosen: Endpoint, Bucket, Region, Access key id, Secret access key, Path-style addresses, Public address for files, and Test connection and Save buttons." />
+
+From your storage provider you need:
+
+- **Endpoint**: the storage's address, starting with `https://`.
+- **Bucket**: the bucket's name.
+- **Region**: such as `eu-west-1` for Amazon. MinIO uses `us-east-1` unless set otherwise; Cloudflare R2 uses `auto`.
+- **Access key id** and **Secret access key**: a key that can read and write the bucket. The secret is stored encrypted and never shown again; when one is saved, leave the box empty to keep it.
+- **Path-style addresses**: leave it ticked for MinIO. R2 and Amazon work either way.
+- **Public address for files** (optional): a CDN in front of the bucket, or the bucket's own public address. Videos and PDFs are then linked there, so they don't pass through your site. Pictures still go through your site to be resized, and private files are never linked there.
+
+Press **Test connection** to check the details work, then **Save**.
+
+## Files already uploaded
+
+Changing where uploads go doesn't move files you've already uploaded: they stay where they are and keep working. A note below the form says how many are elsewhere, with a button to move them, a few at a time. You can stop and carry on later, and their addresses don't change, so your pages need nothing.
+
+If files are kept in S3 and the new settings couldn't read that bucket, you're warned before saving, because those files would stop loading.

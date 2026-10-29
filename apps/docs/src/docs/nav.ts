@@ -200,6 +200,37 @@ export const SECTIONS: DocSection[] = [
       },
     ],
   },
+  {
+    title: "Settings",
+    pages: [
+      {
+        slug: "settings/site",
+        title: "Site and dates",
+        description: "The site's name and address, the date format and the time zone.",
+      },
+      {
+        slug: "settings/reading",
+        title: "Reading",
+        description: "The home page, the blog's address and size, reading progress and search.",
+      },
+      {
+        slug: "settings/media-storage",
+        title: "Media storage",
+        description: "Keep uploads on the server's disk or in S3 storage, and move them.",
+      },
+      {
+        slug: "settings/email",
+        title: "Email",
+        description: "The server password resets and invitations are sent through.",
+      },
+      {
+        slug: "settings/analytics",
+        title: "Analytics",
+        description:
+          "Google Analytics, Tag Manager or PostHog, Search Console, and the privacy page.",
+      },
+    ],
+  },
 ];
 
 export const ALL_PAGES: DocPage[] = SECTIONS.flatMap((section) => section.pages);

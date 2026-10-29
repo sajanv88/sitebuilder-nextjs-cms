@@ -1,0 +1,21 @@
+import settingsEmail from "./images/settings-email.jpg";
+
+Your site sends email for two things only: password reset links, and invitations for [new users](/users/users#add-someone) to choose their password. **Settings → Email** says how it sends them. Without it, those options don't appear, and an admin sets passwords instead.
+
+Sitebuilder doesn't send newsletters or contact form messages.
+
+## Send email through
+
+- **The server's environment**: whatever whoever runs your site set up when they installed it. The card says whether that's done.
+- **An SMTP server**: your email provider's, such as Postmark, Amazon SES, Mailgun or Google Workspace, or your own.
+
+<Screenshot src={settingsEmail} alt="Settings, Email, with An SMTP server chosen: Server, Port 587, Security STARTTLS, User name, Password, Sender's name Riverside Bakery and Sender's address." />
+
+Your provider's help pages give you these:
+
+- **Server** and **Port**, such as `smtp.postmarkapp.com` and `587`.
+- **Security**: **STARTTLS** (usually port 587) or **TLS** (usually 465). **None** is only for a relay on the same network.
+- **User name** and **Password**: leave the user name empty for a server that takes email without signing in. The password is stored encrypted and never shown again.
+- **Sender's name** and **Sender's address**: who the emails come from. Use an address your provider lets you send from, or the emails may be refused or land in spam.
+
+Press **Save email settings**. Sitebuilder connects and signs in to check the details before saving, without sending anything. To try it for real, use **Forgot your password?** on the sign-in page.

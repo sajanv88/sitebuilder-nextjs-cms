@@ -41,4 +41,9 @@ export const PAGES: Record<string, Loader> = {
   "users/users": () => import("@/content/users/users.mdx"),
   "users/roles": () => import("@/content/users/roles.mdx"),
   "users/your-account": () => import("@/content/users/your-account.mdx"),
+  "settings/site": () => import("@/content/settings/site.mdx"),
+  "settings/reading": () => import("@/content/settings/reading.mdx"),
+  "settings/media-storage": () => import("@/content/settings/media-storage.mdx"),
+  "settings/email": () => import("@/content/settings/email.mdx"),
+  "settings/analytics": () => import("@/content/settings/analytics.mdx"),
 };

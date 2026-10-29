@@ -1,0 +1,22 @@
+import settingsAnalytics from "./images/settings-analytics.jpg";
+
+**Settings → Analytics** connects one service that counts visits and shows how your pages are used. It's off to start with. Turn it on and your site asks each visitor first, with a [cookie banner](/search-and-cookies/cookie-banner), and loads nothing until they accept.
+
+<Screenshot src={settingsAnalytics} alt="Settings, Analytics: Google Analytics 4 chosen with a measurement ID, a note that it loads only after a visitor accepts, Search Console site verification, and the privacy page for the banner set to Privacy." />
+
+## Choose a service
+
+- **None**: no analytics, and no banner.
+- **Google Analytics 4**: type the **Measurement ID**, such as `G-XXXXXXXXXX`. In Google Analytics it's under Admin, Data streams, your web stream.
+- **Google Tag Manager**: type the **Container ID**, such as `GTM-XXXXXXX`. Your site's security settings may block tags that load from other addresses, and scripts typed into a tag don't run, so check your tags work after publishing them.
+- **PostHog**: type the **Project API key**, from your project settings in PostHog, and choose where it's hosted: PostHog's EU cloud, its US cloud, or an address of your own that passes requests on to PostHog. The key is public by design: it can only send events.
+
+## Search Console
+
+To prove to Google Search Console that the site is yours, choose the "HTML tag" way of verifying there, and paste the tag it gives you into **Site verification**. You can paste the whole tag or just the code inside it. It's a tag in your pages, not a tracker, so it needs no consent and works whichever service you choose above.
+
+## The privacy page
+
+Choose your privacy page under **Privacy page**, and the cookie banner links to it, so visitors can read what's collected before they choose. It must be a published page. Write it first: say which service you use, what it collects, and how to change your mind.
+
+Press **Save analytics settings**.
