@@ -239,6 +239,18 @@ With Argo CD, point an Application at the OCI chart, or at `charts/sitebuilder` 
 
    Vercel sends the secret as `Authorization: Bearer …` itself. Plans that allow only a daily cron publish scheduled posts once a day.
 
+## Documentation
+
+The user guide, a page per feature with screenshots, is an app of its own: `apps/docs`. It's published as its own image, reads no database and needs no configuration, so it can run anywhere.
+
+```sh
+docker run -d --name sitebuilder-docs -p 3002:3000 \
+  --read-only --tmpfs /app/apps/docs/.next/cache:uid=1001,gid=1001 \
+  ghcr.io/sajanv88/sitebuilder-docs:latest
+```
+
+`:latest` is the newest release; `:main` follows the main branch. Open http://localhost:3002. The container answers `/api/health` for probes, runs as uid 1001, and only writes to `.next/cache` (the picture resizer's cache), as the zones do. To build it from source: `docker build -f apps/docs/Dockerfile -t sitebuilder-docs .` from the repo root. In development, `pnpm dev` serves it on port 3002 too.
+
 ## Development
 
 Requires Node 26 (see `.node-version`) and pnpm, which switches itself to the version in `package.json`.
@@ -289,7 +301,7 @@ An admin change reaches every site process through a small table of cache tags i
 
 ### Releasing
 
-1. Merge to `main`. `main.yaml` builds both images (amd64 and arm64) and pushes them as `ghcr.io/<owner>/sitebuilder-site:sha-<short-sha>` and `…-admin:sha-<short-sha>`.
+1. Merge to `main`. `main.yaml` builds the three images (amd64 and arm64) and pushes them as `ghcr.io/<owner>/sitebuilder-site:sha-<short-sha>`, `…-admin:sha-<short-sha>` and `…-docs:sha-<short-sha>`.
 2. Wait for it to go green.
 3. `git tag vX.Y.Z && git push origin vX.Y.Z`. `release.yaml` retags those images as `vX.Y.Z` and `latest` without rebuilding, pushes the chart to `oci://ghcr.io/<owner>/charts/sitebuilder` at `X.Y.Z`, and creates the GitHub Release.
 

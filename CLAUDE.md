@@ -63,6 +63,7 @@ Run `pnpm typecheck && pnpm lint && pnpm build` before calling a change done.
 ```
 apps/site/               main zone: the public site; Dockerfile beside it
 apps/admin/              admin zone: /admin, /setup, /api/auth, Better Auth, can(); Dockerfile beside it
+apps/docs/               the user guide: MDX pages and screenshots, no database; Dockerfile beside it (port 3002 in dev)
 packages/schema/         valibot schemas: blocks, menus, settings, accounts, env (valibot only)
 packages/db/             Drizzle schema, migrations, queries, bundled migrate/seed/create-admin
 packages/blocks/         the block registry and renderer, drawn by both zones
@@ -80,7 +81,7 @@ compose.yaml             postgres, migrate, admin, site; compose.dev.yaml publis
 ## Delivery
 
 PR → `pr.yaml` checks (Biome, stylelint, typecheck, tests, licences, build, Docker build + health check, helm lint + kubeconform). Nothing is published.
-Merge to `main` → `main.yaml` builds each zone's image once (amd64 + arm64) and pushes `ghcr.io/<owner>/sitebuilder-site` and `…-admin` as `:sha-<short-sha>` and `:main`, the owner being the repository's.
+Merge to `main` → `main.yaml` builds each zone's image, and the docs', once (amd64 + arm64) and pushes `ghcr.io/<owner>/sitebuilder-site`, `…-admin` and `…-docs` as `:sha-<short-sha>` and `:main`, the owner being the repository's.
 Tag `vX.Y.Z` → `release.yaml` retags that commit's images as `:vX.Y.Z` and `:latest` (no rebuild), pushes the chart to `oci://ghcr.io/<owner>/charts/sitebuilder` at `X.Y.Z`, and creates the GitHub Release.
 Argo CD syncs the chart from the OCI registry (production) or from `charts/sitebuilder` in git.
 
