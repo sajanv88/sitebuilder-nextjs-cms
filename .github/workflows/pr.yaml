@@ -74,11 +74,11 @@ jobs:
 
   docker:
     if: ${{ !github.event.pull_request.draft }}
-    # One image per Next.js zone (docs/decisions.md #1).
+    # One image per Next.js zone (docs/decisions.md #1), and one for the documentation.
     strategy:
       fail-fast: false
       matrix:
-        app: [site, admin]
+        app: [site, admin, docs]
     env:
       APP: ${{ matrix.app }}
     runs-on: ubuntu-latest
@@ -102,8 +102,9 @@ jobs:
           # Reads the cache main.yaml writes; a PR never writes it.
           cache-from: type=gha,scope=${{ env.APP }}
       - name: Run the image and hit /api/health
-        # The server refuses to start without its environment. /api/health touches no
-        # dependency, so placeholders are enough; the secret is made up per run.
+        # The zones refuse to start without their environment. /api/health touches no
+        # dependency, so placeholders are enough; the secret is made up per run. The docs need
+        # none and ignore them.
         run: |
           docker run -d --name app -p 3000:3000 \
             --read-only --tmpfs "/app/apps/${APP}/.next/cache:uid=1001,gid=1001" \

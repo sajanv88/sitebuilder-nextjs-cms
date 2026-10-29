@@ -17,11 +17,11 @@ concurrency:
 
 jobs:
   image:
-    # One image per Next.js zone (docs/decisions.md #1).
+    # One image per Next.js zone (docs/decisions.md #1), and one for the documentation.
     strategy:
       fail-fast: false
       matrix:
-        app: [site, admin]
+        app: [site, admin, docs]
     env:
       APP: ${{ matrix.app }}
     runs-on: ubuntu-latest

@@ -38,7 +38,7 @@ jobs:
         run: |
           owner="${GITHUB_REPOSITORY_OWNER,,}"
           {
-            echo "IMAGES=ghcr.io/${owner}/sitebuilder-site ghcr.io/${owner}/sitebuilder-admin"
+            echo "IMAGES=ghcr.io/${owner}/sitebuilder-site ghcr.io/${owner}/sitebuilder-admin ghcr.io/${owner}/sitebuilder-docs"
             echo "CHART_REPOSITORY=oci://ghcr.io/${owner}/charts"
           } >> "${GITHUB_ENV}"
 
@@ -63,7 +63,7 @@ jobs:
 
       - name: Retag the images built by main.yaml
         run: |
-          # Both zones must exist for this commit before either is retagged.
+          # Every image must exist for this commit before any is retagged.
           for image in ${IMAGES}; do
             source_ref="${image}:sha-${GITHUB_SHA::7}"
             if ! docker buildx imagetools inspect "${source_ref}" > /dev/null 2>&1; then
