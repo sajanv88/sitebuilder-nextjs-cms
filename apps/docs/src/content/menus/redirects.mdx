@@ -1,0 +1,51 @@
+import redirects from "./images/redirects.jpg";
+import addRedirect from "./images/add-redirect.jpg";
+
+A redirect sends visitors from an old address to a new one, so links people saved, shared or found in a search engine keep working. **Redirects** in the sidebar lists them all. Editors and admins can use it.
+
+<Screenshot src={redirects} alt="The Redirects screen listing four redirects: /news/* to /blog/*, /our-team to /about-us/our-team, /shop to /visit-the-shop, and /summer-menu to /our-bread, for now." />
+
+## The ones Sitebuilder adds for you
+
+Most redirects you'll never write yourself. Sitebuilder adds one whenever an address that visitors may know changes:
+
+- you change the slug of a published page or post, or move a page under another;
+- you change the address of the blog in Settings → Reading;
+- you change the slug of a category or tag.
+
+They're listed here with the rest, and you can change or remove them like any other.
+
+## Add a redirect
+
+Add your own when you move to Sitebuilder from another site, so its old addresses lead somewhere, or when a page is gone and another one covers it.
+
+1. Press **Add redirect**.
+2. In **From**, type the old address on your site, starting with `/`, such as `/shop`.
+3. In **To**, type where it should go: an address on your site such as `/visit-the-shop`, or another site's address starting with `https://`.
+4. Choose **How** it redirects (see below), and press **Add redirect**.
+
+<Screenshot src={addRedirect} alt="Add a redirect: From /old-blog/*, To /blog/*, How Moved for good (301)." />
+
+### A whole section at once
+
+End **From** with `/*` to cover everything under an address. `/old-blog/*` catches `/old-blog`, `/old-blog/2024/our-first-year` and anything else under it.
+
+End **To** with `/*` too to keep the rest of the address: with `/old-blog/*` to `/blog/*`, `/old-blog/2024/our-first-year` goes to `/blog/2024/our-first-year`. Without it, every address under `/old-blog` goes to the one address in **To**.
+
+### For good or for now
+
+- **Moved for good (301)** is right almost every time. Search engines move what they know about the old address to the new one.
+- **Moved for now (302)** is for a short while, such as a seasonal page you'll bring back. Search engines keep the old address.
+- The **308** and **307** versions do the same, and also pass on a form someone was sending. You'll rarely need them.
+
+## What comes first
+
+A page or post always wins over a redirect. A redirect only answers at an address where there's nothing else, so you can't redirect away from a page that's live. Sitebuilder tells you if you try: move the page, or choose another address.
+
+It also stops you making a loop, such as `/a` to `/b` and `/b` back to `/a`, and keeps out addresses that belong to Sitebuilder itself, such as `/admin`.
+
+## Change or remove one
+
+The **⋯** menu at the end of each row has **Edit** and **Remove**. Once a redirect is removed, its old address shows "page not found" again.
+
+Search the list, or click a column heading to sort by it.

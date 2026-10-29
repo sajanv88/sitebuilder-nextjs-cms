@@ -150,6 +150,21 @@ export const SECTIONS: DocSection[] = [
       },
     ],
   },
+  {
+    title: "Menus and redirects",
+    pages: [
+      {
+        slug: "menus/menus",
+        title: "Build your menus",
+        description: "The primary and footer menus: add, move and group links, and how they look.",
+      },
+      {
+        slug: "menus/redirects",
+        title: "Redirects",
+        description: "Send old addresses on to new ones, one at a time or a whole section.",
+      },
+    ],
+  },
 ];
 
 export const ALL_PAGES: DocPage[] = SECTIONS.flatMap((section) => section.pages);

@@ -34,4 +34,6 @@ export const PAGES: Record<string, Loader> = {
   "media/the-library": () => import("@/content/media/the-library.mdx"),
   "media/upload": () => import("@/content/media/upload.mdx"),
   "media/private-files": () => import("@/content/media/private-files.mdx"),
+  "menus/menus": () => import("@/content/menus/menus.mdx"),
+  "menus/redirects": () => import("@/content/menus/redirects.mdx"),
 };

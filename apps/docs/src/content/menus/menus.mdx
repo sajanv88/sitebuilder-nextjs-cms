@@ -1,0 +1,75 @@
+import menusPrimary from "./images/menus-primary.jpg";
+import menuAdd from "./images/menu-add.jpg";
+import menuWarning from "./images/menu-warning.jpg";
+import menusFooter from "./images/menus-footer.jpg";
+import siteMenuOpen from "./images/site-menu-open.jpg";
+import siteMenuPhone from "./images/site-menu-phone.jpg";
+import siteFooter from "./images/site-footer.jpg";
+
+Your site has two menus: the **primary menu** across the top of every page, and the **footer menu** at the bottom. You build both under **Menus** in the sidebar. Editors and admins can change them.
+
+[Set the home page and menu](/getting-started/home-and-menu) adds a first link. This page covers the rest.
+
+## The Menus screen
+
+The two tabs hold one menu each. On the left is the menu as a list, with the items under another item indented beneath it. Click an item to see and change it on the right.
+
+<Screenshot src={menusPrimary} alt="The Menus screen, Primary menu tab: Our bread, Blog, About and Visit us, with two items under each of the first three. Blog is selected, and its details are on the right: Label, Goes to A web address, Address /blog." />
+
+Nothing reaches your site until you press **Save primary menu** (or **Save footer menu**). The words beside it say when there are unsaved changes. Save before you leave the screen: changes you haven't saved are lost.
+
+## Add an item
+
+1. Press **Add item**. To put it under another item, select that item and press **Add under it**.
+2. Choose where it **Goes to**:
+   - **A page or post on this site**: search for it by title.
+   - **A category or tag**: its page, listing its posts.
+   - **A web address**: a path on your site such as `/blog`, or another site's address starting with `https://`.
+   - **Nothing: a group of the items under it**, for a heading with links beneath it. Only top-level items can be groups.
+3. Type the **Label**, the words in the menu. Choosing a page or category fills it in with its name; you can shorten it. "About" is fine for a page called "About us".
+4. Tick **Open in a new tab** if you want the link to open in a new tab. Keep it for other sites; links within your own site work best in the same tab.
+5. Press **Add item**, then save the menu.
+
+<Screenshot src={menuAdd} alt="Add a menu item: Label Gift cards, Goes to A web address, Address https://example.com/gift-cards, Open in a new tab not ticked, and Add item and Cancel buttons." />
+
+A link to a page, post, category or tag follows it: if its address changes later, the menu changes with it. A web address you type stays as you typed it.
+
+## Change, move or remove items
+
+- **Change** an item by selecting it, editing its details, and pressing **Apply changes**. **Undo changes** puts back what was there.
+- **Move** an item by dragging its row up or down, or under another item. With the keyboard, select it and press <Kbd>Alt</Kbd> with an arrow key.
+- **Remove** an item with **Remove** in its details. Removing an item removes the items under it too, and a group goes when its last item does.
+
+Then save the menu.
+
+Menus have two levels: items, and items under them. The primary menu holds up to 20 items, with up to 12 under each.
+
+## Items the site leaves out
+
+A link to a page or post that isn't published, or to something that's been deleted, is left out of the menu on your site. The Menus screen marks it with a warning sign, and says why when you select it.
+
+<Screenshot src={menuWarning} alt="The details of the Christmas orders item, with a warning: It links to something that isn't published, so the site leaves it out until it is." />
+
+That's handy for a scheduled page: put it in the menu now, and the link appears by itself when the page goes live.
+
+## How the primary menu looks
+
+An item with items under it opens a panel when it's clicked. The panel lists the item itself first, then the ones under it.
+
+<Screenshot src={siteMenuOpen} alt="The site's header with Our bread, Blog, About and Visit us. The Blog panel is open, listing Blog, News and Events." />
+
+On a phone, the menu folds into a menu button. Each item with items under it becomes a heading, with its links below.
+
+<Screenshot src={siteMenuPhone} alt="The menu open on a phone, as a panel from the side: Our bread with Our bread and Bread club under it, Blog with Blog, News and Events, About with About, Our story and Our team, then Visit us." />
+
+Your template's options can change some of this, such as making the last item a button. See Appearance.
+
+## The footer menu
+
+The footer menu works the same way. Each item with items under it becomes a list under its label, which makes groups the natural choice here.
+
+<Screenshot src={menusFooter} alt="The Footer menu tab with two groups: The bakery, holding About us, Our bread and Visit us, and Keep up, holding The blog, RSS feed and Newsletter. Newsletter is selected, with Open in a new tab ticked." />
+
+<Screenshot src={siteFooter} alt="The site's footer: Riverside Bakery and its tagline, then two lists, The bakery and Keep up, with their links." />
+
+A menu with no items isn't shown at all.
