@@ -3,9 +3,11 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import { session, user } from "../schema/auth-schema";
+import { redirects } from "../schema/site";
 import { createTestDb } from "../testing/pglite";
 import { bootstrapSite } from "./bootstrap";
 import { createEntry, getEntryForEdit } from "./entries";
+import { resolveRoute } from "./public";
 import { createTerm, deleteTerm, listTerms, updateTerm } from "./terms";
 import { deleteUser, listUsers, setUserBanned, setUserRole } from "./users";
 
@@ -54,6 +56,44 @@ describe("terms", () => {
     expect(
       await updateTerm(db, { id: again.term.id, name: "Updates", slug: "updates" }),
     ).toMatchObject({ ok: true, term: { name: "Updates", slug: "updates" } });
+  });
+
+  it("a new slug redirects the old archive and its pages, without chains or loops", async () => {
+    const news = await createTerm(db, { taxonomy: "category", name: "News", slug: "" });
+    if (!news.ok) throw new Error("no term");
+    const rename = (slug: string) => updateTerm(db, { id: news.term.id, name: "News", slug });
+
+    await rename("updates");
+    expect(await resolveRoute(db, "/blog/category/news")).toEqual({
+      kind: "redirect",
+      to: "/blog/category/updates",
+      status: 301,
+    });
+    expect(await resolveRoute(db, "/blog/category/news/page/2")).toMatchObject({
+      kind: "redirect",
+      to: "/blog/category/updates/page/2",
+    });
+    expect(await resolveRoute(db, "/blog/category/updates")).toEqual({
+      kind: "term",
+      termId: news.term.id,
+      page: 1,
+    });
+
+    await rename("latest");
+    expect(await resolveRoute(db, "/blog/category/news")).toMatchObject({
+      to: "/blog/category/latest",
+    });
+    await rename("news");
+    expect(await resolveRoute(db, "/blog/category/news")).toMatchObject({ kind: "term" });
+    expect(await resolveRoute(db, "/blog/category/latest")).toMatchObject({
+      to: "/blog/category/news",
+    });
+    // A name change alone leaves the redirects as they are.
+    const before = await db.$count(redirects);
+    await updateTerm(db, { id: news.term.id, name: "Newsroom", slug: "news" });
+    expect(await db.$count(redirects)).toBe(before);
+    // A tag with the same slug is a different archive.
+    expect(await resolveRoute(db, "/blog/tag/updates")).toEqual({ kind: "missing" });
   });
 
   it("deleting a term unlinks it and keeps the posts; counts skip the trash", async () => {

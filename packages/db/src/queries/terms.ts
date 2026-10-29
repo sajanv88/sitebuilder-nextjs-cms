@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Copyright (C) 2026 Sajankumar Vijayan
 
-import { slugify, type TaxonomyKind, withSuffix } from "@sitebuilder/schema";
+import { archivePath, slugify, type TaxonomyKind, withSuffix } from "@sitebuilder/schema";
 import { and, asc, count, eq, inArray, isNull, ne } from "drizzle-orm";
 import type { Executor } from "../executor";
 import { entries } from "../schema/entries";
+import { redirects } from "../schema/site";
 import { entryTerms, terms } from "../schema/terms";
 import { isUniqueViolation } from "./errors";
+import { getReading } from "./public";
 
 // Categories and tags (design §4.3): flat, slugs unique within a taxonomy. Deleting a term
-// removes its links to entries, not the entries.
+// removes its links to entries, not the entries. A new slug redirects from the old archive.
 
 export interface TermRow {
   id: string;
@@ -89,25 +91,48 @@ export async function createTerm(
   }
 }
 
+// A new slug moves the term's archive, so one "/*" redirect from the old one covers it and its
+// pages (/blog/category/old/page/2). Redirects to the old archive follow it, so there are no
+// chains, and one from the new archive (an earlier move back) would hide it.
+async function redirectArchive(
+  db: Executor,
+  taxonomy: TaxonomyKind,
+  from: string,
+  to: string,
+): Promise<void> {
+  const { postsPath } = await getReading(db);
+  const fromAll = `${archivePath(postsPath, taxonomy, from)}/*`;
+  const toAll = `${archivePath(postsPath, taxonomy, to)}/*`;
+  await db.delete(redirects).where(eq(redirects.fromPath, toAll));
+  await db.update(redirects).set({ toPath: toAll }).where(eq(redirects.toPath, fromAll));
+  await db
+    .insert(redirects)
+    .values({ fromPath: fromAll, toPath: toAll, status: 301 })
+    .onConflictDoUpdate({ target: redirects.fromPath, set: { toPath: toAll, status: 301 } });
+}
+
 export async function updateTerm(
   db: Executor,
   input: { id: string; name: string; slug: string },
 ): Promise<TermWriteResult> {
-  const existing = await db.query.terms.findFirst({
-    where: { id: input.id },
-    columns: { taxonomy: true },
-  });
-  if (!existing) return { ok: false, error: "not-found" };
   try {
-    const slug = await placeSlug(db, existing.taxonomy, input.name, input.slug, input.id);
-    if (!slug) return { ok: false, error: "slug-taken" };
-    const [term] = await db
-      .update(terms)
-      .set({ name: input.name, slug })
-      .where(eq(terms.id, input.id))
-      .returning({ id: terms.id, name: terms.name, slug: terms.slug });
-    if (!term) return { ok: false, error: "not-found" };
-    return { ok: true, term };
+    return await db.transaction(async (tx): Promise<TermWriteResult> => {
+      const existing = await tx.query.terms.findFirst({
+        where: { id: input.id },
+        columns: { taxonomy: true, slug: true },
+      });
+      if (!existing) return { ok: false, error: "not-found" };
+      const slug = await placeSlug(tx, existing.taxonomy, input.name, input.slug, input.id);
+      if (!slug) return { ok: false, error: "slug-taken" };
+      const [term] = await tx
+        .update(terms)
+        .set({ name: input.name, slug })
+        .where(eq(terms.id, input.id))
+        .returning({ id: terms.id, name: terms.name, slug: terms.slug });
+      if (!term) return { ok: false, error: "not-found" };
+      if (slug !== existing.slug) await redirectArchive(tx, existing.taxonomy, existing.slug, slug);
+      return { ok: true, term };
+    });
   } catch (error) {
     if (isUniqueViolation(error)) return { ok: false, error: "slug-taken" };
     throw error;

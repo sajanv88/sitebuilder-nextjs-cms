@@ -48,6 +48,34 @@ export type PublicRoute =
 // Under the posts path: nothing, /page/<n>, /<taxonomy>/<slug>, or both (decisions #67).
 const LIST_PATH = /^(?:\/(category|tag)\/([a-z0-9-]{1,80}))?(?:\/page\/(\d{1,6}))?$/;
 
+// The blog, an archive or one of their pages, or null when the path isn't one. An archive whose
+// slug no term has is null too, so a redirect from a renamed term's old slug can answer it.
+async function listRoute(
+  db: Executor,
+  reading: ReadingSettings,
+  path: string,
+): Promise<PublicRoute | null> {
+  const list = LIST_PATH.exec(path.slice(reading.postsPath.length));
+  if (!list) return null;
+  const [, taxonomy, slug, pageText] = list;
+  const base = taxonomy ? `${reading.postsPath}/${taxonomy}/${slug}` : reading.postsPath;
+  const page = pageText ? Number(pageText) : 1;
+  // /page/1 is the list itself; /page/02 isn't a page.
+  if (pageText && page === 1) return { kind: "redirect", to: base, status: 301 };
+  if (pageText && (page < 2 || String(page) !== pageText)) return { kind: "missing" };
+
+  let termId: string | null = null;
+  if (taxonomy && slug) {
+    const term = await getTermBySlug(db, taxonomy as TaxonomyKind, slug);
+    if (!term) return null;
+    termId = term.id;
+  }
+  const total = await countPublicPosts(db, termId);
+  const lastPage = Math.max(1, Math.ceil(total / reading.postsPerPage));
+  if (page > lastPage) return { kind: "missing" };
+  return termId ? { kind: "term", termId, page } : { kind: "posts", page };
+}
+
 // What a request path is, decided before the page renders so the response can carry the right
 // status (decisions #65). A few indexed lookups; the site zone's proxy calls it per page request.
 export async function resolveRoute(db: Executor, path: string): Promise<PublicRoute> {
@@ -56,26 +84,8 @@ export async function resolveRoute(db: Executor, path: string): Promise<PublicRo
   const reading = await getReading(db);
 
   if (path === reading.postsPath || path.startsWith(`${reading.postsPath}/`)) {
-    const list = LIST_PATH.exec(path.slice(reading.postsPath.length));
-    if (list) {
-      const [, taxonomy, slug, pageText] = list;
-      const base = taxonomy ? `${reading.postsPath}/${taxonomy}/${slug}` : reading.postsPath;
-      const page = pageText ? Number(pageText) : 1;
-      // /page/1 is the list itself; /page/02 isn't a page.
-      if (pageText && page === 1) return { kind: "redirect", to: base, status: 301 };
-      if (pageText && (page < 2 || String(page) !== pageText)) return { kind: "missing" };
-
-      let termId: string | null = null;
-      if (taxonomy && slug) {
-        const term = await getTermBySlug(db, taxonomy as TaxonomyKind, slug);
-        if (!term) return { kind: "missing" };
-        termId = term.id;
-      }
-      const total = await countPublicPosts(db, termId);
-      const lastPage = Math.max(1, Math.ceil(total / reading.postsPerPage));
-      if (page > lastPage) return { kind: "missing" };
-      return termId ? { kind: "term", termId, page } : { kind: "posts", page };
-    }
+    const list = await listRoute(db, reading, path);
+    if (list) return list;
   }
 
   const [entry] = await db

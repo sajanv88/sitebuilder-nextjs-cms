@@ -71,8 +71,8 @@ export const ACTION_EFFECTS = {
   activateTemplate: ["template", "settings", "entries", "menu"],
   // Its options change how every public page is drawn.
   saveTemplateOptions: ["template", "settings"],
-  // terms.ts: archives, and the categories and tags printed on posts.
-  saveTerm: ["terms", "entries"],
+  // terms.ts: archives, the categories and tags printed on posts, and a new slug's redirect.
+  saveTerm: ["terms", "entries", "redirects"],
   removeTerm: ["terms", "entries"],
   // users.ts: users with content can't be deleted, and nothing else here is public.
   createUser: [],
