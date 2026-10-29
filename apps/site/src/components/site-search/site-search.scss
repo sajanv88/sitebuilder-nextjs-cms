@@ -15,7 +15,10 @@
 
     &__title {
       margin: 0;
-      font-size: var(--text-3xl);
+
+      // nuvui's type scale stops at --text-2xl: a larger name isn't defined and falls back to
+      // the body size.
+      font-size: var(--text-2xl);
       font-weight: var(--font-weight-semibold);
       line-height: 1.15;
     }
