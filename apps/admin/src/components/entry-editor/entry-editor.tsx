@@ -81,6 +81,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   type SubmitEvent,
+  startTransition,
   useActionState,
   useEffect,
   useMemo,
@@ -196,7 +197,7 @@ function statusLine(entry: EditorEntry | null, formatDateTime: (date: Date) => s
     return `Published ${formatDateTime(new Date(entry.publishedAt))}.`;
   }
   if (entry.status === "scheduled" && entry.publishedAt) {
-    return `Scheduled for ${formatDateTime(new Date(entry.publishedAt))}. It goes live once scheduled publishing is set up (a later release).`;
+    return `Scheduled for ${formatDateTime(new Date(entry.publishedAt))}. It goes live by itself then.`;
   }
   return "A draft: only people who can sign in to the admin see it.";
 }
@@ -508,6 +509,12 @@ export function EntryEditor({
       return;
     }
     submitted.current = snapshotOf(title, blocks);
+    // Sent through a transition, not as the form's action: React resets a form after its
+    // action, which put the Parent page select back on its first option and emptied the date
+    // picker, so the next Update sent those and a page lost its parent.
+    event.preventDefault();
+    const data = new FormData(event.currentTarget, event.nativeEvent.submitter);
+    startTransition(() => action(data));
   }
 
   // ── After a save ─────────────────────────────────────────────────────────────────────────
@@ -715,7 +722,7 @@ export function EntryEditor({
         availability={assistant}
         snapshot={() => ({ entryId, type, title, content: blocks })}
       >
-        <form ref={form} action={action} onSubmit={onSubmit} className="entry-editor" noValidate>
+        <form ref={form} onSubmit={onSubmit} className="entry-editor" noValidate>
           <input type="hidden" name="id" value={entryId} />
           <input type="hidden" name="type" value={type} />
           <input type="hidden" name="updatedAt" value={token} />

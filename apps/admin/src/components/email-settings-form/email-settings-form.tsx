@@ -21,7 +21,7 @@ import {
   RadioGroup,
   toast,
 } from "@nuvui/react";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { type EmailFormState, type EmailFormValues, saveEmail } from "@/actions/email";
 import "./email-settings-form.scss";
 
@@ -44,6 +44,7 @@ export function EmailSettingsForm({
     values: initial,
   } satisfies EmailFormState);
   const [source, setSource] = useState(initial.source);
+  const security = useRef<HTMLSelectElement>(null);
   const { values, errors = {} } = state;
 
   useEffect(() => {
@@ -51,6 +52,9 @@ export function EmailSettingsForm({
       toast(state.message, { intent: "success", id: `email-${state.at}` });
       // After the form's reset, as in the other settings forms.
       setSource(state.values.source);
+      // The reset puts a select on its first option, not its defaultValue, and the next save
+      // would send that.
+      if (security.current) security.current.value = state.values.security;
     }
   }, [state]);
 
@@ -114,7 +118,7 @@ export function EmailSettingsForm({
               <Field>
                 <FieldLabel>Security</FieldLabel>
                 <FieldControl>
-                  <NativeSelect name="security" defaultValue={values.security}>
+                  <NativeSelect ref={security} name="security" defaultValue={values.security}>
                     <option value="starttls">STARTTLS (usually 587)</option>
                     <option value="tls">TLS (usually 465)</option>
                     <option value="none">None: a relay on this network only</option>

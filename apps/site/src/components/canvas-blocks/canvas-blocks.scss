@@ -44,12 +44,13 @@
     }
 
     // The selected block's handle to drag it by (canvas-drag), above its corner, outside the
-    // outline, so it never covers what the block shows.
+    // outline, so it never covers what the block shows. The end corner: the line above runs
+    // from the start, so its end is where it's most often empty.
     &__grip {
       position: absolute;
       z-index: 10;
       inset-block-start: calc(a.space(1) * -1);
-      inset-inline-start: calc(a.space(1) * -1);
+      inset-inline-end: calc(a.space(1) * -1);
       translate: 0 -100%;
       cursor: grab;
       touch-action: none;
